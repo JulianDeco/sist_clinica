@@ -1,0 +1,46 @@
+# Claude Code — contexto interno, no va al repo
+.claude/
+CLAUDE.md
+
+# Secretos — nunca commitear
+.env
+*.env.local
+*.env.production
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+*.egg-info/
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+infra/certbot/conf/
+infra/certbot/www/
+
+# Alembic (no commitear migraciones de BD local)
+# (las migraciones sí se commitean — esto es para otros artefactos)
+
+# Logs
+*.log
