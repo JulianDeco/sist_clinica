@@ -1,13 +1,30 @@
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
+from app.core.redis import get_redis
 from app.modules.auth import service
 from app.modules.auth.models import User
 
 router = APIRouter(prefix="/oauth", tags=["auth"])
+
+
+@router.post("/login")
+async def login(
+    email: str = Form(...),
+    password: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+):
+    """Valida credenciales y retorna un login_ticket de vida corta (120 s)."""
+    user = await service.authenticate_user(db, email, password)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
+    ticket = await service.create_login_ticket(redis, str(user.id))
+    return {"login_ticket": ticket, "expires_in": service.LOGIN_TICKET_TTL}
 
 
 @router.get("/authorize")
@@ -18,16 +35,20 @@ async def authorize(
     code_challenge: str = Query(...),
     code_challenge_method: str = Query("S256"),
     state: str = Query(""),
-    email: str = Query(..., description="Credenciales del usuario (login integrado)"),
-    password: str = Query(...),
+    login_ticket: str = Query(..., description="Ticket obtenido de POST /oauth/login"),
     db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
 ):
     if response_type != "code" or code_challenge_method != "S256":
         raise HTTPException(status_code=400, detail="Parámetros OAuth2 inválidos")
 
-    user = await service.authenticate_user(db, email, password)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
+    user_id = await service.consume_login_ticket(redis, login_ticket)
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login ticket inválido o expirado")
+
+    user = await db.get(User, user_id)
+    if not user or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario inactivo")
 
     code = await service.create_authorization_code(db, user, code_challenge, redirect_uri)
     separator = "&" if "?" in redirect_uri else "?"

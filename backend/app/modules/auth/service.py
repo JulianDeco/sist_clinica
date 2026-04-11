@@ -3,6 +3,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 from jose import JWTError
+from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +15,23 @@ from app.core.security import (
     verify_pkce,
 )
 from app.modules.auth.models import AuthorizationCode, RefreshToken, User
+
+LOGIN_TICKET_TTL = 120  # segundos
+
+
+async def create_login_ticket(redis: Redis, user_id: str) -> str:
+    ticket = secrets.token_urlsafe(32)
+    await redis.set(f"login_ticket:{ticket}", user_id, ex=LOGIN_TICKET_TTL)
+    return ticket
+
+
+async def consume_login_ticket(redis: Redis, ticket: str) -> str | None:
+    """Retorna user_id y elimina el ticket (uso único)."""
+    key = f"login_ticket:{ticket}"
+    user_id = await redis.get(key)
+    if user_id:
+        await redis.delete(key)
+    return user_id
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:

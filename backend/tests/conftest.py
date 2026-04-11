@@ -2,8 +2,10 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from unittest.mock import AsyncMock
 
 from app.core.database import Base, get_db
+from app.core.redis import get_redis
 from app.core.security import hash_password
 from app.main import app
 from app.modules.auth.models import User
@@ -29,6 +31,17 @@ async def db_session() -> AsyncSession:
         yield session
 
 
+@pytest.fixture
+def mock_redis():
+    store: dict[str, str] = {}
+
+    redis = AsyncMock()
+    redis.set = AsyncMock(side_effect=lambda k, v, ex=None: store.__setitem__(k, v))
+    redis.get = AsyncMock(side_effect=lambda k: store.get(k))
+    redis.delete = AsyncMock(side_effect=lambda k: store.pop(k, None))
+    return redis
+
+
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession) -> User:
     user = User(
@@ -43,8 +56,9 @@ async def test_user(db_session: AsyncSession) -> User:
 
 
 @pytest_asyncio.fixture
-async def client(db_session: AsyncSession) -> AsyncClient:
+async def client(db_session: AsyncSession, mock_redis) -> AsyncClient:
     app.dependency_overrides[get_db] = lambda: db_session
+    app.dependency_overrides[get_redis] = lambda: mock_redis
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as c:

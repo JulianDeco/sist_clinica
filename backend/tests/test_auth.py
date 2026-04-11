@@ -3,7 +3,6 @@ import hashlib
 import secrets
 
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient
 
 from app.core.security import create_access_token
@@ -17,8 +16,20 @@ def make_pkce_pair() -> tuple[str, str]:
     return verifier, challenge
 
 
+async def get_login_ticket(client: AsyncClient, email: str, password: str) -> str:
+    resp = await client.post(
+        "/oauth/login",
+        data={"email": email, "password": password},
+    )
+    assert resp.status_code == 200
+    return resp.json()["login_ticket"]
+
+
 async def full_auth_flow(client: AsyncClient, user: User) -> tuple[str, str]:
     verifier, challenge = make_pkce_pair()
+
+    ticket = await get_login_ticket(client, user.email, "password123")
+
     resp = await client.get(
         "/oauth/authorize",
         params={
@@ -27,8 +38,7 @@ async def full_auth_flow(client: AsyncClient, user: User) -> tuple[str, str]:
             "redirect_uri": "http://localhost:3000/callback",
             "code_challenge": challenge,
             "code_challenge_method": "S256",
-            "email": user.email,
-            "password": "password123",
+            "login_ticket": ticket,
         },
         follow_redirects=False,
     )
@@ -59,6 +69,15 @@ async def test_login_correcto_retorna_tokens(client: AsyncClient, test_user: Use
 
 @pytest.mark.asyncio
 async def test_login_credenciales_incorrectas_retorna_401(client: AsyncClient, test_user: User):
+    resp = await client.post(
+        "/oauth/login",
+        data={"email": test_user.email, "password": "wrong_password"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_authorize_ticket_invalido_retorna_401(client: AsyncClient, test_user: User):
     verifier, challenge = make_pkce_pair()
     resp = await client.get(
         "/oauth/authorize",
@@ -68,12 +87,32 @@ async def test_login_credenciales_incorrectas_retorna_401(client: AsyncClient, t
             "redirect_uri": "http://localhost:3000/callback",
             "code_challenge": challenge,
             "code_challenge_method": "S256",
-            "email": test_user.email,
-            "password": "wrong_password",
+            "login_ticket": "ticket-invalido",
         },
         follow_redirects=False,
     )
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_authorize_ticket_uso_unico(client: AsyncClient, test_user: User):
+    verifier, challenge = make_pkce_pair()
+    ticket = await get_login_ticket(client, test_user.email, "password123")
+
+    params = {
+        "response_type": "code",
+        "client_id": "clinica-frontend",
+        "redirect_uri": "http://localhost:3000/callback",
+        "code_challenge": challenge,
+        "code_challenge_method": "S256",
+        "login_ticket": ticket,
+    }
+
+    resp = await client.get("/oauth/authorize", params=params, follow_redirects=False)
+    assert resp.status_code == 307
+
+    resp2 = await client.get("/oauth/authorize", params=params, follow_redirects=False)
+    assert resp2.status_code == 401
 
 
 @pytest.mark.asyncio
