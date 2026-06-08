@@ -38,7 +38,9 @@ Seminario de Trabajo Final — UAI 2026 — Julián Decoppet
 | Archivo | Descripción |
 |---|---|
 | `CLAUDE.md` | Instrucciones para agentes Claude Code |
-| `.claude/` | Contexto, tareas y agentes del proyecto |
+| `.claude/tasks/tasks.json` | Estado de todas las tareas del proyecto (fuente de verdad) |
+| `.claude/tasks/` | Detalle de tareas T-XXX.md y casos de uso ICONIX |
+| `.claude/context/` | Contexto técnico por módulo y buenas prácticas |
 | `.env.example` | Variables de entorno de referencia |
 | `.gitignore` | Exclusiones de git |
 
