@@ -1,0 +1,8 @@
+streamlit>=1.35
+scikit-learn>=1.4
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.8
+shap>=0.45
+seaborn>=0.13
+requests>=2.31
