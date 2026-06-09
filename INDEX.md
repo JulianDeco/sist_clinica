@@ -1,49 +1,47 @@
 # ClinicaSaaS — Índice del proyecto
 
-Plataforma SaaS de gestión clínica interoperable con inteligencia operacional.
-Seminario de Trabajo Final — UAI 2026 — Julián Decoppet
+> La portada del repositorio está en [README.md](README.md).
+> Este archivo mantiene referencias rápidas para navegación interna.
 
 ---
 
-## Código fuente (`src/`)
+## Código fuente
 
 | Directorio | Descripción |
 |---|---|
-| `src/backend/` | API FastAPI + SQLAlchemy 2.0 async, FHIR R4, multitenant |
-| `src/frontend/` | Next.js 14 App Router (en desarrollo) |
+| [src/backend/](src/backend/) | API Spring Boot 3 / Java 21 — Clean Architecture |
+| [src/frontend/](src/frontend/) | Angular 18 + Angular Material |
 
-## Documentación académica (`seminario/`)
-
-| Archivo | Descripción |
-|---|---|
-| `seminario/plan-de-negocios.md` | Plan de negocios completo (v2.1 — pts 1 a 5.2) |
-| `seminario/bmc.md` | Business Model Canvas (anexo del plan de negocios) |
-| `seminario/plan-de-trabajo.md` | Cronograma técnico mayo–diciembre 2026 |
-| `seminario/entrega-2.md` | Borrador segunda entrega (referencia histórica) |
-| `seminario/Notas.pdf` | Notas de cursada |
-| `seminario/material_requerimientos.pdf` | Material de requerimientos |
-| `seminario/T12347 GUIAS...pdf` | Guía oficial del Seminario (Vilaboa 2025) |
-| `seminario/RESUMEN EJECUTIVO (1).pdf` | Resumen ejecutivo versión impresa |
-| `seminario/gemini_primera_entrega.html` | Primera entrega (referencia histórica) |
-| `seminario/bmc.html` | BMC versión visual HTML |
-
-## Demos (`demos/`)
-
-| Directorio | Descripción |
-|---|---|
-| `demos/noshow_demo/` | Prototipo de predicción de ausentismo (Streamlit) |
-
-## Configuración del proyecto
+## Documentación de ingeniería
 
 | Archivo | Descripción |
 |---|---|
-| `CLAUDE.md` | Instrucciones para agentes Claude Code |
-| `.claude/tasks/tasks.json` | Estado de todas las tareas del proyecto (fuente de verdad) |
-| `.claude/tasks/` | Detalle de tareas T-XXX.md y casos de uso ICONIX |
-| `.claude/context/` | Contexto técnico por módulo y buenas prácticas |
-| `.env.example` | Variables de entorno de referencia |
-| `.gitignore` | Exclusiones de git |
+| [docs/README.md](docs/README.md) | Índice completo de docs de ingeniería |
+| [docs/architecture/01-high-level-architecture.md](docs/architecture/01-high-level-architecture.md) | Arquitectura general |
+| [docs/adr/README.md](docs/adr/README.md) | ADRs — decisiones arquitectónicas |
+| [docs/standards/01-backend-standards.md](docs/standards/01-backend-standards.md) | Estándares backend Java/Spring |
+| [docs/standards/02-frontend-standards.md](docs/standards/02-frontend-standards.md) | Estándares frontend Angular |
+| [docs/standards/03-database-standards.md](docs/standards/03-database-standards.md) | Estándares BD / migraciones |
+| [docs/standards/05-security-standards.md](docs/standards/05-security-standards.md) | Estándares seguridad |
+| [docs/testing/01-testing-standards.md](docs/testing/01-testing-standards.md) | Testing / SDD |
+| [docs/standards/09-feature-workflow.md](docs/standards/09-feature-workflow.md) | Workflow de feature |
+
+## Documentación académica
+
+| Archivo | Descripción |
+|---|---|
+| [seminario/plan-de-negocios.md](seminario/plan-de-negocios.md) | Plan de negocios completo |
+| [seminario/plan-de-trabajo.md](seminario/plan-de-trabajo.md) | Cronograma técnico mayo–diciembre 2026 |
+| [seminario/bmc.md](seminario/bmc.md) | Business Model Canvas |
+
+## Configuración y agentes
+
+| Archivo | Descripción |
+|---|---|
+| [CLAUDE.md](CLAUDE.md) | Instrucciones para agentes Claude Code |
+| [.claude/tasks/tasks.json](.claude/tasks/tasks.json) | Estado de todas las tareas (fuente de verdad) |
+| [.claude/tasks/use-cases.md](.claude/tasks/use-cases.md) | Casos de uso ICONIX |
 
 ---
 
-*Última actualización: 08/06/2026*
+*Última actualización: 09/06/2026*

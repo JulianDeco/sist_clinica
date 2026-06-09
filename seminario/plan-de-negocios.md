@@ -19,6 +19,14 @@ Ficha de Seguimiento y Revisión
   08/06/2026   Julián Decoppet     2.1       Consolidación del documento único:
                                              integración de entrega-2.md, capítulo
                                              5 nuevo, referencias APA 7 completas.
+  08/06/2026   Julián Decoppet     2.2       Incorporación de capacidades de IA
+                                             generativa al MVP: resumen automático
+                                             de historia clínica y sugerencia de
+                                             CIE-10 mediante LLM (Claude API).
+                                             Migración de stack a Java 21 +
+                                             Spring Boot 3 + Angular 18.
+                                             Actualización de costos operativos
+                                             (ítem API LLM) y hoja de ruta.
 
 Nota: El Business Model Canvas se presenta como documento independiente
 (bmc.md) para facilitar su visualización y actualización separada.
@@ -56,21 +64,38 @@ Capacidades comprometidas en el MVP del seminario (mayo–diciembre 2026):
     que cada tenant acumule volumen suficiente.
 
   - Recordatorios inteligentes diferenciados por riesgo: las
-    notificaciones a pacientes (WhatsApp, email, SMS) se priorizan según
-    la probabilidad de ausentismo calculada, reduciendo costo de
-    notificación y aumentando la tasa de respuesta efectiva.
+    notificaciones a pacientes se priorizan según la probabilidad de
+    ausentismo calculada, reduciendo costo de notificación y aumentando
+    la tasa de respuesta efectiva. El módulo de notificaciones está
+    diseñado con una abstracción de canal intercambiable: el MVP opera
+    con Telegram Bot API (gratuito, sin aprobación) y email; la
+    integración con WhatsApp Business API se activa en la fase de
+    producción comercial sin modificar la lógica de negocio.
 
   - Overbooking inteligente: cuando un slot tiene alto riesgo de
     ausentismo, el sistema sugiere reservar el horario para sobreturno o
     doble agenda, con tope parametrizable por el profesional, recuperando
     ingresos perdidos sin sobrecargar la operación.
 
+  - Resumen automático de historia clínica mediante IA generativa: al
+    finalizar una consulta, el sistema genera un resumen en lenguaje
+    natural del Encuentro clínico —incluyendo notas SOAP, signos vitales
+    y diagnóstico— a partir de los datos FHIR estructurados. El médico
+    revisa y valida el resumen antes de que quede registrado. Esta
+    capacidad reduce la carga administrativa del profesional y constituye
+    la primera integración del producto con modelos de lenguaje de gran
+    escala (LLM), implementada mediante la API de Claude (Anthropic).
+
+  - Sugerencia automática de clasificación CIE-10: al registrar el
+    motivo de consulta en texto libre, el sistema sugiere el código
+    CIE-10 más probable, reduciendo el tiempo de codificación clínica
+    y el error por omisión. El profesional conserva el criterio final
+    sobre el código aplicado.
+
 Capacidades en roadmap post-MVP (alcance comercial, no entregable del
 seminario):
 
-  - Resumen automático de historia clínica mediante LLM sobre datos FHIR.
   - Sugerencia automática de cobertura óptima por franja horaria.
-  - Sugerencia automática de clasificación CIE-10.
   - Modelos de Machine Learning entrenados por tenant.
   - Integraciones específicas con obras sociales y prestadores vía FHIR.
   - Marketplace B2C de turnos para pacientes finales.
@@ -216,12 +241,14 @@ El desarrollo comenzó en abril de 2026. A la fecha se encuentran completados:
 
   - Arquitectura definida: diseño de schema multitenant con aislamiento por
     tenant_id, módulos planificados de pacientes, profesionales, turnos e
-    historial clínico, stack tecnológico seleccionado (FastAPI, SQLAlchemy 2.0
-    async, Next.js 14 App Router) y metodología de desarrollo acordada (ICONIX).
+    historial clínico, stack tecnológico seleccionado (Java 21, Spring Boot 3,
+    Spring Security, Spring Data JPA, Angular 18, Angular Material) y
+    metodología de desarrollo acordada (ICONIX + SDD + TDD + Clean Architecture).
 
   - Diseño de la base de datos multitenant: especificación de la arquitectura
     de datos con aislamiento por tenant_id, tablas FHIR en JSONB y esquema de
-    migraciones con Alembic.
+    migraciones con Flyway. Once decisiones arquitectónicas documentadas como
+    Architecture Decision Records (ADR-001 a ADR-011).
 
 Alcance del MVP del seminario (mayo a diciembre 2026)
 
@@ -261,11 +288,9 @@ no triviales:
 
 Funcionalidades fuera del alcance del seminario (roadmap post-MVP):
 
-  - Resumen automático de historia clínica mediante LLM sobre datos FHIR.
   - Modelos de Machine Learning entrenados por tenant (Random Forest sobre datos
     reales), que requieren volumen acumulado de turnos inexistente en fase inicial.
   - Sugerencia automática de cobertura óptima por franja horaria.
-  - Sugerencia automática de clasificación CIE-10.
   - Integraciones específicas con obras sociales (validación en línea contra
     padrones).
   - Marketplace B2C de turnos para pacientes finales.
@@ -332,14 +357,26 @@ clínicas pequeñas— de tres pilares integrados al mismo flujo operativo:
   profesional. La predicción se traduce directamente en recuperación de ingresos y
   en eficiencia de la agenda.
 
+- Asistencia clínica mediante IA generativa. A diferencia de los competidores que
+  incorporaron IA para tareas exclusivamente administrativas (transcripción de
+  llamados, asistentes telefónicos), ClinicaSaaS integra IA generativa en el
+  flujo clínico: resumen automático de la historia clínica al cierre de cada
+  consulta y sugerencia de clasificación CIE-10 a partir del texto libre del
+  motivo de consulta. Ambas capacidades están implementadas mediante la API de
+  Claude (Anthropic), con el profesional conservando siempre el criterio final
+  sobre la información registrada. Esta integración representa una diferenciación
+  concreta frente a la oferta del segmento: no IA como decoración, sino IA
+  reduciendo la carga administrativa del médico en cada acto clínico.
+
 En el relevamiento competitivo realizado (mayo de 2026) no se identificó ningún
-proveedor del segmento de clínicas pequeñas que combine estos tres pilares de
+proveedor del segmento de clínicas pequeñas que combine estos cuatro pilares de
 manera nativa e integrada. Los incumbentes locales ofrecen gestión administrativa
 sólida sin interoperabilidad estándar ni capacidades predictivas; los SaaS
 modernos genéricos incorporaron recientemente IA para tareas administrativas
 (transcripción, asistentes telefónicos) pero no predicción de ausentismo
-accionable por paciente; y las soluciones de consolidación masiva priorizan el
-volumen y la estandarización por sobre la personalización del flujo por clínica.
+accionable por paciente ni asistencia en el flujo clínico; y las soluciones de
+consolidación masiva priorizan el volumen y la estandarización por sobre la
+personalización del flujo por clínica.
 
 
 1.4 Factores principales que se considera harán exitoso al proyecto
@@ -1034,6 +1071,20 @@ Acciones técnicas:
     Hito: el sistema sugiere overbooking cuando la probabilidad de ausentismo
     supera el umbral parametrizable.
 
+  - Integrar la API de Claude (Anthropic) para resumen automático de historia
+    clínica (CU-02): al cerrar un Encounter, el sistema envía los datos FHIR
+    estructurados al LLM y devuelve un resumen en lenguaje natural para
+    validación del médico.
+    Hito: el médico recibe un borrador de resumen en menos de 3 segundos al
+    cerrar la consulta; la tasa de aceptación sin edición supera el 50 % en
+    el piloto.
+
+  - Integrar la API de Claude para sugerencia automática de CIE-10: al ingresar
+    el motivo de consulta en texto libre, el sistema sugiere el código CIE-10
+    más probable con una breve justificación.
+    Hito: el sistema sugiere el código correcto en el primer resultado en más
+    del 70 % de los casos evaluados sobre el piloto.
+
 Acciones comerciales y piloto:
 
   - Identificar y contactar entre 3 y 5 clínicas o consultorios en Rosario como
@@ -1070,7 +1121,9 @@ Acciones técnicas:
     Hito: el score de ausentismo predice correctamente en más del 60 % de los
     casos (métrica provisional sobre la base de los datos disponibles).
 
-  - Implementar el canal WhatsApp Business API para recordatorios de alto riesgo.
+  - Validar la tasa de respuesta por Telegram en el piloto. Si supera el 50 %
+    de confirmaciones efectivas, el canal se considera aceptable para la fase
+    comercial; si no, se adelanta la integración de WhatsApp Business API.
 
 Acciones comerciales:
 
@@ -1155,6 +1208,8 @@ TABLA RESUMEN DE HITOS
   ───────────────────────────────────────────────────────────────
   Backend FHIR R4 completo (6 recursos)           Agosto 2026
   Motor de predicción activo en piloto            Agosto 2026
+  Integración LLM: resumen historia clínica       Agosto 2026
+  Integración LLM: sugerencia CIE-10             Agosto 2026
   1 clínica piloto activa con datos reales        Agosto 2026
   Frontend operativo (agenda + ficha + SOAP)      Octubre 2026
   Primer reporte de impacto (datos reales)        Noviembre 2026
@@ -1168,6 +1223,8 @@ TABLA RESUMEN DE HITOS
 ================================================================
 REFERENCIAS (APA 7)
 ================================================================
+
+Anthropic. (2025). *Claude API documentation*. https://docs.anthropic.com/
 
 Argentina.gob.ar. (2026, junio). *Se realizó encuentro para avanzar en la
 estrategia de salud digital*. Ministerio de Salud de la Nación Argentina.
@@ -1234,18 +1291,33 @@ https://www.wearefounders.uk/saas-churn-rates-and-customer-acquisition-costs-by-
 
 
 ================================================================
-Versión 2.1 — 08/06/2026
+Versión 2.2 — 08/06/2026
 
-Cambios respecto a versión 1.1:
+Cambios respecto a versión 2.1:
+  - Incorporación de dos capacidades de IA generativa al MVP del
+    seminario: resumen automático de historia clínica y sugerencia de
+    clasificación CIE-10, implementadas mediante la API de Claude
+    (Anthropic). Ambas funcionalidades figuraban en el roadmap post-MVP
+    de versiones anteriores; la decisión de incluirlas en el MVP
+    responde a la disponibilidad de APIs de LLM accesibles y al impacto
+    diferencial que representan en el flujo clínico diario.
+  - Actualización del stack tecnológico: migración de FastAPI +
+    SQLAlchemy 2.0 + Next.js 14 a Java 21 + Spring Boot 3 + Spring
+    Security + Spring Data JPA + Angular 18 + Angular Material. La
+    migración obedece a la mayor madurez del ecosistema Java/Spring para
+    RBAC empresarial, manejo de excepciones y testing estructurado,
+    y a la mejor alineación con patrones de arquitectura académicamente
+    documentados (Clean Architecture, DDD).
+  - Tabla de hitos actualizada con los hitos de integración LLM.
+  - Sección 1.3 ampliada con un cuarto pilar diferencial: asistencia
+    clínica mediante IA generativa.
+
+Cambios respecto a versión 1.1 (resumidos):
   - Documento consolidado único: integración del contenido de
     entrega-2.md (puntos 1.3 a 4.4) al cuerpo principal.
   - Business Model Canvas movido a documento separado (bmc.md).
   - Incorporación del Capítulo 5: Plan de Acción (5.1 Programas
     generales y 5.2 Programas específicos), con cronograma de hitos
     mayo 2026 – junio 2027 y tres fases operativas.
-  - Sección Contexto Competitivo absorbida por la sección 2.2.
-  - Referencias completamente reescrita en formato APA 7, con nuevas
-    fuentes: OPS 2026, Bessemer Venture Partners 2024, SquadS Ventures
-    2025, We Are Founders 2026, Argentina.gob.ar 2026, Porter 1980,
-    Kotler et al. 2017.
+  - Referencias completamente reescrita en formato APA 7.
 ================================================================
