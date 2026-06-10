@@ -53,6 +53,9 @@ src/
 │   │   ├── pipes/
 │   │   └── models/
 │   ├── features/              # Feature modules (lazy-loaded)
+│   │   ├── landing/
+│   │   ├── login/
+│   │   ├── select-tenant/
 │   │   ├── agenda/
 │   │   ├── patients/
 │   │   ├── clinical/
@@ -69,12 +72,18 @@ src/
 - Signal-based state management (Angular 17+ Signals)
 - HTTP client via generated API services (one per backend controller)
 - `AuthInterceptor` attaches Bearer token to every request
-- `TenantInterceptor` attaches `X-Tenant-ID` header
-- `AuthGuard` protects all routes; `RoleGuard` for RBAC
+- `TenantInterceptor` attaches `X-Tenant-ID` header (informational/tracing only —
+  the authoritative tenant source is the `tenant_id` claim in the JWT, see §6)
+- `AuthGuard` requires auth state `READY` (two-step flow, ADR-014); `RoleGuard` for RBAC
 
 ---
 
 ## 3. Backend Architecture (Spring Boot 3)
+
+> **Estructura objetivo (diseño)** — the current backend contains only the
+> scaffold (`ClinicaSaasApplication` + `SecurityConfig`). The packages below
+> are created incrementally as tasks T-003+ are implemented; they are a design
+> target, not an inventory of existing code.
 
 ```
 com.clinicasaas/
@@ -154,21 +163,27 @@ the `TenantAwareRepository` base automatically appends `WHERE tenant_id = ?`.
 ## 5. Cache Architecture (Redis 8)
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                    Redis                              │
-│                                                       │
-│  Namespace: clinica:{tenant_id}:permissions:{userId}  │  TTL 5 min
-│  Namespace: clinica:{tenant_id}:coverage:{patientId}  │  TTL 1 hour
-│  Namespace: clinica:{tenant_id}:noshow:{appointmentId}│  TTL 30 min
-│  Namespace: clinica:sessions:{jti}                    │  TTL = token expiry
-└──────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                          Redis                              │
+│                                                             │
+│  clinica:{tenantId}:perms:{userId}                TTL 5 min │
+│  clinica:{tenantId}:coverage:{patientId}:{isoWeek}  TTL 1 h │
+│  clinica:{tenantId}:noshow:{appointmentId}       TTL 30 min │
+│  clinica:jti:{jti}             (JWT blocklist)  TTL = token │
+│  clinica:ratelimit:login:{ip}  (login throttle)    TTL 60 s │
+└────────────────────────────────────────────────────────────┘
 ```
+
+Key naming follows `docs/standards/04-redis-standards.md`
+(`clinica:` prefix always; `tenantId` on every tenant-scoped key).
 
 Redis is used only for:
 1. RBAC permission cache per user per tenant
 2. Insurance coverage weekly limit counters
 3. No-show risk score cache per appointment
-4. JWT revocation list (blocklist by JTI)
+4. JWT revocation list (blocklist by JTI — logout, switch-tenant,
+   single-use identity tokens)
+5. Login rate limiting (5 req/min per IP, T-003)
 
 Redis is **never** used as primary storage. If Redis is unavailable,
 the system falls back to the database and continues operating.
@@ -177,25 +192,46 @@ the system falls back to the database and continues operating.
 
 ## 6. Security Architecture
 
+### Two-step authentication flow (ADR-014)
+
 ```
 Browser (Angular SPA)
     │
-    │  1. POST /api/v1/auth/login  (credentials)
-    │  2. ← access_token (JWT, 30 min) + refresh_token (httpOnly cookie, 7d)
-    │  3. GET /api/v1/... (Authorization: Bearer <access_token>)
+    │  1. POST /api/v1/auth/login { email, password }
+    │     ← identityToken (JWT 5 min, purpose=tenant-select) + tenants list
+    │  2. POST /api/v1/auth/select-tenant { tenantId }   Bearer <identityToken>
+    │     ← accessToken (JWT 30 min; claims: sub, tenant_id, role, jti)
+    │       + Set-Cookie: refreshToken (httpOnly, Secure, SameSite=Strict,
+    │         Path=/api/v1/auth, 7 d)
+    │  3. GET /api/v1/... (Authorization: Bearer <accessToken>)
     │
     ▼
 Spring Security Filter Chain
     │
-    ├── JwtAuthenticationFilter  — validates token, loads TenantContext + SecurityContext
-    ├── TenantContextFilter      — extracts tenant_id from JWT, sets ThreadLocal
+    ├── RateLimitFilter          — login only: 5 req/min per IP (Redis counter)
+    ├── JwtAuthenticationFilter  — validates signature + expiry, checks JTI against
+    │                              Redis blocklist, populates SecurityContext
+    ├── TenantContextFilter      — reads tenant_id from SecurityContext, sets ThreadLocal
     └── AuthorizationFilter      — checks @PreAuthorize / method security
 ```
 
-- **Authentication**: JWT (JJWT library), stateless
-- **Authorization**: Role-based + permission-based via Spring Security `@PreAuthorize`
-- **Multitenancy**: Tenant ID in JWT claim; validated on every request
-- **Refresh tokens**: stored hashed in PostgreSQL; single-use rotation
+- Single-tenant users skip step 2 in the UI: the frontend auto-selects the tenant.
+- Identity tokens are single-use: their JTI is blocklisted after `select-tenant`.
+- `POST /api/v1/auth/switch-tenant` issues an accessToken for another tenant
+  without re-login; the previous JTI is blocklisted and the refresh cookie rotated.
+- `POST /api/v1/auth/refresh` authenticates via the httpOnly cookie (single-use
+  rotation; reuse revokes the whole token family). The refresh session is per tenant.
+- Public endpoints: only `POST /api/v1/auth/login`, `POST /api/v1/auth/select-tenant`,
+  `POST /api/v1/auth/refresh` and `GET /actuator/health` — everything else requires
+  a valid accessToken.
+
+- **Authentication**: JWT (JJWT library), stateless, two-step
+  (identity token → session token, ADR-014)
+- **Authorization**: `role` claim in JWT + permissions in Redis cache via
+  Spring Security `@PreAuthorize` (RBAC, T-004)
+- **Multitenancy**: `tenant_id` claim set at select-tenant; validated on every request
+- **Refresh tokens**: stored as SHA-256 hash in PostgreSQL; single-use rotation
+- **Token revocation**: JTI blocklist in Redis (`clinica:jti:{jti}`)
 - **Passwords**: BCrypt (strength 12)
 - **Secrets**: environment variables only; never committed
 
