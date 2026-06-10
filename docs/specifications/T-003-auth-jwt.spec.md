@@ -1,7 +1,8 @@
 # Specification: Autenticación JWT — Login, Select-Tenant, Switch-Tenant, Refresh, Logout
 
-**Status**: DRAFT (rev. 2 — 2026-06-10: cookie Path, tenant en refresh token,
-endpoints públicos acotados, identity token single-use, X-Forwarded-For)
+**Status**: DRAFT (rev. 3 — 2026-06-10: cookie Path, tenant en refresh token,
+endpoints públicos acotados, identity token single-use, X-Forwarded-For,
+claves Redis según estándar `clinica:*`, seed movido a V012)
 **Author**: Julian Deco
 **Date**: 2026-06-09
 **Task**: T-003 (`tasks.json`)
@@ -78,7 +79,8 @@ Soporta múltiples tenants por usuario y switch de tenant sin re-login.
   corre detrás de Nginx; Nginx debe sobrescribir el header (nunca
   confiar en el valor enviado por el cliente). Fallback: remote address.
 - FR-10: Seed de datos: al menos un usuario ADMIN por tenant en los datos
-  de Flyway (o un script de seed separado V011) para poder probar el login
+  de Flyway (o un script de seed separado V012 — V011 quedó asignada a
+  `refresh_tokens.tenant_id`, ver §6) para poder probar el login
   sin datos manuales.
 
 ---
@@ -245,8 +247,11 @@ src/backend/src/main/java/com/clinicasaas/
 
 | Key | Valor | TTL |
 |---|---|---|
-| `auth:blocklist:{jti}` | `"1"` | tiempo restante del token |
-| `auth:ratelimit:login:{ip}` | contador | 60 s |
+| `clinica:jti:{jti}` | `"1"` | tiempo restante del token |
+| `clinica:ratelimit:login:{ip}` | contador | 60 s |
+
+Claves según `docs/standards/04-redis-standards.md`: prefijo `clinica:`
+obligatorio; `clinica:jti:{jti}` es la clave estándar de revocación JWT.
 
 ---
 
