@@ -44,7 +44,7 @@ skinparam shadowing false
 skinparam sequenceMessageAlign left
 skinparam noteBackgroundColor #FFF8DC
 
-actor "Scheduler\n(cron)" as Scheduler
+actor "Scheduler\n(job programado)" as Scheduler
 participant "RecordatorioScheduler\n«infrastructure·@Scheduled»" as SCHED
 participant "NotificarPrediccionUseCaseImpl\n«application»" as UC
 participant "MotorRiesgoNoShowService\n«application»" as RIESGO

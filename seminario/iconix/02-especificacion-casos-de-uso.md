@@ -2,7 +2,7 @@
 
 **Proyecto**: ClinicaSaaS — SaaS multitenant FHIR R4 para clínicas pequeñas
 **Entrega**: Seminario de Trabajo Final UAI — T-020, entregable 2 (16/06/2026)
-**Fuentes**: `.claude/tasks/use-cases.md` (autoritativa) · `docs/adr/ADR-014-multi-tenant-membership.md`
+**Fuentes**: `.claude/tasks/use-cases.md` (autoritativa) · `docs/adr/ADR-013-notification-channels.md` · `docs/adr/ADR-014-multi-tenant-membership.md`
 **Diagrama asociado**: `seminario/iconix/diagramas/01-casos-de-uso.puml`
 
 > Convención ICONIX: el curso básico se narra alternando acciones del
@@ -108,15 +108,15 @@
 **Precondiciones**:
 - Ventanas de notificación configuradas (default: 48 h y 24 h antes del turno).
 - Existen turnos próximos dentro de la ventana.
-- Providers de notificación configurados (WhatsApp Business API, SMTP, SMS).
+- Providers de notificación configurados (Telegram Bot API y SMTP — canales MVP según ADR-013; WhatsApp y SMS quedan en roadmap post-piloto).
 
 **Curso básico**:
 1. El Scheduler dispara el job programado cada N horas.
 2. El sistema selecciona los turnos próximos dentro de la ventana configurable.
 3. Para cada turno, el sistema obtiene el score de riesgo desde el motor heurístico — cache si está fresco, cálculo en vivo si expiró *(«Calcular riesgo de no-show», `<<include>>`)*.
-4. El sistema elige la estrategia de notificación según el rango del score:
-   - Riesgo alto (>70%): WhatsApp con texto personalizado + recordatorio email 48 h y 24 h antes.
-   - Riesgo medio (30–70%): WhatsApp + email 24 h antes.
+4. El sistema elige la estrategia de notificación según el rango del score — el canal por riesgo se cursa vía Telegram/email (canales MVP según ADR-013):
+   - Riesgo alto (>70%): Telegram con texto personalizado + recordatorio email 48 h y 24 h antes.
+   - Riesgo medio (30–70%): Telegram + email 24 h antes.
    - Riesgo bajo (<30%): solo email 24 h antes.
 5. El sistema envía las notificaciones a través del provider correspondiente *(«Enviar notificación», `<<include>>`)*.
 6. El paciente confirma o cancela desde el mensaje; el sistema registra la respuesta y actualiza el estado del `Appointment` *(ver caso de uso de soporte «Registrar respuesta del paciente»)*.
@@ -162,7 +162,7 @@
 3. El sistema sugiere reservar el mismo horario para un segundo turno (sobreturno).
 4. El secretario acepta la sugerencia.
 5. El sistema crea el segundo `Appointment` en el mismo slot, marcado como `overbooked`.
-6. El sistema muestra visualmente en la agenda los slots con overbooking aplicado (icono o color diferenciado).
+6. El sistema muestra visualmente en la agenda los slots con overbooking aplicado (ícono o color diferenciado).
 
 **Cursos alternos**:
 - **A1 — El secretario ignora la sugerencia** *(en paso 4)*: el turno original se crea normalmente, sin sobreturno.
@@ -223,7 +223,7 @@ que no forman parte de los 4 CU core.
 
 ## CU-S06 — Enviar notificación
 
-**Descripción**: envía la notificación por el provider correspondiente al canal elegido (WhatsApp Business API, SMTP, SMS) según la estrategia de riesgo. El Paciente es el actor receptor. Incluye reintento con backoff y fallback a canal alternativo ante fallo del provider.
+**Descripción**: envía la notificación por el provider correspondiente al canal elegido (Telegram Bot API o SMTP — canales MVP según ADR-013; WhatsApp y SMS en roadmap post-piloto) según la estrategia de riesgo. El Paciente es el actor receptor. Incluye reintento con backoff y fallback a canal alternativo ante fallo del provider.
 **Relaciones**: incluido por CU-03.
 
 ## CU-S07 — Registrar respuesta del paciente
@@ -265,6 +265,15 @@ que no forman parte de los 4 CU core.
 **Descripción**: el administrador configura los parámetros del proceso automático de CU-03: ventanas de notificación (default 48 h y 24 h) y frecuencia del job. **[A DEFINIR]**: alcance exacto de los parámetros configurables (la fuente solo explicita la ventana).
 **Relaciones**: sin include/extend (configuración consultada por CU-03).
 
+## CU-S14 — Cambiar de clínica activa
+
+**Actores**: Secretario/a, Médico, Administrador de clínica.
+**Precondición**: sesión activa sobre una clínica (estado READY, ADR-014).
+**Descripción**: tercer flujo de autenticación de ADR-014 (*switch-tenant*): el usuario con membresía en varias clínicas cambia de clínica activa sin volver a ingresar credenciales. Ya implementado en el navbar del frontend (T-002).
+**Curso básico**: (1) el usuario solicita el cambio de clínica activa; (2) el sistema valida su pertenencia a la clínica destino (membresía activa); (3) el sistema emite una nueva sesión para esa clínica y revoca la anterior; (4) el sistema recarga el contexto de trabajo sobre la clínica elegida.
+**Curso alterno**: A1 — el usuario no pertenece a la clínica destino: el sistema rechaza el cambio y conserva la sesión vigente.
+**Relaciones**: sin include/extend (los totales del diagrama no cambian).
+
 ---
 
 ## Matriz de trazabilidad de relaciones (diagrama ↔ texto)
@@ -284,3 +293,4 @@ que no forman parte de los 4 CU core.
 | E5 | `<<extend>>` | Registrar respuesta del paciente | Reasignar slot liberado | Respuesta = cancelación |
 
 **Totales**: 6 `<<include>>` · 5 `<<extend>>` (requisito mínimo de la cátedra: 5 y 5).
+Los casos de uso de soporte sin relaciones (CU-S12, CU-S13 y CU-S14 «Cambiar de clínica activa», ADR-014) no alteran estos totales.

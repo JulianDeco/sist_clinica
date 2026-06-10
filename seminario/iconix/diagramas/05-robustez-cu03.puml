@@ -12,6 +12,8 @@
 ' Entidades: tomadas 1:1 del modelo de dominio (02-dominio.puml).
 ' Boundaries: el Scheduler entra por el disparador del proceso periódico;
 '   el Paciente interactúa solo con el mensaje recibido (no opera el sistema).
+' Canales de notificación: Telegram + email (MVP según ADR-013);
+'   WhatsApp/SMS quedan en roadmap post-piloto.
 '
 ' Trazabilidad curso básico → flechas:
 '   Paso 1 → Scheduler -> TRIG ; TRIG -> SEL
@@ -33,7 +35,7 @@
 actor "Scheduler\n(job programado)" as Scheduler
 actor "Paciente" as PacienteActor
 boundary "Disparador del\nproceso periódico" as TRIG
-boundary "Mensaje de recordatorio\n(WhatsApp / email / SMS)" as MSG
+boundary "Mensaje de recordatorio\n(Telegram / email)" as MSG
 boundary "Aviso al staff\nde la clínica" as STAFF
 control "Seleccionar turnos\npróximos" as SEL
 control "Calcular riesgo de no-show\n(motor heurístico)" as RIESGO
@@ -66,10 +68,12 @@ RIESGO -> ESTR : score (0–100) disponible
 
 note right of ESTR
   Estrategia según rango del score:
-  · alto (>70%): WhatsApp personalizado
+  · alto (>70%): Telegram personalizado
     + email 48 h y 24 h antes
-  · medio (30–70%): WhatsApp + email 24 h antes
+  · medio (30–70%): Telegram + email 24 h antes
   · bajo (<30%): solo email 24 h antes
+  (Canales MVP según ADR-013: Telegram + email;
+  WhatsApp/SMS post-piloto.)
 end note
 
 ' ----- Paso 5 (CU-S06) -----

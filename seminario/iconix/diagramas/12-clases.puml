@@ -18,6 +18,10 @@
 '     api depende de application; infrastructure implementa domain.
 '   - NotificationPort + adapters (Strategy): ADR-013.
 '   - Multitenancy (ADR-003): todo método de repositorio recibe tenantId.
+'   - Los boundaries de las secuencias 08–11 (componentes Angular:
+'     ReservaTurnoComponent, ConsultaMedicaComponent, AgendaComponent;
+'     y mensajes al paciente) pertenecen al frontend / exterior del
+'     backend y quedan deliberadamente fuera de este diagrama.
 ' =====================================================================
 
 skinparam shadowing false

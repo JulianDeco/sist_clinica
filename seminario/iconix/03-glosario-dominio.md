@@ -42,7 +42,7 @@
 | Decisión | Justificación |
 |---|---|
 | **Sobreturno ⊳ Turno (generalización)** | En el mundo real un sobreturno *es* un turno — mismo paciente, profesional y franja — con la regla especial de compartir franja. En la BD se refleja como bandera (`is_overbooked`), pero en el espacio del problema la relación natural es "es-un" (CU-04). |
-| **Agenda ◇— FranjaHoraria (agregación)** | Todo–parte verdadero: la franja horaria no tiene sentido fuera de la agenda que la contiene. Única agregación del modelo junto con NotaSOAP. |
+| **Agenda ◇— FranjaHoraria (agregación)** | Todo–parte verdadero: la franja horaria no tiene sentido fuera de la agenda que la contiene. Única agregación del modelo (la otra relación todo–parte, ConsultaMedica–NotaSOAP, es composición). |
 | **ConsultaMedica ◆— NotaSOAP (composición)** | La nota SOAP es parte inseparable de su consulta; no existe de forma independiente. |
 | **Usuario ↔ Membresia ↔ Clinica** | ADR-014: la identidad (Usuario) se separa de la pertenencia (Membresia). El Rol se asocia a la membresía, no al usuario: la misma persona puede ser Médico en una clínica y Administrador en otra. |
 | **Usuario 0..1 — 0..1 Profesional** | El médico que usa el sistema es a la vez Usuario (inicia sesión) y Profesional (tiene agenda). No todo usuario es profesional (secretaria) ni todo profesional es usuario. Ver *Hallazgos* abajo. |

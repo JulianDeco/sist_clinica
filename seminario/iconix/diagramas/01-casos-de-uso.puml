@@ -17,6 +17,8 @@
 '   Asociación actor–caso de uso: línea sólida sin punta de flecha.
 '
 ' Totales: 6 <<include>> · 5 <<extend>>  (requisito mínimo: 5 y 5)
+'   El CU de soporte «Cambiar de clínica activa» (ADR-014, switch-tenant)
+'   no participa de ninguna relación include/extend — totales sin cambios.
 ' =====================================================================
 
 left to right direction
@@ -45,9 +47,11 @@ actor "Scheduler\n(job programado)" as SCH
 ' --------------------- Límite del sistema ---------------------
 rectangle "ClinicaSaaS" {
 
-  ' ----- Autenticación (ADR-014: flujo two-step) -----
+  ' ----- Autenticación (ADR-014: flujo two-step + switch-tenant) -----
   usecase "Iniciar sesión" as UC_LOGIN
   usecase "Seleccionar tenant" as UC_TENANT
+  ' ADR-014: cambio de clínica activa sin re-login (tercer flujo de auth)
+  usecase "Cambiar de\nclínica activa" as UC_SWITCH
 
   ' ----- Casos de uso core (ICONIX) -----
   usecase "CU-01\nReservar turno con\nvalidación integral" as UC01
@@ -73,6 +77,12 @@ rectangle "ClinicaSaaS" {
 SEC -- UC_LOGIN
 MED -- UC_LOGIN
 ADM -- UC_LOGIN
+
+' ADR-014: los tres actores internos pueden cambiar de clínica activa
+' sin volver a iniciar sesión (ya implementado en el navbar, T-002)
+SEC -- UC_SWITCH
+MED -- UC_SWITCH
+ADM -- UC_SWITCH
 
 SEC -- UC01
 SEC -- UC04
