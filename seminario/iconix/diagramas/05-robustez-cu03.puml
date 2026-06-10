@@ -1,0 +1,112 @@
+@startuml robustez_CU03
+' =====================================================================
+' Diagrama de robustez ICONIX — CU-03 Calcular y notificar predicción
+' de ausentismo
+' Entrega T-020 — deliverable 6 · Seminario de Trabajo Final UAI 2026
+'
+' Cubre: seminario/iconix/02-especificacion-casos-de-uso.md → sección CU-03
+'   (curso básico pasos 1–7, cursos alternos A1–A4) e incorpora los CU de
+'   soporte: CU-S05 (Calcular riesgo, <<include>>), CU-S06 (Enviar
+'   notificación, <<include>>), CU-S07 (Registrar respuesta del paciente),
+'   CU-S10 (Notificar staff, <<extend>>) y CU-S11 (Reasignar slot liberado).
+' Entidades: tomadas 1:1 del modelo de dominio (02-dominio.puml).
+' Boundaries: el Scheduler entra por el disparador del proceso periódico;
+'   el Paciente interactúa solo con el mensaje recibido (no opera el sistema).
+'
+' Trazabilidad curso básico → flechas:
+'   Paso 1 → Scheduler -> TRIG ; TRIG -> SEL
+'   Paso 2 → SEL -> TUR «selecciona turnos dentro de la ventana»
+'   Paso 3 → SEL -> RIESGO ; RIESGO -> PRED ; RIESGO -> PAC    (CU-S05)
+'   Paso 4 → RIESGO -> ESTR (+ nota con la estrategia por rango)
+'   Paso 5 → ESTR -> ENV ; ENV -> REC ; ENV -> MSG             (CU-S06)
+'   Paso 6 → Paciente -> MSG ; MSG -> RESP ; RESP -> REC ;
+'            RESP -> TUR                                        (CU-S07)
+'   Paso 7 → RESP -> MET ; MET -> REC «métricas de envío y respuesta»
+' Cursos alternos:
+'   A1 → nota sobre ENV (reintento con backoff, fallback de canal)
+'   A2 → rama alt: ENV -> NSTAFF ; NSTAFF -> STAFF             (CU-S10)
+'   A3 → rama alt: RESP -> TUR «confirmado»
+'   A4 → rama alt: RESP -> TUR «cancelado» ; RESP -> REAS ;
+'        REAS -> FRA                                            (CU-S11)
+' =====================================================================
+
+actor "Scheduler\n(job programado)" as Scheduler
+actor "Paciente" as PacienteActor
+boundary "Disparador del\nproceso periódico" as TRIG
+boundary "Mensaje de recordatorio\n(WhatsApp / email / SMS)" as MSG
+boundary "Aviso al staff\nde la clínica" as STAFF
+control "Seleccionar turnos\npróximos" as SEL
+control "Calcular riesgo de no-show\n(motor heurístico)" as RIESGO
+control "Elegir estrategia\nde notificación" as ESTR
+control "Enviar notificación" as ENV
+control "Notificar staff para\nllamado manual" as NSTAFF
+control "Registrar respuesta\ndel paciente" as RESP
+control "Reasignar slot\nliberado" as REAS
+control "Registrar métricas" as MET
+entity "Turno" as TUR
+entity "Paciente" as PAC
+entity "PrediccionDeRiesgo" as PRED
+entity "Recordatorio" as REC
+entity "FranjaHoraria" as FRA
+
+' ----- Paso 1 -----
+Scheduler -> TRIG : dispara el job\ncada N horas
+TRIG -> SEL : ejecutar proceso\nde recordatorios
+
+' ----- Paso 2 -----
+SEL -> TUR : selecciona turnos dentro de la\nventana configurada (48 h / 24 h)
+
+' ----- Paso 3 (CU-S05, por cada turno) -----
+SEL -> RIESGO : evaluar cada turno
+RIESGO -> PRED : reutiliza score fresco o\nrecalcula si expiró
+RIESGO -> PAC : obtiene historial de asistencia\n(si recalcula)
+
+' ----- Paso 4 -----
+RIESGO -> ESTR : score (0–100) disponible
+
+note right of ESTR
+  Estrategia según rango del score:
+  · alto (>70%): WhatsApp personalizado
+    + email 48 h y 24 h antes
+  · medio (30–70%): WhatsApp + email 24 h antes
+  · bajo (<30%): solo email 24 h antes
+end note
+
+' ----- Paso 5 (CU-S06) -----
+ESTR -> ENV : canal y anticipación\nelegidos
+ENV -> REC : crea el recordatorio\ndel turno
+ENV -> MSG : envía por el provider\ndel canal elegido
+
+note over ENV
+  A1 — fallo del provider: reintento con
+  backoff y fallback a canal alternativo.
+end note
+
+alt A2 — paciente sin teléfono ni email (CU-S10)
+  ENV -> NSTAFF : paciente incontactable\npor canales digitales
+  NSTAFF -> STAFF : solicita llamado\ntelefónico manual
+end
+
+' ----- Paso 6 (CU-S07) -----
+PacienteActor -> MSG : confirma o cancela\ndesde el mensaje
+MSG -> RESP : respuesta recibida
+RESP -> REC : registra la respuesta\nal recordatorio
+
+alt A3 — confirmación recibida
+  RESP -> TUR : marca el turno\ncomo «confirmado»
+else A4 — cancelación recibida (CU-S11)
+  RESP -> TUR : marca el turno\ncomo «cancelado»
+  RESP -> REAS : disparar reasignación
+  REAS -> FRA : libera la franja horaria
+  note over REAS
+    [A DEFINIR] mecánica de la lista de espera
+    para notificar a otro paciente (la fuente
+    la menciona como «eventual»).
+  end note
+end
+
+' ----- Paso 7 -----
+RESP -> MET : actualizar métricas
+MET -> REC : persiste métricas de envío\ny respuesta para análisis
+
+@enduml

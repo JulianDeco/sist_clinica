@@ -1,0 +1,101 @@
+@startuml robustez_CU02
+' =====================================================================
+' Diagrama de robustez ICONIX — CU-02 Gestionar consulta médica (SOAP básico)
+' Entrega T-020 — deliverable 6 · Seminario de Trabajo Final UAI 2026
+'
+' Cubre: seminario/iconix/02-especificacion-casos-de-uso.md → sección CU-02
+'   (curso básico pasos 1–9, cursos alternos A1–A3) e incorpora la
+'   extensión CU-S09 (Crear turno retroactivo / walk-in).
+' Entidades: tomadas 1:1 del modelo de dominio (02-dominio.puml).
+'
+' Trazabilidad curso básico → flechas:
+'   Paso 1 → Medico -> UI ; UI -> ABR ; ABR -> TUR ; ABR -> CON
+'   Paso 2 → ABR -> PAC ; ABR -> UI «presenta la consulta»
+'   Paso 3 → Medico -> UI «registra las notas SOAP»
+'   Paso 4 → UI -> NOT ; NOT -> NOTA
+'   Paso 5 → Medico -> UI «registra signos vitales y mediciones»
+'   Paso 6 → UI -> VOBS ; VOBS -> OBS
+'   Paso 7 → (opcional) Medico -> UI ; UI -> DIAG ; DIAG -> CON
+'   Paso 8 → Medico -> UI «cierra la consulta»
+'   Paso 9 → UI -> CIE ; CIE -> CON ; CIE -> TUR (transaccional)
+' Cursos alternos:
+'   A1 → nota sobre CIE (abandono sin cerrar: queda «en curso»)
+'   A2 → rama alt: VOBS -> UI (advierte, no bloquea)
+'   A3 → rama alt: ABR -> WALK ; WALK -> TUR ; WALK -> CON     (CU-S09)
+' =====================================================================
+
+actor "Médico" as Medico
+boundary "Pantalla de consulta" as UI
+control "Abrir consulta" as ABR
+control "Crear turno retroactivo\n(walk-in)" as WALK
+control "Registrar notas SOAP" as NOT
+control "Validar y registrar\nobservaciones" as VOBS
+control "Registrar diagnóstico\nprovisorio" as DIAG
+control "Cerrar consulta" as CIE
+entity "Turno" as TUR
+entity "ConsultaMedica" as CON
+entity "Paciente" as PAC
+entity "NotaSOAP" as NOTA
+entity "Observacion" as OBS
+
+' ----- Paso 1 -----
+Medico -> UI : abre la consulta\nvinculada al turno
+UI -> ABR : abrir consulta
+ABR -> TUR : verifica turno en estado\n«llegó» / «en curso»
+ABR -> CON : recupera o inicia\nla consulta
+
+alt A3 — paciente sin turno previo (walk-in, CU-S09)
+  ABR -> WALK : atención sin turno previo
+  WALK -> TUR : crea el turno retroactivo
+  WALK -> CON : crea la consulta «walk-in»
+  note over WALK
+    Mantiene la integridad consulta–turno.
+    El flujo continúa en el paso 2.
+  end note
+end
+
+' ----- Paso 2 -----
+ABR -> PAC : obtiene los datos\ndel paciente
+ABR -> UI : presenta la consulta con datos\ndel paciente y del turno
+
+' ----- Pasos 3–4 -----
+Medico -> UI : registra las notas SOAP\n(Subjetivo, Objetivo, Análisis, Plan)
+UI -> NOT : guardar notas
+NOT -> NOTA : persiste las notas\nasociadas a la consulta
+
+' ----- Pasos 5–6 -----
+Medico -> UI : registra signos vitales y mediciones\n(TA, FC, peso, talla, glucemia)
+UI -> VOBS : validar y guardar mediciones
+VOBS -> OBS : almacena las observaciones\nasociadas a la consulta
+
+alt A2 — valores clínicos fuera de rango
+  VOBS -> UI : advierte rangos imposibles\n(no bloquea el registro)
+end
+
+' ----- Paso 7 (opcional) -----
+opt el médico registra diagnóstico provisorio
+  Medico -> UI : escribe el diagnóstico\ncomo descripción libre
+  UI -> DIAG : guardar diagnóstico
+  DIAG -> CON : asocia la descripción libre\na la consulta
+  note over DIAG
+    La codificación CIE-10 automática
+    queda en roadmap post-MVP.
+  end note
+end
+
+' ----- Pasos 8–9 -----
+Medico -> UI : cierra la consulta
+UI -> CIE : cerrar consulta
+CIE -> CON : finaliza la consulta
+CIE -> TUR : marca el turno\ncomo «cumplido»
+
+note over CIE
+  Paso 9: el cierre se persiste transaccionalmente.
+  Máquina de estados respetada:
+  reservado → llegó → en curso → finalizada.
+  A1 — abandono sin cerrar: la consulta queda
+  «en curso» y el sistema notifica al médico
+  en su próxima sesión.
+end note
+
+@enduml

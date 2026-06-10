@@ -1,0 +1,102 @@
+@startuml robustez_CU04
+' =====================================================================
+' Diagrama de robustez ICONIX — CU-04 Sugerir y aplicar overbooking
+' inteligente
+' Entrega T-020 — deliverable 6 · Seminario de Trabajo Final UAI 2026
+'
+' Cubre: seminario/iconix/02-especificacion-casos-de-uso.md → sección CU-04
+'   (curso básico pasos 1–6, cursos alternos A1–A8). Este caso de uso
+'   EXTIENDE a CU-01: se dispara durante la reserva, con el score de
+'   riesgo ya calculado (ver 03-robustez-cu01.puml, paso 4 / A5).
+'   La configuración la gestiona el médico en CU-S12 (PoliticaDeSobreturnos).
+' Entidades: tomadas 1:1 del modelo de dominio (02-dominio.puml).
+'
+' Trazabilidad curso básico → flechas:
+'   Paso 1 → UI -> DET ; DET -> PRED ; DET -> POL (umbral)
+'   Paso 2 → DET -> VPOL ; VPOL -> POL ; VPOL -> SOB ; VPOL -> FRA
+'   Paso 3 → VPOL -> SUGS ; SUGS -> UI «sugiere el sobreturno»
+'   Paso 4 → Secretario -> UI «acepta la sugerencia»
+'   Paso 5 → UI -> CREA ; CREA -> SOB ; CREA -> FRA
+'   Paso 6 → CREA -> AGUI «muestra el slot diferenciado»
+' Cursos alternos:
+'   A1 → nota tras paso 4 (ignora la sugerencia)
+'   A2/A4/A5 → rama alt: no se sugiere, nota (continúa CU-01)
+'   A3 → rama alt: VPOL -> STAFF (tope semanal alcanzado)
+'   A6/A7/A8 → nota final (cursos operativos posteriores a la reserva)
+' =====================================================================
+
+actor "Secretario/a" as Secretario
+boundary "Formulario de reserva\n(CU-01)" as UI
+boundary "Pantalla de agenda" as AGUI
+boundary "Aviso al staff\nde la clínica" as STAFF
+control "Detectar riesgo alto\nde no-show" as DET
+control "Verificar política\nde sobreturnos" as VPOL
+control "Sugerir sobreturno" as SUGS
+control "Crear sobreturno" as CREA
+entity "PrediccionDeRiesgo" as PRED
+entity "PoliticaDeSobreturnos" as POL
+entity "Sobreturno" as SOB
+entity "FranjaHoraria" as FRA
+
+' ----- Paso 1 (durante CU-01, score ya calculado) -----
+UI -> DET : reserva en curso con\nscore de riesgo calculado
+DET -> PRED : consulta el score\ndel turno en reserva
+DET -> POL : obtiene el umbral\nconfigurado (default 70%)
+
+' ----- Paso 2 -----
+DET -> VPOL : score > umbral
+VPOL -> POL : verifica overbooking habilitado,\ntope semanal y tipos excluidos
+VPOL -> SOB : cuenta los sobreturnos\nde la semana en curso
+VPOL -> FRA : verifica que la franja no\ntenga ya un sobreturno
+
+alt A2 / A4 / A5 — no corresponde sugerir
+  note over VPOL
+    A2 — overbooking deshabilitado ·
+    A4 — la franja ya tiene sobreturno ·
+    A5 — tipo de turno excluido (cirugía,
+    procedimiento, primera consulta).
+    No se sugiere: el turno continúa
+    como turno normal en CU-01.
+  end note
+else A3 — tope semanal alcanzado
+  VPOL -> STAFF : notifica tope semanal\nde sobreturnos alcanzado
+end
+
+' ----- Paso 3 -----
+VPOL -> SUGS : condiciones cumplidas
+SUGS -> UI : sugiere reservar el mismo\nhorario como sobreturno
+
+' ----- Paso 4 -----
+Secretario -> UI : acepta la sugerencia
+
+note over UI
+  A1 — el secretario ignora la sugerencia:
+  el turno original se crea normalmente,
+  sin sobreturno (CU-01, paso 6).
+end note
+
+' ----- Paso 5 -----
+UI -> CREA : crear el sobreturno
+CREA -> SOB : crea el segundo turno marcado\ncomo sobreturno en la misma franja
+CREA -> FRA : asocia el sobreturno a la\nfranja ya ocupada
+
+note over CREA
+  Postcondición: contador semanal de
+  sobreturnos del profesional incrementado.
+end note
+
+' ----- Paso 6 -----
+CREA -> AGUI : muestra la franja con sobreturno\ndiferenciado (ícono / color)
+
+note over AGUI
+  Cursos operativos posteriores a la reserva
+  (sin interacción con esta pantalla):
+  A6 — cancelación del primer turno: el
+  sobreturno pasa a ser turno normal.
+  A7 — ambos pacientes asisten: el profesional
+  ve la doble reserva y decide cómo manejarla.
+  A8 — uno falta: el otro toma la franja y el
+  ausente se marca con motivo «no asistió».
+end note
+
+@enduml
