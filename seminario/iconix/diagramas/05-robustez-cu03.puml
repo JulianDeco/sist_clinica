@@ -29,7 +29,7 @@
 '   A2 → rama alt: ENV -> NSTAFF ; NSTAFF -> STAFF             (CU-S10)
 '   A3 → rama alt: RESP -> TUR «confirmado»
 '   A4 → rama alt: RESP -> TUR «cancelado» ; RESP -> REAS ;
-'        REAS -> FRA                                            (CU-S11)
+'        REAS -> FRA ; REAS -> STAFF                            (CU-S11)
 ' =====================================================================
 
 actor "Scheduler\n(job programado)" as Scheduler
@@ -102,10 +102,11 @@ else A4 — cancelación recibida (CU-S11)
   RESP -> TUR : marca el turno\ncomo «cancelado»
   RESP -> REAS : disparar reasignación
   REAS -> FRA : libera la franja horaria
+  REAS -> STAFF : notifica al staff para\nreasignación manual del slot
   note over REAS
-    [A DEFINIR] mecánica de la lista de espera
-    para notificar a otro paciente (la fuente
-    la menciona como «eventual»).
+    Decisión 2026-06-10 (MVP mínimo): sin
+    ListaDeEspera ni notificación automática
+    a otros pacientes — roadmap post-MVP.
   end note
 end
 

@@ -41,7 +41,7 @@ entity "Observacion" as OBS
 ' ----- Paso 1 -----
 Medico -> UI : abre la consulta\nvinculada al turno
 UI -> ABR : abrir consulta
-ABR -> TUR : verifica turno en estado\n«llegó» / «en curso»
+ABR -> TUR : verifica turno en estado «llegó»\n(o consulta «en curso» a retomar)
 ABR -> CON : recupera o inicia\nla consulta
 
 alt A3 — paciente sin turno previo (walk-in, CU-S09)
@@ -91,8 +91,10 @@ CIE -> TUR : marca el turno\ncomo «cumplido»
 
 note over CIE
   Paso 9: el cierre se persiste transaccionalmente.
-  Máquina de estados respetada:
-  reservado → llegó → en curso → finalizada.
+  Dos máquinas de estado separadas (decisión 2026-06-10):
+  · Turno (Appointment): reservado → confirmado →
+    llegó → cumplido / ausente.
+  · ConsultaMedica (Encounter): en curso → finalizada.
   A1 — abandono sin cerrar: la consulta queda
   «en curso» y el sistema notifica al médico
   en su próxima sesión.

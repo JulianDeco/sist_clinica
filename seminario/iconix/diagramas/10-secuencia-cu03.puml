@@ -21,6 +21,7 @@
 '   «Registrar respuesta del paciente»  → RegistrarRespuestaUseCaseImpl.registrarRespuesta()
 '   «Reasignar slot liberado»           → RegistrarRespuestaUseCaseImpl (rama A4)
 '                                          + FranjaHorariaRepository.liberar()
+'                                          + NotificationPort.enviar(avisoStaff)
 '   «Registrar métricas»                → Recordatorio.registrarRespuesta()
 '                                          + RecordatorioRepository.guardar()
 '
@@ -34,6 +35,7 @@
 '            (alt canal) TG.enviar / MAIL.enviar
 '   Paso 6 → Paciente -> WH ; UCR.registrarRespuesta ; REC.registrarRespuesta ;
 '            (alt) TUR.confirmar / TUR.cancelar + FREPO.liberar
+'            + PORT.enviar(avisoStaff, EMAIL)
 '   Paso 7 → RREPO.guardar (métricas de envío y respuesta)
 ' Cursos alternos: A1 (nota) · A2 (alt, CU-S10) · A3/A4 (alt, CU-S11)
 ' Multitenancy (ADR-003): todo método de repositorio recibe tenantId
@@ -143,10 +145,14 @@ alt A3 — confirmación recibida
 else A4 — cancelación recibida (CU-S11)
   UCR -> TUR : cancelar(motivo)
   UCR -> FREPO : liberar(franjaId, tenantId)
-  note over UCR, FREPO
-    [A DEFINIR] mecánica de la lista de espera
-    para notificar a otro paciente (la fuente
-    la menciona como «eventual»).
+  UCR -> PORT : enviar(avisoStaff, canal = EMAIL)
+  PORT -> MAIL : enviar(avisoStaff)
+  note over UCR, MAIL
+    Decisión 2026-06-10 (MVP mínimo): se notifica
+    al staff de la clínica para la reasignación
+    manual del slot. Sin ListaDeEspera ni
+    notificación automática a otros pacientes
+    — roadmap post-MVP.
   end note
 end
 

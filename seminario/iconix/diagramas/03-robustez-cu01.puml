@@ -22,7 +22,7 @@
 ' Cursos alternos:
 '   A1 → rama alt: VDISP -> SUG ; SUG -> FRA ; SUG -> UI ;
 '        Secretario -> UI (retoma paso 2)                       (CU-S08)
-'   A2 → rama alt: VCOB -> UI (bloquea, propone particular)
+'   A2 → rama alt: VCOB -> UI (bloquea imputación, advierte)
 '   A3 → nota sobre RIESGO (score parcial, «baja confianza»)
 '   A4 → nota sobre RIESGO (degradación elegante, sin score)
 '   A5 → nota sobre RIESGO (dispara CU-04, ver 06-robustez-cu04.puml)
@@ -66,11 +66,13 @@ VDISP -> VCOB : slot disponible
 VCOB -> COB : verifica vigencia y descuenta\ndel tope semanal
 
 alt A2 — cobertura vencida o tope superado
-  VCOB -> UI : bloquea la reserva con cobertura\ny propone turno particular
+  VCOB -> UI : bloquea la imputación a la cobertura\ny advierte a la secretaria
   note over VCOB
-    [A DEFINIR] condiciones de la
-    continuación como turno particular
-    (tarifa, registro).
+    Decisión 2026-06-10: la decisión queda
+    fuera del sistema — el turno puede crearse
+    igualmente sin imputación a cobertura y sin
+    clasificación especial (asociación
+    Turno—Cobertura vacía, multiplicidad 0..1).
   end note
 end
 

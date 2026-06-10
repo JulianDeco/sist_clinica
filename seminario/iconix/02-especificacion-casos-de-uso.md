@@ -9,8 +9,8 @@
 > actor y respuestas del sistema, en pasos numerados. Cada curso alterno
 > tiene nombre y condición de disparo. Las relaciones `<<include>>` /
 > `<<extend>>` listadas en cada caso de uso coinciden 1:1 con el diagrama.
-> Donde la fuente no define una regla de negocio, se marca **[A DEFINIR]**
-> en lugar de inventarla.
+> Las reglas antes marcadas **[A DEFINIR]** fueron resueltas por el
+> product owner el 2026-06-10; cada una se anota *(decisión 2026-06-10)*.
 
 ---
 
@@ -45,7 +45,7 @@
 
 **Cursos alternos**:
 - **A1 — Slot ya ocupado** *(en paso 2)*: el sistema sugiere slots cercanos disponibles *(punto de extensión de «Sugerir slots alternativos»)*. Si el secretario elige uno, el flujo retoma en el paso 2 con el nuevo slot.
-- **A2 — Cobertura vencida o tope superado** *(en paso 3)*: el sistema bloquea la reserva con cobertura y propone registrar el turno como particular. **[A DEFINIR]**: condiciones exactas de la continuación como turno particular (tarifa, registro).
+- **A2 — Cobertura vencida o tope superado** *(en paso 3)*: el sistema bloquea la imputación a la cobertura y muestra una advertencia a la secretaria; la decisión queda fuera del sistema. El turno puede crearse igualmente sin imputación a cobertura y sin clasificación especial — la asociación Turno—Cobertura queda vacía (multiplicidad 0..1) *(decisión 2026-06-10)*.
 - **A3 — Paciente sin historial** *(en paso 4)*: el sistema calcula el score con factores parciales y lo marca como "baja confianza". El flujo continúa en el paso 5.
 - **A4 — Falla del motor heurístico** *(en paso 4)*: degradación elegante — el turno se crea sin score y queda registrado para reintento posterior. El flujo continúa en el paso 5.
 - **A5 — Riesgo alto con overbooking habilitado** *(tras paso 4)*: si el score supera el 70% y el profesional tiene overbooking habilitado, se dispara CU-04 *(punto de extensión de «CU-04 Sugerir overbooking inteligente»)*.
@@ -71,7 +71,7 @@
 
 **Precondiciones**:
 - El médico inició sesión y seleccionó tenant.
-- Existe un `Appointment` en estado `arrived` o `in-progress` para el paciente (salvo curso alterno A3, walk-in).
+- Existe un `Appointment` en estado `arrived` (turno «llegó») para el paciente — o una consulta (`Encounter`) ya `in-progress` a retomar (curso alterno A1) — salvo curso alterno A3, walk-in.
 
 **Curso básico**:
 1. El médico abre el `Encounter` vinculado al `Appointment` existente.
@@ -92,7 +92,9 @@
 **Postcondiciones**:
 - Encounter en estado `finished` con notas SOAP y Observations asociadas.
 - `Appointment` en estado `fulfilled`.
-- Máquina de estados respetada: `booked → arrived → in-progress → finished`.
+- Máquinas de estado respetadas — son dos máquinas separadas *(decisión 2026-06-10)*:
+  - Turno (FHIR `Appointment`): `reservado → confirmado → llegó → cumplido / ausente`.
+  - ConsultaMedica (FHIR `Encounter`): `en curso → finalizada`.
 
 **Relaciones** (idénticas al diagrama):
 - Es extendido por: Crear turno retroactivo (walk-in).
@@ -126,7 +128,7 @@
 - **A1 — Fallo del provider de notificaciones** *(en paso 5)*: el sistema reintenta con backoff y, si persiste, hace fallback a un canal alternativo.
 - **A2 — Paciente sin teléfono ni email** *(en paso 5)*: el sistema notifica al staff de la clínica para realizar el llamado manual *(punto de extensión de «Notificar staff para llamado manual»)*.
 - **A3 — Confirmación recibida** *(en paso 6)*: el sistema marca el `Appointment` como `confirmed`.
-- **A4 — Cancelación recibida** *(en paso 6)*: el sistema libera el slot y dispara la reasignación *(extensión «Reasignar slot liberado» sobre «Registrar respuesta del paciente»)*. **[A DEFINIR]**: mecánica de la lista de espera para notificar a otro paciente (la fuente la menciona como "eventual").
+- **A4 — Cancelación recibida** *(en paso 6)*: el sistema libera el slot y notifica al staff de la clínica para la reasignación manual *(extensión «Reasignar slot liberado» sobre «Registrar respuesta del paciente»)*. No hay lista de espera ni notificación automática a otros pacientes en el MVP — queda en roadmap post-MVP *(decisión 2026-06-10)*.
 
 **Postcondiciones**:
 - Notificaciones enviadas según estrategia de riesgo (o derivadas al staff en A2).
@@ -250,7 +252,7 @@ que no forman parte de los 4 CU core.
 
 ## CU-S11 — Reasignar slot liberado
 
-**Descripción**: ante la cancelación de un turno, libera el slot y dispara su reasignación. **[A DEFINIR]**: la fuente menciona "eventualmente notificar otro paciente en lista de espera"; la mecánica de la lista de espera no está definida en el MVP.
+**Descripción**: ante la cancelación de un turno, libera la franja horaria y notifica al staff de la clínica (mismo mecanismo de aviso al staff de CU-S10) para la reasignación manual del slot. No hay entidad ListaDeEspera ni notificación automática a otros pacientes en el MVP — queda en roadmap post-MVP *(decisión 2026-06-10)*.
 **Relaciones**: `<<extend>>` → Registrar respuesta del paciente. Condición: la respuesta es una cancelación.
 
 ## CU-S12 — Configurar overbooking
@@ -262,7 +264,7 @@ que no forman parte de los 4 CU core.
 ## CU-S13 — Configurar predicción y recordatorios
 
 **Actores**: Administrador de clínica.
-**Descripción**: el administrador configura los parámetros del proceso automático de CU-03: ventanas de notificación (default 48 h y 24 h) y frecuencia del job. **[A DEFINIR]**: alcance exacto de los parámetros configurables (la fuente solo explicita la ventana).
+**Descripción**: el administrador configura los parámetros del proceso automático de CU-03. En el MVP es configurable SOLO la ventana de anticipación de los recordatorios (default 48 h y 24 h). Los umbrales de riesgo (30%/70%) y la estrategia de canal por riesgo son fijos en el MVP — configurables post-MVP *(decisión 2026-06-10)*.
 **Relaciones**: sin include/extend (configuración consultada por CU-03).
 
 ## CU-S14 — Cambiar de clínica activa

@@ -55,6 +55,6 @@
 
 | Término | Motivo de exclusión |
 |---|---|
-| **ListaDeEspera** | Aparece solo de forma eventual en un flujo alternativo de CU-03 ("eventualmente notificar otro paciente en lista de espera"). No tiene tabla en BD ni flujo principal que la requiera en el MVP. Se incorporará al modelo si entra en scope. |
+| **ListaDeEspera** | Excluida por decisión explícita del product owner (2026-06-10): al liberarse un slot por cancelación (CU-03 A4), el sistema notifica al staff de la clínica para la reasignación manual. No hay ListaDeEspera ni notificación automática a otros pacientes en el MVP — queda en roadmap post-MVP. |
 | **Notificacion (genérica) / Canal** | El canal concreto (Telegram, email, SMS) es una decisión de implementación (ADR-013), no un concepto del problema. El concepto del dominio es **Recordatorio**. |
 | **Tenant, JWT, Token, Cache, Score** | Conceptos técnicos del espacio de la solución. En el dominio: Tenant → Clinica; Score → PrediccionDeRiesgo. |

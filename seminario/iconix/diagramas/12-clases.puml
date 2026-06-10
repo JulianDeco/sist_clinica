@@ -235,14 +235,22 @@ package "domain" #FFFDF5 {
     +permiteSobreturno(tipoTurno): boolean
   }
 
+  ' Decisión 2026-06-10: dos máquinas de estado separadas.
+  ' Turno (FHIR Appointment): RESERVADO → CONFIRMADO → LLEGO →
+  ' CUMPLIDO / AUSENTE (+ CANCELADO). EN_CURSO pertenece solo a
+  ' ConsultaMedica (FHIR Encounter): EN_CURSO → FINALIZADA.
   enum EstadoTurno {
     RESERVADO
     CONFIRMADO
     LLEGO
-    EN_CURSO
     CUMPLIDO
     CANCELADO
     AUSENTE
+  }
+
+  enum EstadoConsulta {
+    EN_CURSO
+    FINALIZADA
   }
 
   ' ----- Interfaces de repositorio (firmas descubiertas en 08–11) -----
@@ -333,6 +341,7 @@ Turno "0..*" -- "0..1" Cobertura : se imputa a >
 Turno "1" -- "0..*" PrediccionDeRiesgo : es evaluado por >
 Turno "1" -- "0..*" Recordatorio : origina >
 Turno ..> EstadoTurno
+ConsultaMedica ..> EstadoConsulta
 
 ' =====================================================================
 ' Dependencias entre capas (regla de dependencia ADR-010)

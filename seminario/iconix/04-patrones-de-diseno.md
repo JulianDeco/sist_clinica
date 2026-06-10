@@ -282,11 +282,13 @@ end note
 @enduml
 ```
 
-**Segunda aplicación del mismo patrón — `DISEÑADO`**: el ciclo de vida del
-`Encounter` FHIR en UC-02 (`booked → arrived → in-progress → finished`,
-con transiciones inválidas rechazadas por el dominio) usa la misma técnica
-de máquina de estados explícita; se documentará con su implementación
-en la fase de historia clínica del cronograma.
+**Segunda aplicación del mismo patrón — `DISEÑADO`**: los ciclos de vida
+de UC-02 son dos máquinas de estado separadas *(decisión 2026-06-10)* —
+Turno (FHIR `Appointment`): `reservado → confirmado → llegó → cumplido /
+ausente`; ConsultaMedica (FHIR `Encounter`): `en curso → finalizada` —
+con transiciones inválidas rechazadas por el dominio, usando la misma
+técnica de máquina de estados explícita; se documentarán con su
+implementación en la fase de historia clínica del cronograma.
 
 ### Consecuencias / trade-offs
 

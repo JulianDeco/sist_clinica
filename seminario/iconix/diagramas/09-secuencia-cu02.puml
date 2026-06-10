@@ -58,8 +58,8 @@ UC -> TREPO : buscarPorId(turnoId, tenantId)
 TREPO --> UC : turno
 UC -> TUR : verificarEstadoAtencion()
 note right of TUR
-  Precondición: turno en estado
-  LLEGO o EN_CURSO.
+  Precondición: turno en estado LLEGO
+  (o consulta EN_CURSO a retomar).
 end note
 TUR --> UC : ok
 UC -> CONREPO : buscarPorTurno(turnoId, tenantId)
@@ -68,7 +68,7 @@ CONREPO --> UC : consulta (existente o nueva)
 alt A3 — paciente sin turno previo (walk-in, CU-S09)
   UI -> CTRL : POST /api/v1/consultas/walk-in\ncrearConsultaWalkIn(pacienteId)
   CTRL -> UC : crearConsultaWalkIn(pacienteId,\nprofesionalId, tenantId)
-  UC -> TUR : «create» new Turno(retroactivo,\nestado = EN_CURSO)
+  UC -> TUR : «create» new Turno(retroactivo,\nestado = LLEGO)
   UC -> CON : «create» new ConsultaMedica(turnoId,\norigen = WALK_IN)
   UC -> TREPO : guardar(turno, tenantId)
   UC -> CONREPO : guardar(consulta, tenantId)
@@ -146,8 +146,10 @@ UI --> Medico : consulta cerrada
 
 note over UC, TREPO
   Paso 9: cierre persistido en una única transacción.
-  Máquina de estados respetada:
-  reservado → llegó → en curso → finalizada.
+  Dos máquinas de estado separadas (decisión 2026-06-10):
+  · Turno (Appointment): RESERVADO → CONFIRMADO →
+    LLEGO → CUMPLIDO / AUSENTE.
+  · ConsultaMedica (Encounter): EN_CURSO → FINALIZADA.
   A1 — abandono sin cerrar: la consulta queda
   EN_CURSO y el sistema notifica al médico en su
   próxima sesión.
