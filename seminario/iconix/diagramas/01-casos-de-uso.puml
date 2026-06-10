@@ -1,0 +1,138 @@
+@startuml 01-casos-de-uso
+' =====================================================================
+' ClinicaSaaS — Diagrama de casos de uso (ICONIX) — T-020 entregable 1
+' Entrega Seminario de Trabajo Final UAI — 16/06/2026
+'
+' Fuentes:
+'   - .claude/tasks/use-cases.md  (CU-01..CU-04, fuente autoritativa)
+'   - docs/adr/ADR-014-multi-tenant-membership.md (auth two-step)
+'
+' Convenciones UML aplicadas:
+'   <<include>> : flecha punteada DESDE el caso base HACIA el incluido.
+'                 Comportamiento obligatorio y reutilizable que SIEMPRE
+'                 se ejecuta como parte del caso base.
+'   <<extend>>  : flecha punteada DESDE la extensión HACIA el caso base.
+'                 Comportamiento OPCIONAL/CONDICIONAL; la condición de
+'                 disparo se documenta en nota sobre el vínculo.
+'   Asociación actor–caso de uso: línea sólida sin punta de flecha.
+'
+' Totales: 6 <<include>> · 5 <<extend>>  (requisito mínimo: 5 y 5)
+' =====================================================================
+
+left to right direction
+skinparam shadowing false
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor #FFFFE0
+  BorderColor #999999
+}
+
+' ------------------------- Actores -------------------------
+' Actores humanos internos de la clínica
+actor "Secretario/a" as SEC
+actor "Médico" as MED
+actor "Administrador\nde clínica" as ADM
+
+' Actor externo: recibe notificaciones y confirma/cancela turnos
+actor "Paciente" as PAC
+
+' Actor temporal: dispara el job programado de UC-03 (convención reloj)
+actor "Scheduler\n(job programado)" as SCH
+
+' --------------------- Límite del sistema ---------------------
+rectangle "ClinicaSaaS" {
+
+  ' ----- Autenticación (ADR-014: flujo two-step) -----
+  usecase "Iniciar sesión" as UC_LOGIN
+  usecase "Seleccionar tenant" as UC_TENANT
+
+  ' ----- Casos de uso core (ICONIX) -----
+  usecase "CU-01\nReservar turno con\nvalidación integral" as UC01
+  usecase "CU-02\nGestionar consulta\nmédica (SOAP)" as UC02
+  usecase "CU-03\nNotificar predicción\nde ausentismo" as UC03
+  usecase "CU-04\nSugerir overbooking\ninteligente" as UC04
+
+  ' ----- Casos de uso de soporte -----
+  usecase "Validar disponibilidad\nde slot" as UC_DISP
+  usecase "Validar cobertura y\ntope semanal" as UC_COB
+  usecase "Calcular riesgo\nde no-show" as UC_RIESGO
+  usecase "Enviar notificación" as UC_NOTIF
+  usecase "Registrar respuesta\ndel paciente" as UC_RESP
+  usecase "Sugerir slots\nalternativos" as UC_ALT
+  usecase "Crear turno\nretroactivo (walk-in)" as UC_WALKIN
+  usecase "Notificar staff para\nllamado manual" as UC_STAFF
+  usecase "Reasignar slot\nliberado" as UC_REASIG
+  usecase "Configurar\noverbooking" as UC_CFG_OVB
+  usecase "Configurar predicción\ny recordatorios" as UC_CFG_PRED
+}
+
+' ------------- Asociaciones actor – caso de uso -------------
+SEC -- UC_LOGIN
+MED -- UC_LOGIN
+ADM -- UC_LOGIN
+
+SEC -- UC01
+SEC -- UC04
+MED -- UC02
+MED -- UC_CFG_OVB
+ADM -- UC_CFG_PRED
+SCH -- UC03
+
+' El paciente es receptor de las notificaciones y responde desde el mensaje
+PAC -- UC_NOTIF
+PAC -- UC_RESP
+
+' --------------------- <<include>> (6) ---------------------
+' CU-01 siempre ejecuta sus 3 validaciones (use-cases.md, pasos 2-4)
+UC01 ..> UC_DISP : <<include>>
+UC01 ..> UC_COB : <<include>>
+UC01 ..> UC_RIESGO : <<include>>
+
+' CU-03 reutiliza el mismo motor heurístico (use-cases.md, paso 2)
+UC03 ..> UC_RIESGO : <<include>>
+' CU-03 siempre envía las notificaciones elegidas (paso 4)
+UC03 ..> UC_NOTIF : <<include>>
+
+' ADR-014: la selección de tenant siempre ocurre tras el login
+' (auto-seleccionado si el usuario pertenece a un único tenant)
+UC_LOGIN ..> UC_TENANT : <<include>>
+
+' --------------------- <<extend>> (5) ---------------------
+UC04 ..> UC01 : <<extend>>
+note on link
+  Condición: riesgo de no-show > 70%,
+  overbooking habilitado por el profesional
+  y tope semanal no alcanzado
+end note
+
+UC_ALT ..> UC01 : <<extend>>
+note on link
+  Condición: el slot
+  solicitado ya está ocupado
+end note
+
+UC_WALKIN ..> UC02 : <<extend>>
+note on link
+  Condición: paciente sin
+  Appointment previo
+  (atención sin turno)
+end note
+
+UC_STAFF ..> UC03 : <<extend>>
+note on link
+  Condición: paciente sin
+  teléfono ni email
+  (incontactable)
+end note
+
+UC_REASIG ..> UC_RESP : <<extend>>
+note on link
+  Condición: la respuesta
+  del paciente es una
+  cancelación del turno
+end note
+
+@enduml
