@@ -1,0 +1,411 @@
+@startuml 12-clases
+' =====================================================================
+' Diagrama de clases de diseño ICONIX — ClinicaSaaS (Seminario UAI 2026)
+' Entrega T-020 — deliverable 8
+'
+' Espacio de la SOLUCIÓN: registra el comportamiento asignado a clases
+' en los diagramas de secuencia 08–11 (ICONIX: las secuencias ASIGNAN
+' comportamiento; este diagrama lo DOCUMENTA).
+'
+' Trazabilidad:
+'   - Entidades y asociaciones: 02-dominio.puml (mismas multiplicidades)
+'     + tipos derivados de docs/specifications/DB-Schema.spec.md.
+'   - Métodos de entidades, servicios y use cases: descubiertos en
+'     08-secuencia-cu01 · 09-secuencia-cu02 · 10-secuencia-cu03 ·
+'     11-secuencia-cu04.
+'   - Capas y regla de dependencia: ADR-010 (Clean Architecture) —
+'     domain no depende de nadie; application depende de domain;
+'     api depende de application; infrastructure implementa domain.
+'   - NotificationPort + adapters (Strategy): ADR-013.
+'   - Multitenancy (ADR-003): todo método de repositorio recibe tenantId.
+' =====================================================================
+
+skinparam shadowing false
+skinparam classBackgroundColor #FDFDFD
+skinparam classBorderColor #444444
+skinparam packageBackgroundColor #FFFFFF
+skinparam noteBackgroundColor #FFF8DC
+skinparam classAttributeIconSize 0
+hide circle
+
+' =====================================================================
+package "api" #F8F8FF {
+  class AgendaController {
+    +validarReserva(dto) / confirmarReserva(dto) / confirmarSobreturno(dto)
+  }
+  class ConsultaController {
+    +abrirConsulta() / registrarNotaSoap() / registrarObservaciones() / cerrarConsulta()
+  }
+  class TelegramWebhookController {
+    +recibirRespuesta(update)
+  }
+}
+
+' =====================================================================
+package "application" #F5FFF5 {
+
+  class ReservarTurnoUseCaseImpl <<@Transactional>> {
+    +validar(comando, tenantId): ValidacionReserva
+    +reservar(comando, tenantId): TurnoCreado
+  }
+
+  class SugerirSobreturnoUseCaseImpl <<@Transactional>> {
+    +evaluarSugerencia(franjaId, prediccion, tenantId): Sugerencia
+    +crearSobreturno(comando, tenantId): SobreturnoCreado
+  }
+
+  class GestionarConsultaUseCaseImpl <<@Transactional>> {
+    +abrirConsulta(turnoId, tenantId): ConsultaAbierta
+    +crearConsultaWalkIn(pacienteId, profesionalId, tenantId)
+    +registrarNotaSoap(consultaId, nota, tenantId)
+    +registrarObservaciones(consultaId, mediciones, tenantId)
+    +registrarDiagnostico(consultaId, texto, tenantId)
+    +cerrarConsulta(consultaId, tenantId)
+  }
+
+  class NotificarPrediccionUseCaseImpl {
+    +procesarRecordatorios(tenantId)
+    -elegirEstrategia(score: int): EstrategiaNotificacion
+  }
+
+  class RegistrarRespuestaUseCaseImpl <<@Transactional>> {
+    +registrarRespuesta(turnoId, respuesta, tenantId)
+  }
+
+  class DisponibilidadService {
+    +validarDisponibilidad(franjaId, tenantId): ResultadoDisponibilidad
+    +sugerirAlternativas(profesionalId, fecha, tenantId): List<FranjaHoraria>
+  }
+
+  class CoberturaService {
+    +validarTopeSemanal(pacienteId, fecha, tenantId): ResultadoCobertura
+    +consumirTope(pacienteId, coberturaId, semanaIso, tenantId)
+  }
+
+  class MotorRiesgoNoShowService {
+    +calcularRiesgo(pacienteId, datosTurno, tenantId): PrediccionDeRiesgo
+    +obtenerScore(turnoId, tenantId): PrediccionDeRiesgo
+  }
+
+  interface NotificationPort <<port·ADR-013>> {
+    +enviar(request: NotificationRequest): NotificationResult
+  }
+
+  interface ScoreCachePort <<port>> {
+    +obtener(turnoId): Optional<PrediccionDeRiesgo>
+    +guardar(turnoId, prediccion, ttl)
+  }
+}
+
+' =====================================================================
+package "domain" #FFFDF5 {
+
+  ' ----- Entidades (atributos: DB-Schema.spec.md · métodos: secuencias 08–11) -----
+
+  class Turno {
+    -id: UUID
+    -tenantId: UUID
+    -pacienteId: UUID
+    -profesionalId: UUID
+    -franjaId: UUID
+    -fecha: LocalDate
+    -horaInicio: Instant
+    -horaFin: Instant
+    -estado: EstadoTurno
+    -esSobreturno: boolean
+    -motivoCancelacion: String
+    +confirmar()
+    +cancelar(motivo: String)
+    +marcarCumplido()
+    +verificarEstadoAtencion()
+  }
+
+  class Sobreturno {
+    +pasarATurnoNormal()
+  }
+
+  class FranjaHoraria {
+    -id: UUID
+    -agendaId: UUID
+    -inicio: Instant
+    -fin: Instant
+    -estado: EstadoFranja
+    +estaLibre(): boolean
+    +ocupar()
+    +liberar()
+    +tieneSobreturno(): boolean
+    +registrarSobreturno()
+  }
+
+  class Agenda {
+    -id: UUID
+    -profesionalId: UUID
+    -periodo: Periodo
+  }
+
+  class Paciente {
+    -id: UUID
+    -nombreCompleto: String
+    -telefono: String
+    -email: String
+    +tieneContactoDigital(): boolean
+  }
+
+  class Profesional {
+    -id: UUID
+    -nombreCompleto: String
+    -especialidad: String
+  }
+
+  class Cobertura {
+    -id: UUID
+    -pacienteId: UUID
+    -obraSocialId: UUID
+    -vigenciaHasta: LocalDate
+    -topeSemanal: int
+    +estaVigente(fecha: LocalDate): boolean
+  }
+
+  class ObraSocial {
+    -id: UUID
+    -nombre: String
+  }
+
+  class ConsultaMedica {
+    -id: UUID
+    -turnoId: UUID
+    -estado: EstadoConsulta
+    -iniciadaEn: Instant
+    -finalizadaEn: Instant
+    -diagnosticoProvisorio: String
+    +documentarSOAP(nota: NotaSOAP)
+    +registrarObservacion(obs: Observacion)
+    +registrarDiagnostico(texto: String)
+    +finalizar()
+  }
+
+  class NotaSOAP {
+    -subjetivo: String
+    -objetivo: String
+    -analisis: String
+    -plan: String
+  }
+
+  class Observacion {
+    -codigo: String
+    -valor: BigDecimal
+    -unidad: String
+    +validarRangoClinico(): List<AdvertenciaClinica>
+  }
+
+  class PrediccionDeRiesgo {
+    -id: UUID
+    -turnoId: UUID
+    -score: int «0..100»
+    -confianza: Confianza
+    -factores: List<FactorRiesgo>
+    -versionModelo: String
+    -calculadaEn: Instant
+    +esRiesgoAlto(umbral: int): boolean
+    +esBajaConfianza(): boolean
+  }
+
+  class Recordatorio {
+    -id: UUID
+    -turnoId: UUID
+    -canal: Canal
+    -tipoMensaje: TipoMensaje
+    -estado: EstadoEnvio
+    -enviadoEn: Instant
+    -respondidoEn: Instant
+    -reintentos: int
+    +registrarRespuesta(respuesta, fecha)
+  }
+
+  class PoliticaDeSobreturnos {
+    -profesionalId: UUID
+    -habilitado: boolean
+    -umbralRiesgo: int = 70
+    -topeSemanal: int = 5
+    -tiposExcluidos: List<String>
+    +permiteSobreturno(tipoTurno): boolean
+  }
+
+  enum EstadoTurno {
+    RESERVADO
+    CONFIRMADO
+    LLEGO
+    EN_CURSO
+    CUMPLIDO
+    CANCELADO
+    AUSENTE
+  }
+
+  ' ----- Interfaces de repositorio (firmas descubiertas en 08–11) -----
+
+  interface TurnoRepository {
+    +buscarPorId(id, tenantId): Turno
+    +guardar(turno, tenantId): UUID
+    +buscarHistorialPaciente(pacienteId, tenantId): List<Turno>
+    +buscarProximosEnVentana(ventana, tenantId): List<Turno>
+    +contarSobreturnosSemana(profesionalId, semanaIso, tenantId): int
+  }
+
+  interface FranjaHorariaRepository {
+    +buscarPorId(franjaId, tenantId): FranjaHoraria
+    +buscarLibresCercanas(profesionalId, fecha, tenantId): List<FranjaHoraria>
+    +guardar(franja, tenantId)
+    +liberar(franjaId, tenantId)
+  }
+
+  interface CoberturaRepository {
+    +buscarVigente(pacienteId, tenantId): Cobertura
+    +obtenerUsoSemanal(pacienteId, coberturaId, semanaIso, tenantId): int
+    +incrementarUsoSemanal(pacienteId, coberturaId, semanaIso, tenantId)
+  }
+
+  interface ConsultaMedicaRepository {
+    +buscarPorTurno(turnoId, tenantId): Optional<ConsultaMedica>
+    +guardar(consulta, tenantId)
+  }
+
+  interface PacienteRepository {
+    +buscarPorId(pacienteId, tenantId): Paciente
+  }
+
+  interface PrediccionRiesgoRepository {
+    +guardar(prediccion, turnoId, tenantId)
+  }
+
+  interface RecordatorioRepository {
+    +guardar(recordatorio, tenantId)
+    +buscarVigentePorTurno(turnoId, tenantId): Recordatorio
+  }
+
+  interface PoliticaSobreturnosRepository {
+    +buscarPorProfesional(profesionalId, tenantId): PoliticaDeSobreturnos
+  }
+}
+
+' =====================================================================
+package "infrastructure" #FFF5F5 {
+
+  class NotificationDispatcher {
+    +enviar(request): NotificationResult
+    -seleccionarAdapter(canal): NotificationPort
+  }
+  class TelegramNotificationAdapter {
+    +enviar(request): NotificationResult
+  }
+  class EmailNotificationAdapter {
+    +enviar(request): NotificationResult
+  }
+  class CacheScoreRedis <<Redis·TTL 30 min>> {
+    +obtener(turnoId)
+    +guardar(turnoId, prediccion, ttl)
+  }
+  class RecordatorioScheduler <<@Scheduled>> {
+    +ejecutar()
+  }
+  class TurnoRepositoryJpa <<JPA·JSONB ADR-009>>
+}
+
+' =====================================================================
+' Asociaciones de dominio (multiplicidades = 02-dominio.puml)
+' =====================================================================
+Profesional "1" -- "0..*" Agenda : publica >
+Agenda "1" o-- "1..*" FranjaHoraria : se compone de >
+Paciente "1" -- "0..*" Turno : reserva >
+Profesional "1" -- "0..*" Turno : atiende >
+FranjaHoraria "1" -- "0..*" Turno : aloja >
+Sobreturno --|> Turno
+Profesional "1" -- "0..1" PoliticaDeSobreturnos : configura >
+Turno "1" -- "0..*" ConsultaMedica : da lugar a >
+ConsultaMedica "1" *-- "0..1" NotaSOAP : se documenta con >
+ConsultaMedica "1" -- "0..*" Observacion : registra >
+Paciente "1" -- "0..*" Cobertura : posee >
+ObraSocial "1" -- "0..*" Cobertura : emite >
+Turno "0..*" -- "0..1" Cobertura : se imputa a >
+Turno "1" -- "0..*" PrediccionDeRiesgo : es evaluado por >
+Turno "1" -- "0..*" Recordatorio : origina >
+Turno ..> EstadoTurno
+
+' =====================================================================
+' Dependencias entre capas (regla de dependencia ADR-010)
+' =====================================================================
+' api → application
+AgendaController ..> ReservarTurnoUseCaseImpl
+AgendaController ..> SugerirSobreturnoUseCaseImpl
+ConsultaController ..> GestionarConsultaUseCaseImpl
+TelegramWebhookController ..> RegistrarRespuestaUseCaseImpl
+
+' application → application (orquestación CU-01 → CU-04 «extend»)
+ReservarTurnoUseCaseImpl ..> DisponibilidadService
+ReservarTurnoUseCaseImpl ..> CoberturaService
+ReservarTurnoUseCaseImpl ..> MotorRiesgoNoShowService
+ReservarTurnoUseCaseImpl ..> SugerirSobreturnoUseCaseImpl : <<extend>> CU-04
+NotificarPrediccionUseCaseImpl ..> MotorRiesgoNoShowService
+NotificarPrediccionUseCaseImpl ..> NotificationPort
+MotorRiesgoNoShowService ..> ScoreCachePort
+
+' application → domain (use case / servicio → repositorio)
+ReservarTurnoUseCaseImpl ..> TurnoRepository
+ReservarTurnoUseCaseImpl ..> PrediccionRiesgoRepository
+DisponibilidadService ..> FranjaHorariaRepository
+CoberturaService ..> CoberturaRepository
+MotorRiesgoNoShowService ..> TurnoRepository
+GestionarConsultaUseCaseImpl ..> ConsultaMedicaRepository
+GestionarConsultaUseCaseImpl ..> TurnoRepository
+GestionarConsultaUseCaseImpl ..> PacienteRepository
+NotificarPrediccionUseCaseImpl ..> TurnoRepository
+NotificarPrediccionUseCaseImpl ..> RecordatorioRepository
+RegistrarRespuestaUseCaseImpl ..> TurnoRepository
+RegistrarRespuestaUseCaseImpl ..> RecordatorioRepository
+RegistrarRespuestaUseCaseImpl ..> FranjaHorariaRepository
+SugerirSobreturnoUseCaseImpl ..> PoliticaSobreturnosRepository
+SugerirSobreturnoUseCaseImpl ..> TurnoRepository
+SugerirSobreturnoUseCaseImpl ..> FranjaHorariaRepository
+
+' infrastructure → implementa puertos e interfaces (realizaciones)
+NotificationDispatcher ..|> NotificationPort
+TelegramNotificationAdapter ..|> NotificationPort
+EmailNotificationAdapter ..|> NotificationPort
+NotificationDispatcher o-- "2..*" NotificationPort : adapters\n(Strategy ADR-013)
+CacheScoreRedis ..|> ScoreCachePort
+TurnoRepositoryJpa ..|> TurnoRepository
+RecordatorioScheduler ..> NotificarPrediccionUseCaseImpl
+
+' =====================================================================
+note bottom of TurnoRepositoryJpa
+  Representante del patrón: las demás interfaces de
+  repositorio del dominio se implementan análogamente
+  en infrastructure (FranjaHorariaRepositoryJpa,
+  CoberturaRepositoryJpa, ConsultaMedicaRepositoryJpa,
+  PacienteRepositoryJpa, PrediccionRiesgoRepositoryJpa,
+  RecordatorioRepositoryJpa, PoliticaSobreturnosRepositoryJpa).
+  Paciente, Profesional, Agenda y FranjaHoraria se
+  persisten como recursos FHIR JSONB (ADR-009);
+  Turno y ConsultaMedica tienen además proyección
+  relacional (appointments / encounters).
+end note
+
+note bottom of Sobreturno
+  Generalización del dominio (CU-04): se persiste
+  como Turno con is_overbooked = true en la misma
+  FranjaHoraria de un turno de alto riesgo.
+end note
+
+note right of NotificationPort
+  ADR-013: la capa de aplicación llama al puerto
+  sin conocer el canal. MVP: Telegram + Email.
+  Post-piloto: WhatsApp y SMS = nuevos adapters,
+  cero cambios en la lógica de negocio.
+end note
+
+note bottom of PoliticaDeSobreturnos
+  Defaults de CU-S12: umbral 70%,
+  tope semanal 5, tipos excluidos
+  (cirugía, procedimiento, primera consulta).
+end note
+
+@enduml
