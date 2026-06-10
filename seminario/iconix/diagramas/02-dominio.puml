@@ -1,0 +1,117 @@
+@startuml 02-dominio
+' =====================================================================
+' Modelo de Dominio ICONIX — ClinicaSaaS (Seminario UAI 2026)
+' Entrega T-020 — deliverable 3 — 16/06/2026
+'
+' Reglas ICONIX aplicadas:
+'   - Espacio del PROBLEMA: solo conceptos del mundo real de la clínica.
+'   - Sin métodos ni atributos — el modelo de dominio ES el glosario
+'     (ver seminario/iconix/03-glosario-dominio.md, correspondencia 1:1).
+'   - Sin conceptos técnicos (JWT, Redis, JSONB, cache). El "tenant"
+'     aparece como Clinica.
+'   - Trazabilidad: cada entidad proviene de los CU (use-cases.md)
+'     o del esquema de BD (DB-Schema.spec.md / ADR-014).
+' =====================================================================
+
+hide members
+hide circle
+skinparam shadowing false
+skinparam classBackgroundColor #FDFDFD
+skinparam classBorderColor #444444
+skinparam noteBackgroundColor #FFF8DC
+skinparam linetype ortho
+
+' ----- Organización y personas -----
+class Clinica
+class Usuario
+class Membresia
+class Rol
+class Paciente
+class Profesional
+
+' ----- Agenda y turnos -----
+class Agenda
+class FranjaHoraria
+class Turno
+class Sobreturno
+class PoliticaDeSobreturnos
+
+' ----- Atención clínica -----
+class ConsultaMedica
+class NotaSOAP
+class Observacion
+
+' ----- Cobertura -----
+class ObraSocial
+class Cobertura
+
+' ----- Inteligencia y comunicación -----
+class PrediccionDeRiesgo
+class Recordatorio
+
+' =====================================================================
+' Relaciones
+' =====================================================================
+
+' Identidad y pertenencia (ADR-014: identidad global, membresía por clínica)
+Usuario "1" -- "0..*" Membresia : posee >
+Clinica "1" -- "0..*" Membresia : otorga >
+Membresia "0..*" -- "1" Rol : desempeña >
+Usuario "0..1" -- "0..1" Profesional : actúa como >
+
+' La clínica y sus personas
+Clinica "1" -- "0..*" Paciente : atiende a >
+Clinica "1" -- "0..*" Profesional : cuenta con >
+
+' Agenda: todo–parte verdadero (la franja no existe sin su agenda)
+Profesional "1" -- "0..*" Agenda : publica >
+Agenda "1" o-- "1..*" FranjaHoraria : se compone de >
+
+' Turnos
+Paciente "1" -- "0..*" Turno : reserva >
+Profesional "1" -- "0..*" Turno : atiende >
+FranjaHoraria "1" -- "0..*" Turno : aloja >
+Sobreturno --|> Turno
+
+' Configuración de sobreturnos por profesional (UC-04)
+Profesional "1" -- "0..1" PoliticaDeSobreturnos : configura >
+
+' Atención clínica (UC-02 — un turno puede originar varias consultas, OQ-10)
+Turno "1" -- "0..*" ConsultaMedica : da lugar a >
+ConsultaMedica "1" *-- "0..1" NotaSOAP : se documenta con >
+ConsultaMedica "1" -- "0..*" Observacion : registra >
+
+' Cobertura y obra social (UC-01 — tope semanal)
+Paciente "1" -- "0..*" Cobertura : posee >
+ObraSocial "1" -- "0..*" Cobertura : emite >
+Turno "0..*" -- "0..1" Cobertura : se imputa a >
+
+' Predicción de ausentismo y recordatorios (UC-01, UC-03, UC-04)
+Turno "1" -- "0..*" PrediccionDeRiesgo : es evaluado por >
+Turno "1" -- "0..*" Recordatorio : origina >
+Recordatorio "0..*" -- "1" Paciente : notifica a >
+
+' =====================================================================
+' Notas de decisión
+' =====================================================================
+
+note bottom of Sobreturno
+  Generalización (UC-04): un Sobreturno
+  ES un Turno con regla especial — comparte
+  la misma FranjaHoraria con un turno ya
+  reservado de alto riesgo de ausentismo.
+end note
+
+note right of FranjaHoraria
+  Una franja admite normalmente un único
+  turno; solo mediante Sobreturno puede
+  alojar un segundo (UC-04).
+end note
+
+note bottom of Membresia
+  ADR-014: una misma persona (Usuario)
+  puede trabajar en varias Clinicas,
+  con un Rol distinto en cada una.
+end note
+
+@enduml
