@@ -1,12 +1,19 @@
 # Specification: Database Schema — ClinicaSaaS MVP
 
-**Status**: APPROVED — v3 (post correcciones de consistencia)
+**Status**: APPROVED — v4 (rev. v4 pendiente de aprobación @julian)
 **Author**: Julián Deco
-**Date**: 2026-06-08
+**Date**: 2026-06-08 (última revisión: 2026-06-10)
 **Task**: T-001 (`tasks.json`)
 **Branch**: `feature/T-001-scaffold-backend`
 **Relates to**: transversal (UC-01, UC-02, UC-03, UC-04)
-**ADRs referenced**: ADR-002, ADR-003, ADR-008, ADR-009
+**ADRs referenced**: ADR-002, ADR-003, ADR-008, ADR-009, ADR-014, ADR-015 (PROPOSED)
+
+## Changelog
+
+| Versión | Fecha | Cambios |
+|---|---|---|
+| v3 | 2026-06-08 | APPROVED — post correcciones de consistencia |
+| v4 | 2026-06-10 | Sync con ADR-014 (V010: `users` global, `user_tenants`, drop `user_roles`), ADR-015 (`practitioner_fhir_id` PROPOSED) y spec T-003 rev.2 (V011: `refresh_tokens.tenant_id`, pendiente de implementación). OQ-07/OQ-08 marcadas como supersedidas por ADR-014. |
 
 ---
 
@@ -60,6 +67,12 @@ como clave lógica. Patrón idéntico a HAPI FHIR (HFJ_RESOURCE + HFJ_RES_VER)
 y Smile CDR. `fhir_search_params` para búsquedas indexadas.
 
 ### OQ-07 — Multitenancy: roles/permissions globales (Opción A)
+> ⚠️ **Parcialmente supersedida por ADR-014 (V010, 2026-06-09).**
+> `roles`, `permissions`, `role_permissions` siguen siendo globales (vigente),
+> pero `user_roles` fue eliminada: el rol se asigna por membresía en
+> `user_tenants.role_id` (un rol por usuario por tenant). Ver §5 Grupo B.
+
+Texto original (histórico):
 `roles`, `permissions`, `role_permissions` son tablas globales (sin `tenant_id`).
 `user_roles` hereda el scope del usuario (que sí tiene `tenant_id`).
 Justificación: MVP SaaS médico con roles fijos — ADMIN, DOCTOR, SECRETARY.
@@ -67,6 +80,14 @@ Si se requiere personalización de roles por clínica, se agrega `tenant_id`
 en una migración futura con ADR.
 
 ### OQ-08 — users: UNIQUE global por email
+> ⚠️ **Supersedida en parte por ADR-014 (V010, 2026-06-09).**
+> El `UNIQUE(email)` global se mantiene (vigente y reforzado: `users` es ahora
+> identidad global). Lo que quedó invalidado es "un usuario pertenece a un
+> solo tenant": con ADR-014 un usuario puede pertenecer a N tenants vía la
+> tabla pivote `user_tenants`. La "nueva migración + ADR" anticipada aquí
+> es exactamente ADR-014 + V010.
+
+Texto original (histórico):
 `UNIQUE(email)` global, no `UNIQUE(email, tenant_id)`.
 Justificación: simplifica login (el usuario identifica su tenant por slug
 o al momento del onboarding). Un usuario pertenece a un solo tenant en MVP.
@@ -112,7 +133,8 @@ innecesarias y auditar versiones.
 ## 3. Functional Requirements
 
 - FR-01: Toda tabla de datos de negocio debe incluir `tenant_id UUID NOT NULL`
-  referenciando `tenants(id)`.
+  referenciando `tenants(id)`. Excepción: `users` es identidad global sin
+  `tenant_id` desde V010 (ADR-014) — la membresía vive en `user_tenants` (§5 Grupo B).
 - FR-02: Toda tabla tenant-scoped debe incluir `created_at` y `updated_at`.
   Las entidades sujetas a soft delete deben además incluir `deleted_at` y `deleted_by`.
   Las entidades auditables deben incluir `created_by` y `updated_by` según corresponda.
@@ -234,14 +256,25 @@ Seed: ver sección 6.
 
 ---
 
-### Grupo B — Usuarios y auth (tenant-scoped + tablas globales de auth)
+### Grupo B — Usuarios y auth (identidad global + membresía por tenant)
+
+> ⚠️ **Refactor V010 (ADR-014, 2026-06-09)**: `users` dejó de ser tenant-scoped
+> y pasó a ser **identidad global** (sin `tenant_id`). La pertenencia a clínicas
+> se modela en la tabla pivote `user_tenants` (un usuario × N tenants, un rol
+> por tenant). `user_roles` fue eliminada. Excepción explícita a FR-01:
+> `users` y `user_tenants` no son "datos de negocio tenant-scoped" — `users` es
+> global y `user_tenants` lleva `tenant_id` como parte de su PK.
 
 #### `users`
+
+Identidad global del sistema (ADR-014, V010). **No tiene `tenant_id`** —
+la columna y su FK fueron eliminadas en `V010__refactor_users_multi_tenant.sql`.
+`email` mantiene unicidad global (`uq_users_email`): una cuenta por persona real.
+
 | Columna | Tipo | Restricción |
 |---|---|---|
 | id | UUID | PK |
-| tenant_id | UUID | NOT NULL, FK → tenants(id) ON DELETE CASCADE |
-| email | VARCHAR(255) | NOT NULL, UNIQUE — global, no por tenant (OQ-08) |
+| email | VARCHAR(255) | NOT NULL, UNIQUE — global (OQ-08, reafirmado por ADR-014) |
 | password_hash | VARCHAR(255) | NOT NULL — BCrypt |
 | full_name | VARCHAR(255) | NOT NULL |
 | active | BOOLEAN | NOT NULL DEFAULT TRUE |
@@ -250,18 +283,70 @@ Seed: ver sección 6.
 | created_by | UUID | FK → users(id) — admin que creó el usuario |
 | updated_by | UUID | FK → users(id) |
 
-#### `user_roles`
+#### `user_tenants`
+
+Membresía usuario × tenant (ADR-014, creada en V010). Reemplaza a `user_roles`:
+un usuario tiene **exactamente un rol por tenant** (MVP; extender post-MVP si
+se necesitan roles múltiples por tenant).
+
 | Columna | Tipo | Restricción |
 |---|---|---|
-| user_id | UUID | FK → users(id) ON DELETE CASCADE |
-| role_id | UUID | FK → roles(id) ON DELETE CASCADE |
-| PK | — | (user_id, role_id) |
+| user_id | UUID | NOT NULL, FK → users(id) ON DELETE CASCADE (`fk_ut_user`) |
+| tenant_id | UUID | NOT NULL, FK → tenants(id) ON DELETE CASCADE (`fk_ut_tenant`) |
+| role_id | UUID | NOT NULL, FK → roles(id) (`fk_ut_role`) |
+| active | BOOLEAN | NOT NULL DEFAULT TRUE — membresía activable/desactivable |
+| joined_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() |
+| PK | — | (user_id, tenant_id) (`pk_user_tenants`) |
+
+Índices: `idx_user_tenants_user_id (user_id)`, `idx_user_tenants_tenant_id (tenant_id)`.
+
+DDL (según V010):
+
+```sql
+CREATE TABLE IF NOT EXISTS user_tenants (
+    user_id   UUID        NOT NULL,
+    tenant_id UUID        NOT NULL,
+    role_id   UUID        NOT NULL,
+    active    BOOLEAN     NOT NULL DEFAULT TRUE,
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT pk_user_tenants PRIMARY KEY (user_id, tenant_id),
+    CONSTRAINT fk_ut_user      FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE,
+    CONSTRAINT fk_ut_tenant    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ut_role      FOREIGN KEY (role_id)   REFERENCES roles(id)
+);
+```
+
+**PROPUESTO — ADR-015 (status PROPOSED, pendiente aprobación @julian)**:
+columna `practitioner_fhir_id UUID NULL` en `user_tenants` para vincular la
+membresía con el recurso `Practitioner` FHIR del tenant ("usuario actúa como
+profesional", por clínica). FK **lógica** hacia `fhir_resources.id` validada en
+capa de aplicación (no FK física). NULL para usuarios no clínicos
+(SECRETARY, ADMIN). La migración se implementa junto con T-005 (V012 o
+siguiente disponible) — **no existe aún en el esquema**.
+
+#### `user_roles` — ELIMINADA (V010)
+
+> ⚠️ **Deprecada y eliminada** en `V010__refactor_users_multi_tenant.sql`
+> (`DROP TABLE IF EXISTS user_roles`). El rol del usuario se asigna ahora por
+> membresía en `user_tenants.role_id` (ADR-014). Esta entrada se conserva solo
+> como nota histórica — no recrear.
 
 #### `refresh_tokens`
+
+> 📌 **Cambio pendiente — V011 (definida en spec T-003 rev.2, pendiente de
+> implementación)**: `ALTER TABLE refresh_tokens ADD COLUMN tenant_id UUID
+> NOT NULL REFERENCES tenants(id)`. La sesión de refresh es **por tenant**:
+> sin esta columna, `POST /auth/refresh` no sabe para qué tenant emitir el
+> nuevo accessToken (con ADR-014 el usuario puede pertenecer a N tenants).
+> Nota: V010 afirmaba "sin cambios necesarios" en `refresh_tokens`; esa
+> afirmación quedó corregida por el spec T-003 rev.2.
+
 | Columna | Tipo | Restricción |
 |---|---|---|
 | id | UUID | PK |
 | user_id | UUID | NOT NULL, FK → users(id) ON DELETE CASCADE |
+| tenant_id | UUID | NOT NULL, FK → tenants(id) — **V011 pendiente de implementación (T-003 rev.2)** |
 | jti | VARCHAR(36) | NOT NULL, UNIQUE — JWT ID del token |
 | token_hash | VARCHAR(255) | NOT NULL — SHA-256 del refresh token |
 | issued_at | TIMESTAMPTZ | NOT NULL |
@@ -546,13 +631,16 @@ AUDIT_LOG_READ       | SYSTEM       | ADMIN
 |---|---|---|
 | V001__create_tenants.sql | Función `set_updated_at()` + tabla `tenants` | tenants |
 | V002__create_roles_and_permissions.sql | Roles, permisos, role_permissions + seed | roles, permissions, role_permissions |
-| V003__create_users.sql | Users, user_roles, refresh_tokens | users, user_roles, refresh_tokens |
+| V003__create_users.sql | Users, user_roles, refresh_tokens (modelo original — refactorizado por V010) | users, user_roles, refresh_tokens |
 | V004__create_fhir_resources.sql | FHIR storage + índices GIN | fhir_resources, fhir_search_params |
 | V005__create_appointments.sql | Appointments + noshow scores + coverage | appointments, appointment_noshow_scores, coverage_weekly_usage |
 | V006__create_encounters.sql | Encounters | encounters |
 | V007__create_overbooking_config.sql | Config overbooking | overbooking_config |
 | V008__create_notification_log.sql | Log de notificaciones | notification_log |
 | V009__create_audit_log.sql | Auditoría de acciones de usuario | audit_log |
+| V010__refactor_users_multi_tenant.sql | ADR-014: `users` global (drop `tenant_id`), crea `user_tenants`, drop `user_roles` | users, user_tenants, ~~user_roles~~ |
+| V011 *(pendiente — T-003 rev.2)* | `refresh_tokens.tenant_id UUID NOT NULL REFERENCES tenants(id)` — sesión de refresh por tenant | refresh_tokens |
+| V012 o siguiente *(propuesta — ADR-015, se implementa en T-005)* | `user_tenants.practitioner_fhir_id UUID NULL` — FK lógica a Practitioner FHIR | user_tenants |
 
 ---
 
@@ -588,8 +676,7 @@ erDiagram
 
     users {
         UUID id PK
-        UUID tenant_id FK
-        VARCHAR email
+        VARCHAR email UK
         VARCHAR password_hash
         VARCHAR full_name
         BOOLEAN active
@@ -597,14 +684,19 @@ erDiagram
         TIMESTAMPTZ updated_at
     }
 
-    user_roles {
-        UUID user_id FK
+    user_tenants {
+        UUID user_id PK, FK
+        UUID tenant_id PK, FK
         UUID role_id FK
+        BOOLEAN active
+        TIMESTAMPTZ joined_at
+        UUID practitioner_fhir_id "PROPUESTO ADR-015 (T-005)"
     }
 
     refresh_tokens {
         UUID id PK
         UUID user_id FK
+        UUID tenant_id FK "V011 pendiente (T-003 rev.2)"
         VARCHAR jti UK
         VARCHAR token_hash
         TIMESTAMPTZ issued_at
@@ -740,7 +832,7 @@ erDiagram
         TIMESTAMPTZ occurred_at
     }
 
-    tenants ||--o{ users : "tiene"
+    tenants ||--o{ user_tenants : "tiene miembros"
     tenants ||--o{ fhir_resources : "posee"
     tenants ||--o{ appointments : "tiene"
     tenants ||--o{ encounters : "tiene"
@@ -752,9 +844,10 @@ erDiagram
 
     roles ||--o{ role_permissions : "tiene"
     permissions ||--o{ role_permissions : "tiene"
-    users ||--o{ user_roles : "tiene"
-    roles ||--o{ user_roles : "tiene"
+    users ||--o{ user_tenants : "pertenece a"
+    roles ||--o{ user_tenants : "rol por membresía"
     users ||--o{ refresh_tokens : "tiene"
+    tenants ||--o{ refresh_tokens : "scope de sesión (V011 pendiente)"
 
     fhir_resources ||--o{ fhir_search_params : "indexado en"
     fhir_resources ||--|| appointments : "proyectado en"
@@ -769,7 +862,8 @@ erDiagram
 
 ## 9. Acceptance Criteria
 
-- AC-01: La migración V001..V009 ejecuta sin errores en PostgreSQL 16 limpio.
+- AC-01: La cadena de migraciones V001..V010 ejecuta sin errores en PostgreSQL 16
+  limpio (V011 se valida en T-003; la migración de ADR-015 en T-005).
 - AC-02: `GET /actuator/health` retorna `UP` con Flyway `status: success`.
 - AC-03: Una fila en `appointments` con `tenant_id = T1` NO es visible con
   `tenant_id = T2` — test de aislamiento obligatorio.
@@ -830,9 +924,11 @@ erDiagram
 | Spring Data JPA | Framework | Entidades JPA derivadas de este schema |
 | ADR-003 | Arquitectura | Row-level multitenancy — `tenant_id` en todo |
 | ADR-009 | Arquitectura | FHIR JSONB storage pattern |
-| T-003 (auth) | Tarea | Usa `users`, `refresh_tokens` |
-| T-004 (RBAC) | Tarea | Usa `roles`, `permissions`, `role_permissions` |
-| T-005 (FHIR) | Tarea | Usa `fhir_resources`, `fhir_search_params` |
+| ADR-014 | Arquitectura | Identidad global + membresía `user_tenants` (V010) |
+| ADR-015 (PROPOSED) | Arquitectura | `user_tenants.practitioner_fhir_id` — migración en T-005 |
+| T-003 (auth) | Tarea | Usa `users`, `user_tenants`, `refresh_tokens`; define V011 |
+| T-004 (RBAC) | Tarea | Usa `roles`, `permissions`, `role_permissions`, `user_tenants.role_id` |
+| T-005 (FHIR) | Tarea | Usa `fhir_resources`, `fhir_search_params`; implementa migración ADR-015 |
 | T-006 (agenda) | Tarea | Usa `appointments`, `coverage_weekly_usage` |
 | T-007 (historia) | Tarea | Usa `encounters` |
 | T-008 (no-show) | Tarea | Usa `appointment_noshow_scores` |
@@ -857,4 +953,6 @@ erDiagram
 
 ## 14. Open Questions
 
-Ninguna — todas las OQ (OQ-01 a OQ-06) fueron resueltas antes de escribir este spec.
+Ninguna — todas las OQ (OQ-01 a OQ-12) fueron resueltas antes de escribir este spec.
+Nota (v4): OQ-07 y OQ-08 fueron parcialmente supersedidas por ADR-014 — el texto
+histórico se conserva en §2 con la anotación correspondiente.
