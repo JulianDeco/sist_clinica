@@ -13,6 +13,7 @@ Redis is a **cache and ephemeral store only** — never primary storage.
 | No-show risk score cache | `clinica:{tenantId}:noshow:{appointmentId}` | 30 min | Recalculated on appointment update |
 | JWT revocation list | `clinica:jti:{jti}` | = token remaining TTL | Set on logout or token rotation |
 | Notification deduplication | `clinica:{tenantId}:notif:{appointmentId}:{channel}` | 48 hours | Prevents duplicate SMS/email |
+| Login rate limiting | `clinica:ratelimit:login:{ip}` | 60 s | Counter, max 5 attempts/min (T-003); not tenant-scoped — pre-auth |
 
 **Not allowed in Redis:**
 - Patient records or any FHIR resource
