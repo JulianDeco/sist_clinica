@@ -27,6 +27,17 @@ Ficha de Seguimiento y Revisión
                                              Spring Boot 3 + Angular 18.
                                              Actualización de costos operativos
                                              (ítem API LLM) y hoja de ruta.
+  10/06/2026   Julián Decoppet     2.3       Corrección de consistencia: avance
+                                             técnico actualizado al estado real
+                                             post-migración (auth two-step en
+                                             diseño, 15 ADRs, frontend Angular,
+                                             docs ICONIX), canales de
+                                             notificación unificados según
+                                             ADR-013 (Telegram/email en MVP),
+                                             justificación del posicionamiento
+                                             de precio, correcciones menores
+                                             (Nubimed en capa SaaS, hitos de
+                                             recordatorio 48/24 h).
 
 Nota: El Business Model Canvas se presenta como documento independiente
 (bmc.md) para facilitar su visualización y actualización separada.
@@ -140,8 +151,10 @@ fase inicial sin necesidad de financiamiento externo.
 La empresa es unipersonal: Julián Decoppet, estudiante avanzado de
 Ingeniería en Sistemas en UAI Rosario, es el único desarrollador y
 fundador. Los logros actuales incluyen infraestructura de producción en
-funcionamiento, autenticación segura multitenant y un prototipo funcional
-en etapa de desarrollo activo bajo metodología ICONIX.
+funcionamiento, esquema de base de datos multitenant versionado, frontend
+de autenticación multiclínica navegable y documentación de ingeniería
+completa (15 ADRs, especificaciones SDD y casos de uso ICONIX), con el
+producto en desarrollo activo bajo metodología ICONIX.
 
 El principal riesgo es la lentitud en la adopción inicial frente a una
 base instalada significativa de incumbentes locales, mitigable mediante
@@ -172,8 +185,8 @@ clínica — agenda de turnos, gestión de pacientes, historial clínico y
 administración de profesionales — bajo un estándar internacional de
 interoperabilidad médica (FHIR R4), incorporando predicción de ausentismo de
 pacientes mediante reglas heurísticas diseñadas para evolucionar a Machine
-Learning y sugerencia automática de cobertura de profesionales por franja
-horaria.
+Learning, con una hoja de ruta que incluye la sugerencia automática de
+cobertura de profesionales por franja horaria (post-MVP).
 
 Justificación
 
@@ -195,6 +208,11 @@ Expertos, 2024). Los sistemas de gestión clínica disponibles en el mercado loc
 cobran entre USD 10 y USD 25 mensuales (Medesk, 2024; DriCloud, 2024), pero
 ninguno incorpora capacidades de predicción de ausentismo ni sugerencia de
 cobertura basada en inteligencia artificial para clínicas de este tamaño.
+El posicionamiento de precio de ClinicaSaaS por encima de ese rango
+(USD 35–50) se sustenta en el retorno medible: la recuperación de una
+fracción de los turnos perdidos por ausentismo supera el costo mensual de
+la suscripción para una clínica tipo, y el reporte mensual de ausentismo
+hace ese retorno verificable.
 
 Tipo de E-Business
 
@@ -233,11 +251,14 @@ Avance técnico al 08/06/2026
 El desarrollo comenzó en abril de 2026. A la fecha se encuentran completados:
 
   - Infraestructura base: entorno Docker Compose con Nginx, PostgreSQL 16 y
-    Redis 7, configurado y desplegado en servidor VPS propio.
+    Redis 8, configurado y desplegado en servidor VPS propio.
 
-  - Autenticación: servidor OAuth2 con flujo Authorization Code + PKCE,
-    implementado bajo el estándar SMART on FHIR, que será la base del acceso
-    multiclínica (multitenant).
+  - Autenticación multiclínica (diseño completo, implementación iniciada):
+    flujo de dos pasos con separación de identidad y membresía — un usuario
+    puede pertenecer a varias clínicas con roles distintos — especificado
+    bajo SDD (ADR-014) con el frontend de login y selección de clínica ya
+    navegable; la implementación del backend es la siguiente tarea del
+    cronograma.
 
   - Arquitectura definida: diseño de schema multitenant con aislamiento por
     tenant_id, módulos planificados de pacientes, profesionales, turnos e
@@ -247,8 +268,17 @@ El desarrollo comenzó en abril de 2026. A la fecha se encuentran completados:
 
   - Diseño de la base de datos multitenant: especificación de la arquitectura
     de datos con aislamiento por tenant_id, tablas FHIR en JSONB y esquema de
-    migraciones con Flyway. Once decisiones arquitectónicas documentadas como
-    Architecture Decision Records (ADR-001 a ADR-011).
+    migraciones con Flyway (diez migraciones aplicadas). Quince decisiones
+    arquitectónicas documentadas como Architecture Decision Records
+    (ADR-001 a ADR-015).
+
+  - Frontend inicial Angular 18: workspace con Angular Material, flujo de
+    autenticación de dos pasos navegable (presentación, login, selección de
+    clínica y layout principal con cambio de clínica activa).
+
+  - Documentación ICONIX de los cuatro casos de uso core completa: diagrama
+    de casos de uso, especificaciones, modelo de dominio, diagramas de
+    robustez, secuencia y clases, y documentación de patrones de diseño.
 
 Alcance del MVP del seminario (mayo a diciembre 2026)
 
@@ -268,8 +298,10 @@ Funcionalidades comprometidas para el MVP:
   - Predicción explicable de ausentismo basada en reglas heurísticas (historial
     de no-show del paciente, anticipación del turno, día y franja horaria), con
     factores interpretables por el profesional.
-  - Recordatorios inteligentes diferenciados por riesgo, vía WhatsApp / email /
-    SMS, priorizando pacientes con mayor probabilidad de ausentismo.
+  - Recordatorios inteligentes diferenciados por riesgo, vía Telegram y email
+    en el MVP (WhatsApp Business API y SMS en fase comercial — la abstracción
+    de canal permite incorporarlos sin modificar la lógica de negocio),
+    priorizando pacientes con mayor probabilidad de ausentismo.
   - Overbooking inteligente: sugerencia automática de sobreturno o doble agenda
     para slots con alto riesgo de ausentismo, con tope parametrizable por el
     profesional.
@@ -723,7 +755,7 @@ estructura en tres capas:
   interoperable nativa ni capacidades predictivas integradas al flujo operativo.
 
 - Capa de SaaS modernos genéricos. AgendaPro, Gendu, Turnito, Doctoralia,
-  Meducar: orientados a agenda y recordatorios automáticos, con incorporación
+  Nubimed: orientados a agenda y recordatorios automáticos, con incorporación
   reciente de IA para tareas administrativas (transcripción de consultas y
   asistentes telefónicos en Nubimed; IA clínica supervisada orientada a
   hospitales en SFS).
@@ -1060,9 +1092,9 @@ Acciones técnicas:
     en la interfaz del profesional con factores interpretables.
 
   - Implementar el módulo de recordatorios inteligentes diferenciados por riesgo
-    (CU-03): priorización de notificaciones vía email y SMS según score de
+    (CU-03): priorización de notificaciones vía Telegram y email según score de
     ausentismo.
-    Hito: pacientes de alto riesgo reciben recordatorio adicional 24 horas antes
+    Hito: pacientes de alto riesgo reciben recordatorios 48 y 24 horas antes
     del turno.
 
   - Implementar el módulo de overbooking inteligente (CU-04): sugerencia
