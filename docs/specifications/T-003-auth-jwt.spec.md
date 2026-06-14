@@ -1,6 +1,6 @@
 # Specification: Autenticación JWT — Login, Select-Tenant, Switch-Tenant, Refresh, Logout
 
-**Status**: DRAFT (rev. 3 — 2026-06-10: cookie Path, tenant en refresh token,
+**Status**: APPROVED (rev. 3 — 2026-06-10: cookie Path, tenant en refresh token,
 endpoints públicos acotados, identity token single-use, X-Forwarded-For,
 claves Redis según estándar `clinica:*`, seed movido a V012)
 **Author**: Julian Deco

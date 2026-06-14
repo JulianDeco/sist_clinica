@@ -56,10 +56,20 @@
 - Score de riesgo persistido y asociado al turno (o marcado para reintento en A4).
 
 **Relaciones** (idénticas al diagrama):
-- `<<include>>` → Validar disponibilidad de slot.
-- `<<include>>` → Validar cobertura y tope semanal.
-- `<<include>>` → Calcular riesgo de no-show.
-- Es extendido por: Sugerir overbooking inteligente (CU-04) · Sugerir slots alternativos.
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Validar disponibilidad de slot | — siempre |
+| I2 | `<<include>>` | Validar cobertura y tope semanal | — siempre |
+| I3 | `<<include>>` | Calcular riesgo de no-show | — siempre |
+| I4 | `<<include>>` | Crear Appointment FHIR y actualizar Slot | — siempre |
+| I5 | `<<include>>` | Registrar score de riesgo en turno | — siempre |
+| E1 | `<<extend>>` | Sugerir slots alternativos | Slot solicitado ya está ocupado |
+| E2 | `<<extend>>` | Advertir cobertura vencida o tope superado | Cobertura inválida o tope alcanzado |
+| E3 | `<<extend>>` | Crear turno sin imputación a cobertura | Usuario confirma turno sin cobertura *(decisión 2026-06-10)* |
+| E4 | `<<extend>>` | Calcular score con baja confianza | Paciente sin historial previo |
+| E5 | `<<extend>>` | Registrar turno sin score para reintento | Falla del motor heurístico |
+| E6 | `<<extend>>` | CU-04 Sugerir overbooking inteligente | Score > 70%, overbooking habilitado, tope no alcanzado |
 
 **Recursos FHIR**: `Patient`, `Practitioner`, `Schedule`, `Slot`, `Appointment`, `Coverage`.
 
@@ -97,7 +107,19 @@
   - ConsultaMedica (FHIR `Encounter`): `en curso → finalizada`.
 
 **Relaciones** (idénticas al diagrama):
-- Es extendido por: Crear turno retroactivo (walk-in).
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Abrir / reanudar Encounter vinculado | — siempre |
+| I2 | `<<include>>` | Registrar notas SOAP estructuradas | — siempre |
+| I3 | `<<include>>` | Registrar signos vitales como Observations FHIR | — siempre |
+| I4 | `<<include>>` | Cerrar Encounter y actualizar Appointment | — siempre |
+| I5 | `<<include>>` | Validar rangos clínicos | — siempre |
+| E1 | `<<extend>>` | Sugerir código CIE-10 (LLM) | Médico ingresa diagnóstico en texto libre *(T-018)* |
+| E2 | `<<extend>>` | Generar resumen del encuentro (LLM) | Encounter cerrado exitosamente *(T-017)* |
+| E3 | `<<extend>>` | Crear turno retroactivo (walk-in) | Paciente sin Appointment previo |
+| E4 | `<<extend>>` | Notificar consulta incompleta al médico | Médico abandona la consulta sin cerrarla |
+| E5 | `<<extend>>` | Mostrar advertencia de rango imposible | Signo vital fuera de rango clínico |
 
 **Recursos FHIR**: `Encounter`, `Observation`, `Appointment`, `Patient`, `Practitioner`.
 
@@ -136,9 +158,19 @@
 - Métricas de envío y respuesta persistidas.
 
 **Relaciones** (idénticas al diagrama):
-- `<<include>>` → Calcular riesgo de no-show *(reutiliza el mismo motor que CU-01)*.
-- `<<include>>` → Enviar notificación.
-- Es extendido por: Notificar staff para llamado manual.
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Seleccionar turnos próximos (ventana) | — siempre |
+| I2 | `<<include>>` | Calcular riesgo de no-show | — siempre *(reutiliza el mismo motor que CU-01)* |
+| I3 | `<<include>>` | Determinar estrategia de notificación por riesgo | — siempre |
+| I4 | `<<include>>` | Enviar notificación al paciente | — siempre |
+| I5 | `<<include>>` | Registrar métricas de envío y respuesta | — siempre |
+| E1 | `<<extend>>` | Usar score en caché (Redis) | Score en caché Redis todavía fresco |
+| E2 | `<<extend>>` | Reintentar notificación con backoff + fallback | Falla del provider de notificaciones |
+| E3 | `<<extend>>` | Notificar staff para llamado manual | Paciente sin teléfono ni email |
+| E4 | `<<extend>>` | Marcar Appointment como `confirmed` | Respuesta del paciente es confirmación |
+| E5 | `<<extend>>` | Liberar slot y notificar staff para reasignación | Respuesta del paciente es cancelación |
 
 **Recursos FHIR**: `Appointment`, `Patient`, `Communication` (envío y respuesta).
 
@@ -181,7 +213,21 @@
 - Si no se aceptó o no aplicó: estado del sistema sin cambios respecto de CU-01.
 
 **Relaciones** (idénticas al diagrama):
-- `<<extend>>` → CU-01 Reservar turno con validación integral. Condición: riesgo > 70% (umbral configurable), overbooking habilitado y tope semanal no alcanzado.
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Verificar overbooking habilitado | — siempre |
+| I2 | `<<include>>` | Verificar tope semanal no alcanzado | — siempre |
+| I3 | `<<include>>` | Verificar slot sin overbooking previo | — siempre |
+| I4 | `<<include>>` | Crear Appointment como `overbooked` | — siempre (si se acepta la sugerencia) |
+| I5 | `<<include>>` | Mostrar indicador visual en agenda | — siempre (si se crea el sobreturno) |
+| E1 | `<<extend>>` | Omitir sugerencia (overbooking deshabilitado) | Profesional deshabilitó overbooking |
+| E2 | `<<extend>>` | Omitir y notificar staff (tope semanal alcanzado) | Tope semanal de overbookings alcanzado |
+| E3 | `<<extend>>` | Promover a turno normal (cancelación) | Primer turno del slot es cancelado |
+| E4 | `<<extend>>` | Alertar doble asistencia al profesional | Ambos pacientes asisten al mismo slot |
+| E5 | `<<extend>>` | Excluir tipo de turno de la sugerencia | Turno es cirugía, procedimiento o primera consulta |
+
+CU-04 es extendido por CU-01: condición de disparo → score > 70% (umbral configurable), overbooking habilitado y tope semanal no alcanzado.
 
 **Recursos FHIR**: `Appointment` (con extensión custom o status `overbooked`), `Schedule`, `Slot`, `Practitioner`.
 
@@ -280,19 +326,66 @@ que no forman parte de los 4 CU core.
 
 ## Matriz de trazabilidad de relaciones (diagrama ↔ texto)
 
-| # | Relación | Base | Destino / Extendido | Condición (solo extend) |
-|---|---|---|---|---|
-| I1 | `<<include>>` | CU-01 Reservar turno | Validar disponibilidad de slot | — |
-| I2 | `<<include>>` | CU-01 Reservar turno | Validar cobertura y tope semanal | — |
-| I3 | `<<include>>` | CU-01 Reservar turno | Calcular riesgo de no-show | — |
-| I4 | `<<include>>` | CU-03 Notificar predicción | Calcular riesgo de no-show | — |
-| I5 | `<<include>>` | CU-03 Notificar predicción | Enviar notificación | — |
-| I6 | `<<include>>` | Iniciar sesión | Seleccionar tenant | — |
-| E1 | `<<extend>>` | CU-01 Reservar turno | CU-04 Sugerir overbooking | Riesgo > 70%, overbooking habilitado, tope semanal no alcanzado |
-| E2 | `<<extend>>` | CU-01 Reservar turno | Sugerir slots alternativos | Slot solicitado ocupado |
-| E3 | `<<extend>>` | CU-02 Gestionar consulta | Crear turno retroactivo (walk-in) | Paciente sin Appointment previo |
-| E4 | `<<extend>>` | CU-03 Notificar predicción | Notificar staff para llamado manual | Paciente sin teléfono ni email |
-| E5 | `<<extend>>` | Registrar respuesta del paciente | Reasignar slot liberado | Respuesta = cancelación |
+### CU-01 — Reservar turno con validación integral
 
-**Totales**: 6 `<<include>>` · 5 `<<extend>>` (requisito mínimo de la cátedra: 5 y 5).
-Los casos de uso de soporte sin relaciones (CU-S12, CU-S13 y CU-S14 «Cambiar de clínica activa», ADR-014) no alteran estos totales.
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Validar disponibilidad de slot | — |
+| I2 | `<<include>>` | Validar cobertura y tope semanal | — |
+| I3 | `<<include>>` | Calcular riesgo de no-show | — |
+| I4 | `<<include>>` | Crear Appointment FHIR y actualizar Slot | — |
+| I5 | `<<include>>` | Registrar score de riesgo en turno | — |
+| E1 | `<<extend>>` | Sugerir slots alternativos | Slot ocupado |
+| E2 | `<<extend>>` | Advertir cobertura vencida o tope superado | Cobertura inválida |
+| E3 | `<<extend>>` | Crear turno sin imputación a cobertura | Usuario confirma sin cobertura |
+| E4 | `<<extend>>` | Calcular score con baja confianza | Paciente sin historial |
+| E5 | `<<extend>>` | Registrar turno sin score para reintento | Falla del motor heurístico |
+| E6 | `<<extend>>` | CU-04 Sugerir overbooking inteligente | Score > 70% + overbooking habilitado + tope no alcanzado |
+
+### CU-02 — Gestionar consulta médica (SOAP básico)
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Abrir / reanudar Encounter vinculado | — |
+| I2 | `<<include>>` | Registrar notas SOAP estructuradas | — |
+| I3 | `<<include>>` | Registrar signos vitales como Observations FHIR | — |
+| I4 | `<<include>>` | Cerrar Encounter y actualizar Appointment | — |
+| I5 | `<<include>>` | Validar rangos clínicos | — |
+| E1 | `<<extend>>` | Sugerir código CIE-10 (LLM) | Diagnóstico en texto libre |
+| E2 | `<<extend>>` | Generar resumen del encuentro (LLM) | Encounter cerrado |
+| E3 | `<<extend>>` | Crear turno retroactivo (walk-in) | Paciente sin Appointment previo |
+| E4 | `<<extend>>` | Notificar consulta incompleta al médico | Médico abandona sin cerrar |
+| E5 | `<<extend>>` | Mostrar advertencia de rango imposible | Signo vital fuera de rango |
+
+### CU-03 — Calcular y notificar predicción de ausentismo
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Seleccionar turnos próximos (ventana) | — |
+| I2 | `<<include>>` | Calcular riesgo de no-show | — |
+| I3 | `<<include>>` | Determinar estrategia de notificación por riesgo | — |
+| I4 | `<<include>>` | Enviar notificación al paciente | — |
+| I5 | `<<include>>` | Registrar métricas de envío y respuesta | — |
+| E1 | `<<extend>>` | Usar score en caché (Redis) | Score fresco en caché |
+| E2 | `<<extend>>` | Reintentar con backoff + fallback | Falla del provider |
+| E3 | `<<extend>>` | Notificar staff para llamado manual | Paciente incontactable |
+| E4 | `<<extend>>` | Marcar Appointment como `confirmed` | Respuesta = confirmación |
+| E5 | `<<extend>>` | Liberar slot y notificar staff | Respuesta = cancelación |
+
+### CU-04 — Sugerir y aplicar overbooking inteligente
+
+| # | Tipo | Sub-caso / Extensión | Condición |
+|---|---|---|---|
+| I1 | `<<include>>` | Verificar overbooking habilitado | — |
+| I2 | `<<include>>` | Verificar tope semanal no alcanzado | — |
+| I3 | `<<include>>` | Verificar slot sin overbooking previo | — |
+| I4 | `<<include>>` | Crear Appointment como `overbooked` | — |
+| I5 | `<<include>>` | Mostrar indicador visual en agenda | — |
+| E1 | `<<extend>>` | Omitir sugerencia (overbooking deshabilitado) | Overbooking off |
+| E2 | `<<extend>>` | Omitir y notificar staff (tope alcanzado) | Tope semanal alcanzado |
+| E3 | `<<extend>>` | Promover a turno normal | Primer turno cancelado |
+| E4 | `<<extend>>` | Alertar doble asistencia | Ambos pacientes asisten |
+| E5 | `<<extend>>` | Excluir tipo de turno | Cirugía / procedimiento / primera consulta |
+
+**Totales por caso de uso**: 5 `<<include>>` · 5–6 `<<extend>>` por CU (requisito mínimo de la cátedra: 5 de cada tipo por CU).
+Los casos de uso de soporte (CU-S12, CU-S13, CU-S14) y la relación auth (`Iniciar sesión` → `Seleccionar tenant`) no cuentan en los totales de los CU core.

@@ -1,6 +1,6 @@
 # ADR-015: Vínculo Usuario ↔ Practitioner por membresía
 
-**Status**: PROPOSED (pendiente aprobación @julian)
+**Status**: ACCEPTED
 **Date**: 2026-06-10
 **Author**: Julián Deco
 **Relates to**: ADR-003 (row-level multitenancy), ADR-009 (FHIR JSONB), ADR-014 (multi-tenant membership), T-005, T-006
