@@ -1,7 +1,6 @@
 # Claude Code — el contexto compartido (agents, skills, hooks, settings.json)
 # SÍ se versiona; lo personal/local y los secretos NO.
 .claude/settings.local.json
-CLAUDE.md
 
 # Secretos — nunca commitear
 .env
