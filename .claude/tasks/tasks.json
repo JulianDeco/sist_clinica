@@ -1,0 +1,244 @@
+{
+  "version": "2.0",
+  "stack": "Java 21 + Spring Boot 3 + Angular 18 (migrado 2026-06-08)",
+  "estados": [
+    "pendiente",
+    "en_progreso",
+    "testeando",
+    "bloqueado",
+    "hecho"
+  ],
+  "tareas": [
+    {
+      "id": "T-000",
+      "titulo": "Documentación de fundación e ingeniería",
+      "estado": "hecho",
+      "agente": "software-architect",
+      "prioridad": "alta",
+      "fecha_inicio": "2026-06-08",
+      "fecha_fin": "2026-06-08",
+      "descripcion": "Estructura docs/, estándares (backend, frontend, DB, Redis, seguridad, API, Git, testing, workflow), 11 ADRs, template spec SDD, metodología SDD+TDD+DDD+Clean Architecture. CLAUDE.md y contexto actualizados.",
+      "ref": "docs/README.md"
+    },
+    {
+      "id": "T-001",
+      "titulo": "Scaffold backend — Spring Boot 3 / Java 21",
+      "estado": "testeando",
+      "agente": "backend-architect",
+      "prioridad": "alta",
+      "fecha_inicio": "2026-06-08",
+      "fecha_fin": "2026-06-08",
+      "descripcion": "Completado: Maven Clean Architecture, pom.xml, application.yml (dev/prod), Flyway V001..V009 (17 tablas + seed), docker-compose.yml, Dockerfiles multi-stage, nginx.conf, SecurityConfig scaffold. Verificado: V001..V009 success=t, /actuator/health UP, .env fuente de verdad. PR abierta a develop.",
+      "ref": ".claude/tasks/T-001.md"
+    },
+    {
+      "id": "T-002",
+      "titulo": "Scaffold frontend — Angular 18 + Angular Material",
+      "estado": "en_progreso",
+      "agente": "frontend-developer",
+      "prioridad": "alta",
+      "fecha_inicio": "2026-06-09",
+      "fecha_fin": null,
+      "descripcion": "Spec APPROVED (2026-06-09). Workspace Angular 18: core/shared/features/layout, Angular Material tema azul médico, interceptores (auth/tenant/error), guards (auth/role/select-tenant), rutas lazy-loaded, LandingComponent, SelectTenantComponent, MainLayout con tenant switcher. AuthService con máquina de estados 3-fase (ADR-014): UNAUTHENTICATED→IDENTITY_CONFIRMED→READY. Migración V010 (refactor users multi-tenant) incluida.",
+      "ref": "docs/specifications/T-002-scaffold-frontend.spec.md"
+    },
+    {
+      "id": "T-003",
+      "titulo": "Autenticación JWT — login, refresh, logout",
+      "estado": "testeando",
+      "agente": "backend-architect",
+      "prioridad": "alta",
+      "fecha_inicio": "2026-06-11",
+      "fecha_fin": null,
+      "descripcion": "Implementado: V011+V012 Flyway, dominio (User/UserTenant/RefreshToken/Role), JpaUserRepository/JpaUserTenantRepository/JpaRefreshTokenRepository/JpaRoleRepository, AuthUseCaseImpl (login/selectTenant/switchTenant/refresh/logout), JwtConfig, JwtBlocklistService, JwtAuthenticationFilter, TenantContextFilter/TenantContextHolder, RateLimitFilter, AuthController, AuthExceptionHandler, SecurityConfig actualizado. Tests unitarios: AuthUseCaseImplTest (TC-01..08,15), RateLimitFilterTest (TC-10). Pendiente: mvn test (Maven no disponible en entorno), integración con T-004 (resolveRoleName).",
+      "ref": ".claude/tasks/T-003.md"
+    },
+    {
+      "id": "T-004",
+      "titulo": "RBAC dinámico — roles y permisos",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Tablas roles/permissions/role_permissions. Cache Redis TTL 5min. @PreAuthorize por permiso. Roles: ADMIN, DOCTOR, SECRETARY. Spec SDD requerida.",
+      "ref": ".claude/tasks/T-004.md"
+    },
+    {
+      "id": "T-005",
+      "titulo": "FHIR R4 — recursos core (Patient, Practitioner, Coverage)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Endpoints /fhir/R4/ para Patient, Practitioner, Coverage. Storage JSONB + search params. Validación FHIR R4. Multitenant. Spec SDD requerida. UC-01 dependency.",
+      "ref": ".claude/tasks/T-005.md"
+    },
+    {
+      "id": "T-006",
+      "titulo": "Agenda — Slot, Schedule, Appointment (CU-01 backend)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Reserva de turno con validación integral: disponibilidad de slot, tope semanal de cobertura, score de riesgo, sugerencia de overbooking. Transacción atómica. Spec SDD requerida. CU-01 core.",
+      "ref": ".claude/tasks/T-006.md"
+    },
+    {
+      "id": "T-007",
+      "titulo": "Historia clínica — Encounter + Observations SOAP (CU-02 backend)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Apertura/cierre de Encounter vinculado a Appointment, registro SOAP, Observations FHIR (signos vitales), máquina de estados. Spec SDD requerida. CU-02 core.",
+      "ref": ".claude/tasks/T-007.md"
+    },
+    {
+      "id": "T-008",
+      "titulo": "Motor heurístico de no-show (CU-03 backend)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Score 0-100 + factores explicables. Inputs: historial no-show, anticipación del turno, día y franja horaria. Cache Redis 30min. < 10ms latencia. Spec SDD requerida. CU-03 dependency.",
+      "ref": ".claude/tasks/T-008.md"
+    },
+    {
+      "id": "T-009",
+      "titulo": "Notificaciones inteligentes diferenciadas por riesgo (CU-03)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "media",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Job programado Spring Scheduler. Abstracción NotificationPort con adaptadores intercambiables. MVP: Telegram Bot API + Email (SMTP). Post-piloto: WhatsApp Business API + SMS. Canal por score: alto>70% Telegram+email 48h+24h; medio 30-70% Telegram+email 24h; bajo email 24h. Reintentos con backoff exponencial. Dedup Redis TTL 48h. Spec SDD requerida.",
+      "ref": ".claude/tasks/T-009.md"
+    },
+    {
+      "id": "T-010",
+      "titulo": "Overbooking inteligente (CU-04)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "media",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Sugerencia de sobreturno en slots con score >70%. Configuración por profesional: habilitado, umbral, tope semanal, tipos excluidos. Spec SDD requerida. CU-04 core.",
+      "ref": ".claude/tasks/T-010.md"
+    },
+    {
+      "id": "T-011",
+      "titulo": "Frontend — login y shell Angular",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Login con JWT, AuthInterceptor, TenantInterceptor, AuthGuard, RoleGuard, layout (navbar + sidebar). Depende de T-002 (scaffold) y T-003 (auth backend).",
+      "ref": null
+    },
+    {
+      "id": "T-012",
+      "titulo": "Frontend — agenda interactiva (CU-01 frontend)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Vista calendario, formulario reserva de turno con validación integral, display score riesgo, sugerencia overbooking. Angular Material. Depende de T-006.",
+      "ref": null
+    },
+    {
+      "id": "T-013",
+      "titulo": "Frontend — consulta médica SOAP (CU-02 frontend)",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Formulario SOAP, registro de Observations (signos vitales), máquina de estados del Encounter. Depende de T-007.",
+      "ref": null
+    },
+    {
+      "id": "T-014",
+      "titulo": "Frontend — dashboard de ausentismo",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "media",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Reporte mensual con métricas de ausentismo y eficiencia operativa por clínica. Depende de T-008.",
+      "ref": null
+    },
+    {
+      "id": "T-015",
+      "titulo": "Docker Compose + Nginx actualizados para nuevo stack",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "docker-compose.yml con servicios: backend (Spring Boot JAR), frontend (Angular static en Nginx), postgres, redis, nginx proxy. Límites de memoria. Health checks. .env.example actualizado.",
+      "ref": null
+    },
+    {
+      "id": "T-016",
+      "titulo": "Piloto real con clínica en Rosario",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Onboarding de 1 clínica piloto, validación con datos reales, reporte de impacto para tesis.",
+      "ref": null
+    },
+    {
+      "id": "T-017",
+      "titulo": "Integración LLM — resumen automático de historia clínica",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Al cerrar Encounter (CU-02), enviar datos FHIR estructurados a Claude API (Anthropic) y devolver resumen en lenguaje natural para validación del médico. Latencia < 3s. Spec SDD requerida. Depende de T-007.",
+      "ref": ".claude/tasks/T-017.md"
+    },
+    {
+      "id": "T-018",
+      "titulo": "Integración LLM — sugerencia automática CIE-10",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "alta",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "Al registrar motivo de consulta en texto libre, llamar a Claude API para sugerir código CIE-10 más probable con justificación breve. El profesional conserva criterio final. Spec SDD requerida. Depende de T-007.",
+      "ref": ".claude/tasks/T-018.md"
+    },
+    {
+      "id": "T-019",
+      "titulo": "Portal de pacientes — autogestión de turnos",
+      "estado": "pendiente",
+      "agente": null,
+      "prioridad": "baja",
+      "fecha_inicio": null,
+      "fecha_fin": null,
+      "descripcion": "POST-SEMINARIO. Autenticación separada por patient_id+contraseña. Vista del paciente: perfil, historial de consultas, turnos futuros. Autogestión: crear y cancelar turnos. CU-05 nuevo con diagramas ICONIX propios.",
+      "ref": null
+    },
+    {
+      "id": "T-020",
+      "titulo": "Entrega académica ICONIX — diagramas, prototipo y patrones",
+      "estado": "testeando",
+      "agente": "software-architect",
+      "prioridad": "alta",
+      "fecha_inicio": "2026-06-10",
+      "fecha_fin": null,
+      "descripcion": "PRIMORDIAL antes de seguir codeando (pedido en clase 2026-06-09). Entregables: (1) diagrama de casos de uso con mínimo 5 <<extend>> y 5 <<include>>, (2) especificación de casos de uso, (3) diagrama de dominio, (4) prototipo lo más básico posible (papel si es posible), (5) diagrama de arquitectura, (6) diagrama de robustez, (7) diagrama de secuencia, (8) diagrama de clases, (9) documentación de aplicación de mínimo 2 patrones de diseño. Base: .claude/tasks/use-cases.md (CU-01..04) + ADR-014. [2026-06-10: 9 entregables generados en seminario/iconix/ — pendiente render online + revisión de @julian; capturas y bocetos del prototipo pendientes.]",
+      "ref": ".claude/tasks/T-020.md"
+    }
+  ]
+}
