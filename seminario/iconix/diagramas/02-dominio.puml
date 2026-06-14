@@ -3,115 +3,196 @@
 ' Modelo de Dominio ICONIX — ClinicaSaaS (Seminario UAI 2026)
 ' Entrega T-020 — deliverable 3 — 16/06/2026
 '
-' Reglas ICONIX aplicadas:
+' Reglas ICONIX:
 '   - Espacio del PROBLEMA: solo conceptos del mundo real de la clínica.
-'   - Sin métodos ni atributos — el modelo de dominio ES el glosario
-'     (ver seminario/iconix/03-glosario-dominio.md, correspondencia 1:1).
-'   - Sin conceptos técnicos (JWT, Redis, JSONB, cache). El "tenant"
-'     aparece como Clinica.
-'   - Trazabilidad: cada entidad proviene de los CU (use-cases.md)
-'     o del esquema de BD (DB-Schema.spec.md / ADR-014).
+'   - Muestra atributos conceptuales (sin tipos técnicos); sin métodos.
+'   - Sin conceptos técnicos (JWT, Redis, JSONB, cache, UUID, tenantId).
+'   - Trazabilidad 1:1 con seminario/iconix/03-glosario-dominio.md
+'   - Atributos añadidos en fase de análisis (post-casos de uso, ICONIX §2).
 ' =====================================================================
 
-hide members
+hide methods
 hide circle
 skinparam shadowing false
 skinparam classBackgroundColor #FDFDFD
-skinparam classBorderColor #444444
+skinparam classBorderColor #555555
 skinparam noteBackgroundColor #FFF8DC
-skinparam linetype ortho
+skinparam noteBorderColor #CCBB88
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classAttributeFontSize 11
+skinparam wrapWidth 180
+skinparam linetype polyline
+skinparam nodesep 45
+skinparam ranksep 55
 
-' ----- Organización y personas -----
-class Clinica
-class Usuario
-class Membresia
-class Rol
-class Paciente
-class Profesional
+' ── Columna 1: Organización ──────────────────────────────────────────
+class Clinica {
+  nombre
+  cuit
+  domicilio
+}
 
-' ----- Agenda y turnos -----
-class Agenda
-class FranjaHoraria
-class Turno
-class Sobreturno
-class PoliticaDeSobreturnos
+class Usuario {
+  email
+  nombreCompleto
+}
 
-' ----- Atención clínica -----
-class ConsultaMedica
-class NotaSOAP
-class Observacion
+class Membresia {
+  activa
+}
 
-' ----- Cobertura -----
-class ObraSocial
-class Cobertura
+class Rol {
+  nombre
+}
 
-' ----- Inteligencia y comunicación -----
-class PrediccionDeRiesgo
-class Recordatorio
+' ── Columna 2: Personas clínicas ─────────────────────────────────────
+class Paciente {
+  nombre
+  dni
+  telefono
+  email
+}
+
+class Profesional {
+  nombre
+  especialidad
+  matricula
+}
+
+' ── Columna 3: Agenda ────────────────────────────────────────────────
+class Agenda {
+  nombre
+}
+
+class FranjaHoraria {
+  inicio
+  fin
+  estado
+}
+
+class Turno {
+  estado
+  esSobreturno
+}
+
+class Sobreturno {
+  motivoOverbooking
+}
+
+' ── Columna 4: Configuración ─────────────────────────────────────────
+class PoliticaDeSobreturnos {
+  habilitado
+  umbralRiesgo
+  topeSemanal
+}
+
+' ── Columna 5: Atención clínica ──────────────────────────────────────
+class ConsultaMedica {
+  fechaHoraInicio
+  fechaHoraCierre
+  estado
+}
+
+class NotaSOAP {
+  subjetivo
+  objetivo
+  analisis
+  plan
+}
+
+class Observacion {
+  codigo
+  valor
+  unidad
+}
+
+' ── Columna 6: Cobertura ─────────────────────────────────────────────
+class ObraSocial {
+  nombre
+  codigoRNOS
+}
+
+class Cobertura {
+  vigenciaHasta
+  topeSemanal
+}
+
+' ── Columna 7: Inteligencia y comunicación ───────────────────────────
+class PrediccionDeRiesgo {
+  score
+  confianza
+  factores
+  versionModelo
+}
+
+class Recordatorio {
+  canal
+  estado
+  reintentos
+}
 
 ' =====================================================================
-' Relaciones
+' Relaciones — notación UML estándar:
+'   --    asociación
+'   o--   agregación (todo-parte no exclusiva)
+'   *--   composición (todo-parte exclusiva)
+'   --|>  generalización
+'   ..>   dependencia
 ' =====================================================================
 
-' Identidad y pertenencia (ADR-014: identidad global, membresía por clínica)
-Usuario "1" -- "0..*" Membresia : posee >
-Clinica "1" -- "0..*" Membresia : otorga >
-Membresia "0..*" -- "1" Rol : desempeña >
-Usuario "0..1" -- "0..1" Profesional : actúa como >
+' Identidad y pertenencia (ADR-014)
+Usuario "1" -- "0..*" Membresia
+Clinica "1" -- "0..*" Membresia
+Membresia "0..*" -- "1" Rol
+Usuario "0..1" -- "0..1" Profesional
 
-' La clínica y sus personas
-Clinica "1" -- "0..*" Paciente : atiende a >
-Clinica "1" -- "0..*" Profesional : cuenta con >
+' Clínica y sus personas
+Clinica "1" -- "0..*" Paciente
+Clinica "1" -- "0..*" Profesional
 
-' Agenda: todo–parte verdadero (la franja no existe sin su agenda)
-Profesional "1" -- "0..*" Agenda : publica >
-Agenda "1" o-- "1..*" FranjaHoraria : se compone de >
-
-' Turnos
-Paciente "1" -- "0..*" Turno : reserva >
-Profesional "1" -- "0..*" Turno : atiende >
-FranjaHoraria "1" -- "0..*" Turno : aloja >
+' Agenda
+Profesional "1" -- "0..*" Agenda
+Agenda "1" o-- "1..*" FranjaHoraria
+FranjaHoraria "1" -- "0..*" Turno
+Paciente "1" -- "0..*" Turno
+Profesional "1" -- "0..*" Turno
 Sobreturno --|> Turno
 
-' Configuración de sobreturnos por profesional (UC-04)
-Profesional "1" -- "0..1" PoliticaDeSobreturnos : configura >
+' Configuración de sobreturnos (UC-04)
+Profesional "1" -- "0..1" PoliticaDeSobreturnos
 
-' Atención clínica (UC-02 — un turno puede originar varias consultas, OQ-10)
-Turno "1" -- "0..*" ConsultaMedica : da lugar a >
-ConsultaMedica "1" *-- "0..1" NotaSOAP : se documenta con >
-ConsultaMedica "1" -- "0..*" Observacion : registra >
+' Atención clínica (UC-02)
+Turno "1" -- "0..*" ConsultaMedica
+ConsultaMedica "1" *-- "0..1" NotaSOAP
+ConsultaMedica "1" -- "0..*" Observacion
 
-' Cobertura y obra social (UC-01 — tope semanal)
-Paciente "1" -- "0..*" Cobertura : posee >
-ObraSocial "1" -- "0..*" Cobertura : emite >
-Turno "0..*" -- "0..1" Cobertura : se imputa a >
+' Cobertura y obra social (UC-01)
+Paciente "1" -- "0..*" Cobertura
+ObraSocial "1" -- "0..*" Cobertura
+Turno "0..*" -- "0..1" Cobertura
 
-' Predicción de ausentismo y recordatorios (UC-01, UC-03, UC-04)
-Turno "1" -- "0..*" PrediccionDeRiesgo : es evaluado por >
-Turno "1" -- "0..*" Recordatorio : origina >
-Recordatorio "0..*" -- "1" Paciente : notifica a >
+' Predicción y recordatorios (UC-01, UC-03, UC-04)
+Turno "1" -- "0..*" PrediccionDeRiesgo
+Turno "1" -- "0..*" Recordatorio
+Recordatorio "0..*" -- "1" Paciente
 
 ' =====================================================================
-' Notas de decisión
-' =====================================================================
+note right of Sobreturno
+  Especialización (UC-04): Turno
+  que comparte FranjaHoraria con
+  otro turno de alto riesgo.
+end note
 
-note bottom of Sobreturno
-  Generalización (UC-04): un Sobreturno
-  ES un Turno con regla especial — comparte
-  la misma FranjaHoraria con un turno ya
-  reservado de alto riesgo de ausentismo.
+note right of Membresia
+  ADR-014: un Usuario puede
+  pertenecer a varias Clinicas
+  con Rol distinto en cada una.
 end note
 
 note right of FranjaHoraria
-  Una franja admite normalmente un único
-  turno; solo mediante Sobreturno puede
-  alojar un segundo (UC-04).
-end note
-
-note bottom of Membresia
-  ADR-014: una misma persona (Usuario)
-  puede trabajar en varias Clinicas,
-  con un Rol distinto en cada una.
+  Solo admite un segundo Turno
+  si es Sobreturno (UC-04).
 end note
 
 @enduml

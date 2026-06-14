@@ -5,7 +5,8 @@
 '
 ' Fuentes:
 '   - .claude/tasks/use-cases.md  (CU-01..CU-04, fuente autoritativa)
-'   - docs/adr/ADR-014-multi-tenant-membership.md (auth two-step)
+'   - docs/adr/ADR-013-notification-channels.md
+'   - docs/adr/ADR-014-multi-tenant-membership.md
 '
 ' Convenciones UML aplicadas:
 '   <<include>> : flecha punteada DESDE el caso base HACIA el incluido.
@@ -16,12 +17,14 @@
 '                 disparo se documenta en nota sobre el vínculo.
 '   Asociación actor–caso de uso: línea sólida sin punta de flecha.
 '
-' Totales: 6 <<include>> · 5 <<extend>>  (requisito mínimo: 5 y 5)
-'   El CU de soporte «Cambiar de clínica activa» (ADR-014, switch-tenant)
-'   no participa de ninguna relación include/extend — totales sin cambios.
+' Totales por caso de uso (requisito mínimo: 5 <<include>> y 5 <<extend>> por CU):
+'   CU-01: 5 <<include>> · 6 <<extend>>
+'   CU-02: 5 <<include>> · 5 <<extend>>
+'   CU-03: 5 <<include>> · 5 <<extend>>
+'   CU-04: 5 <<include>> · 5 <<extend>>
 ' =====================================================================
 
-left to right direction
+top to bottom direction
 skinparam shadowing false
 skinparam usecase {
   BackgroundColor White
@@ -33,44 +36,79 @@ skinparam note {
 }
 
 ' ------------------------- Actores -------------------------
-' Actores humanos internos de la clínica
 actor "Secretario/a" as SEC
 actor "Médico" as MED
 actor "Administrador\nde clínica" as ADM
-
-' Actor externo: recibe notificaciones y confirma/cancela turnos
 actor "Paciente" as PAC
-
-' Actor temporal: dispara el job programado de UC-03 (convención reloj)
 actor "Scheduler\n(job programado)" as SCH
 
 ' --------------------- Límite del sistema ---------------------
 rectangle "ClinicaSaaS" {
 
-  ' ----- Autenticación (ADR-014: flujo two-step + switch-tenant) -----
+  ' ----- Autenticación (ADR-014) -----
   usecase "Iniciar sesión" as UC_LOGIN
   usecase "Seleccionar tenant" as UC_TENANT
-  ' ADR-014: cambio de clínica activa sin re-login (tercer flujo de auth)
   usecase "Cambiar de\nclínica activa" as UC_SWITCH
 
-  ' ----- Casos de uso core (ICONIX) -----
+  ' ----- CU-01: Reservar turno con validación integral -----
   usecase "CU-01\nReservar turno con\nvalidación integral" as UC01
-  usecase "CU-02\nGestionar consulta\nmédica (SOAP)" as UC02
-  usecase "CU-03\nNotificar predicción\nde ausentismo" as UC03
-  usecase "CU-04\nSugerir overbooking\ninteligente" as UC04
 
-  ' ----- Casos de uso de soporte -----
   usecase "Validar disponibilidad\nde slot" as UC_DISP
   usecase "Validar cobertura y\ntope semanal" as UC_COB
   usecase "Calcular riesgo\nde no-show" as UC_RIESGO
-  usecase "Enviar notificación" as UC_NOTIF
-  usecase "Registrar respuesta\ndel paciente" as UC_RESP
+  usecase "Crear Appointment FHIR\ny actualizar Slot" as UC_APPT
+  usecase "Registrar score de\nriesgo en turno" as UC_SCORE
+
   usecase "Sugerir slots\nalternativos" as UC_ALT
+  usecase "Advertir cobertura\nvencida o tope superado" as UC_ADV_COB
+  usecase "Crear turno sin\nimputación a cobertura" as UC_SIN_COB
+  usecase "Calcular score con\nbaja confianza" as UC_BAJA_CONF
+  usecase "Registrar turno sin\nscore para reintento" as UC_RETRY
+  usecase "CU-04\nSugerir overbooking\ninteligente" as UC04
+
+  ' ----- CU-02: Gestionar consulta médica (SOAP) -----
+  usecase "CU-02\nGestionar consulta\nmédica (SOAP)" as UC02
+
+  usecase "Abrir / reanudar\nEncounter vinculado" as UC_OPEN
+  usecase "Registrar notas\nSOAP estructuradas" as UC_SOAP
+  usecase "Registrar signos vitales\ncomo Observations FHIR" as UC_OBS
+  usecase "Cerrar Encounter y\nactualizar Appointment" as UC_CLOSE
+  usecase "Validar rangos\nclínicos" as UC_RANG
+
+  usecase "Sugerir código\nCIE-10 (LLM)" as UC_CIE10
+  usecase "Generar resumen\nencuentro (LLM)" as UC_LLM
   usecase "Crear turno\nretroactivo (walk-in)" as UC_WALKIN
+  usecase "Notificar consulta\nincompleta al médico" as UC_INCOMP
+  usecase "Mostrar advertencia\nde rango imposible" as UC_WARN
+
+  ' ----- CU-03: Calcular y notificar predicción de ausentismo -----
+  usecase "CU-03\nNotificar predicción\nde ausentismo" as UC03
+
+  usecase "Seleccionar turnos\npróximos (ventana)" as UC_SEL
+  usecase "Determinar estrategia\nde notificación por riesgo" as UC_STRAT
+  usecase "Enviar notificación\nal paciente" as UC_NOTIF
+  usecase "Registrar respuesta\ndel paciente" as UC_RESP
+  usecase "Registrar métricas\nde envío y respuesta" as UC_METR
+
+  usecase "Usar score\nen caché (Redis)" as UC_CACHE
+  usecase "Reintentar notificación\ncon backoff + fallback" as UC_RETRY3
   usecase "Notificar staff para\nllamado manual" as UC_STAFF
-  usecase "Reasignar slot\nliberado" as UC_REASIG
-  usecase "Configurar\noverbooking" as UC_CFG_OVB
-  usecase "Configurar predicción\ny recordatorios" as UC_CFG_PRED
+  usecase "Marcar Appointment\ncomo confirmed" as UC_CONFIRM
+  usecase "Liberar slot y notificar\nstaff para reasignación" as UC_REASIG
+
+  ' ----- CU-04: Sugerir y aplicar overbooking inteligente -----
+  usecase "Verificar overbooking\nhabilitado" as UC_OVB_HAB
+  usecase "Verificar tope semanal\nno alcanzado" as UC_OVB_TOP
+  usecase "Verificar slot sin\noverbooking previo" as UC_OVB_DUP
+  usecase "Crear Appointment\ncomo overbooked" as UC_OVB_APPT
+  usecase "Mostrar indicador\nvisual en agenda" as UC_OVB_UI
+
+  usecase "Configurar política\nde sobreturnos" as UC_CFG_OVB2
+  usecase "Omitir sugerencia\n(overbooking deshabilitado)" as UC_OVB_DIS
+  usecase "Omitir y notificar staff\n(tope semanal alcanzado)" as UC_OVB_MAX
+  usecase "Promover a turno\nnormal (cancelación)" as UC_OVB_PROM
+  usecase "Alertar doble\nasistencia" as UC_OVB_ALERT
+  usecase "Excluir tipo de turno\nde la sugerencia" as UC_OVB_EXCL
 }
 
 ' ------------- Asociaciones actor – caso de uso -------------
@@ -78,8 +116,6 @@ SEC -- UC_LOGIN
 MED -- UC_LOGIN
 ADM -- UC_LOGIN
 
-' ADR-014: los tres actores internos pueden cambiar de clínica activa
-' sin volver a iniciar sesión (ya implementado en el navbar, T-002)
 SEC -- UC_SWITCH
 MED -- UC_SWITCH
 ADM -- UC_SWITCH
@@ -87,62 +123,183 @@ ADM -- UC_SWITCH
 SEC -- UC01
 SEC -- UC04
 MED -- UC02
-MED -- UC_CFG_OVB
-ADM -- UC_CFG_PRED
+MED -- UC_CFG_OVB2
+ADM -- UC03
 SCH -- UC03
-
-' El paciente es receptor de las notificaciones y responde desde el mensaje
 PAC -- UC_NOTIF
 PAC -- UC_RESP
 
-' --------------------- <<include>> (6) ---------------------
-' CU-01 siempre ejecuta sus 3 validaciones (use-cases.md, pasos 2-4)
-UC01 ..> UC_DISP : <<include>>
-UC01 ..> UC_COB : <<include>>
+' =============================================================
+' <<include>> CU-01 (5)
+' =============================================================
+UC01 ..> UC_DISP   : <<include>>
+UC01 ..> UC_COB    : <<include>>
 UC01 ..> UC_RIESGO : <<include>>
+UC01 ..> UC_APPT   : <<include>>
+UC01 ..> UC_SCORE  : <<include>>
 
-' CU-03 reutiliza el mismo motor heurístico (use-cases.md, paso 2)
-UC03 ..> UC_RIESGO : <<include>>
-' CU-03 siempre envía las notificaciones elegidas (paso 4)
-UC03 ..> UC_NOTIF : <<include>>
-
-' ADR-014: la selección de tenant siempre ocurre tras el login
-' (auto-seleccionado si el usuario pertenece a un único tenant)
-UC_LOGIN ..> UC_TENANT : <<include>>
-
-' --------------------- <<extend>> (5) ---------------------
-UC04 ..> UC01 : <<extend>>
-note on link
-  Condición: riesgo de no-show > 70%,
-  overbooking habilitado por el profesional
-  y tope semanal no alcanzado
-end note
-
-UC_ALT ..> UC01 : <<extend>>
+' <<extend>> CU-01 (6)
+UC_ALT       ..> UC01 : <<extend>>
 note on link
   Condición: el slot
   solicitado ya está ocupado
 end note
 
+UC_ADV_COB   ..> UC01 : <<extend>>
+note on link
+  Condición: cobertura vencida
+  o tope semanal superado
+end note
+
+UC_SIN_COB   ..> UC01 : <<extend>>
+note on link
+  Condición: usuario confirma
+  turno sin imputación a cobertura
+  (decisión 2026-06-10)
+end note
+
+UC_BAJA_CONF ..> UC01 : <<extend>>
+note on link
+  Condición: paciente sin
+  historial de turnos previos
+end note
+
+UC_RETRY     ..> UC01 : <<extend>>
+note on link
+  Condición: falla del
+  motor heurístico
+end note
+
+UC04         ..> UC01 : <<extend>>
+note on link
+  Condición: score > 70%,
+  overbooking habilitado
+  y tope semanal no alcanzado
+end note
+
+' =============================================================
+' <<include>> CU-02 (5)
+' =============================================================
+UC02 ..> UC_OPEN  : <<include>>
+UC02 ..> UC_SOAP  : <<include>>
+UC02 ..> UC_OBS   : <<include>>
+UC02 ..> UC_CLOSE : <<include>>
+UC02 ..> UC_RANG  : <<include>>
+
+' <<extend>> CU-02 (5)
+UC_CIE10  ..> UC02 : <<extend>>
+note on link
+  Condición: médico ingresa
+  diagnóstico en texto libre
+end note
+
+UC_LLM    ..> UC02 : <<extend>>
+note on link
+  Condición: Encounter
+  cerrado exitosamente
+end note
+
 UC_WALKIN ..> UC02 : <<extend>>
 note on link
   Condición: paciente sin
-  Appointment previo
-  (atención sin turno)
+  Appointment previo (walk-in)
 end note
 
-UC_STAFF ..> UC03 : <<extend>>
+UC_INCOMP ..> UC02 : <<extend>>
+note on link
+  Condición: médico abandona
+  la consulta sin cerrarla
+end note
+
+UC_WARN   ..> UC02 : <<extend>>
+note on link
+  Condición: signo vital
+  fuera de rango clínico
+end note
+
+' =============================================================
+' <<include>> CU-03 (5)
+' =============================================================
+UC03 ..> UC_SEL    : <<include>>
+UC03 ..> UC_RIESGO : <<include>>
+UC03 ..> UC_STRAT  : <<include>>
+UC03 ..> UC_NOTIF  : <<include>>
+UC03 ..> UC_METR   : <<include>>
+
+' <<extend>> CU-03 (5)
+UC_CACHE   ..> UC03 : <<extend>>
+note on link
+  Condición: score en caché
+  Redis todavía fresco
+end note
+
+UC_RETRY3  ..> UC03 : <<extend>>
+note on link
+  Condición: falla del
+  provider de notificaciones
+end note
+
+UC_STAFF   ..> UC03 : <<extend>>
 note on link
   Condición: paciente sin
-  teléfono ni email
-  (incontactable)
+  teléfono ni email registrados
 end note
 
-UC_REASIG ..> UC_RESP : <<extend>>
+UC_CONFIRM ..> UC_RESP : <<extend>>
 note on link
   Condición: la respuesta
-  del paciente es una
-  cancelación del turno
+  del paciente es confirmación
 end note
+
+UC_REASIG  ..> UC_RESP : <<extend>>
+note on link
+  Condición: la respuesta
+  del paciente es cancelación
+end note
+
+' =============================================================
+' <<include>> CU-04 (5)
+' =============================================================
+UC04 ..> UC_OVB_HAB  : <<include>>
+UC04 ..> UC_OVB_TOP  : <<include>>
+UC04 ..> UC_OVB_DUP  : <<include>>
+UC04 ..> UC_OVB_APPT : <<include>>
+UC04 ..> UC_OVB_UI   : <<include>>
+
+' <<extend>> CU-04 (5)
+UC_OVB_DIS   ..> UC04 : <<extend>>
+note on link
+  Condición: profesional
+  deshabilitó overbooking
+end note
+
+UC_OVB_MAX   ..> UC04 : <<extend>>
+note on link
+  Condición: tope semanal
+  de overbookings alcanzado
+end note
+
+UC_OVB_PROM  ..> UC04 : <<extend>>
+note on link
+  Condición: primer turno
+  del slot cancelado
+end note
+
+UC_OVB_ALERT ..> UC04 : <<extend>>
+note on link
+  Condición: ambos pacientes
+  asisten al mismo slot
+end note
+
+UC_OVB_EXCL  ..> UC04 : <<extend>>
+note on link
+  Condición: tipo de turno
+  excluido de overbooking
+  (cirugía, procedimiento,
+  primera consulta)
+end note
+
+' <<include>> Auth (ADR-014)
+UC_LOGIN ..> UC_TENANT : <<include>>
 
 @enduml
