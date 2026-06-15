@@ -1,0 +1,27 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "seminario/**"
+      - "zendocs/**"
+      - "zensical.toml"
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+environment:
+  name: github-pages
+  url: ${{ steps.deploy.outputs.page_url }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Zensical Action
+        id: deploy
+        uses: cssnr/zensical-action@4a85be625b4c38e82cb7b3c1c8a9683c86807468  # v1
