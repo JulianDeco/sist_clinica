@@ -1,6 +1,6 @@
 # Specification: Database Schema — ClinicaSaaS MVP
 
-**Status**: APPROVED — v4 (rev. v4 pendiente de aprobación @julian)
+**Status**: APPROVED — v5
 **Author**: Julián Deco
 **Date**: 2026-06-08 (última revisión: 2026-06-10)
 **Task**: T-001 (`tasks.json`)
@@ -14,6 +14,7 @@
 |---|---|---|
 | v3 | 2026-06-08 | APPROVED — post correcciones de consistencia |
 | v4 | 2026-06-10 | Sync con ADR-014 (V010: `users` global, `user_tenants`, drop `user_roles`), ADR-015 (`practitioner_fhir_id` PROPOSED) y spec T-003 rev.2 (V011: `refresh_tokens.tenant_id`, pendiente de implementación). OQ-07/OQ-08 marcadas como supersedidas por ADR-014. |
+| v5 | 2026-06-15 | V012: corrección de columnas de auditoría faltantes detectadas en análisis DER. `appointment_noshow_scores` agrega `created_by`; `coverage_weekly_usage` agrega `created_at`, `created_by`, `updated_by` y trigger; `notification_log` agrega `updated_at` (con trigger), `created_by`, `updated_by`; `fhir_search_params` agrega FK constraint explícita a `tenants`. OQ-09 actualizada. §7 y §8 sincronizados. |
 
 ---
 
@@ -98,6 +99,12 @@ Soft delete **sí** (tienen `deleted_at`, `deleted_by`):
 `appointments`, `encounters`, `fhir_resources`, `overbooking_config`.
 Soft delete **no** (registros históricos, DELETE físico permitido):
 `coverage_weekly_usage`, `appointment_noshow_scores`, `notification_log`, `refresh_tokens`.
+
+Nota (v5): las tablas sin soft delete igualmente cumplen el estándar §2 de columnas
+de auditoría (`created_at`, `updated_at`, `created_by`, `updated_by`) según corresponda.
+V012 corrigió los faltantes en `coverage_weekly_usage`, `appointment_noshow_scores` y
+`notification_log`. La ausencia de `deleted_at`/`deleted_by` es intencional —
+no contradice el requisito de columnas de trazabilidad.
 
 ### OQ-10 — Appointment → Encounter: relación 1:N
 FK `encounters.appointment_id` sin UNIQUE — un Appointment puede originar
@@ -392,7 +399,7 @@ Resource types en MVP: `Patient`, `Practitioner`, `Schedule`, `Slot`,
 | Columna | Tipo | Restricción |
 |---|---|---|
 | id | UUID | PK |
-| tenant_id | UUID | NOT NULL |
+| tenant_id | UUID | NOT NULL, FK → tenants(id) — constraint explícita agregada en V012 |
 | fhir_resource_id | UUID | NOT NULL, FK → fhir_resources(id) ON DELETE CASCADE |
 | param_name | VARCHAR(100) | NOT NULL — e.g. "family", "birthdate" |
 | param_value | TEXT | NOT NULL |
@@ -447,6 +454,8 @@ checked-in | waitlist` (HL7 oficial).
 | confidence | VARCHAR(10) | NOT NULL — 'high','medium','low' |
 | model_version | VARCHAR(20) | NOT NULL — e.g. 'heuristic-v1' |
 | factors | JSONB | NOT NULL — lista de factores explicables con valor y peso |
+| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() — agregado en V012 |
+| created_by | UUID | FK → users(id) — agregado en V012 |
 
 Nota: múltiples filas por `appointment_id` permiten historial de
 recálculos. El score vigente es el más reciente por `calculated_at`.
@@ -472,7 +481,10 @@ Tope semanal de cobertura por paciente. Semana ISO: lunes 00:00 → domingo 23:5
 | week_start_date | DATE | NOT NULL — siempre lunes |
 | usage_count | SMALLINT | NOT NULL DEFAULT 0, CHECK (usage_count >= 0) |
 | weekly_limit | SMALLINT | NOT NULL, CHECK (weekly_limit > 0) — copiado de Coverage al crear |
+| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() — agregado en V012 |
 | updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() |
+| created_by | UUID | FK → users(id) — agregado en V012 |
+| updated_by | UUID | FK → users(id) — agregado en V012 |
 | UNIQUE | — | (tenant_id, patient_fhir_id, coverage_fhir_id, week_start_date) |
 
 #### `encounters`
@@ -542,6 +554,9 @@ DELETE físico permitido (registro histórico — OQ-09).
 | retry_count | SMALLINT | NOT NULL DEFAULT 0 |
 | error_message | TEXT | |
 | created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() |
+| updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() — agregado en V012 |
+| created_by | UUID | FK → users(id) — agregado en V012 |
+| updated_by | UUID | FK → users(id) — agregado en V012 |
 
 #### `audit_log`
 
@@ -639,8 +654,9 @@ AUDIT_LOG_READ       | SYSTEM       | ADMIN
 | V008__create_notification_log.sql | Log de notificaciones | notification_log |
 | V009__create_audit_log.sql | Auditoría de acciones de usuario | audit_log |
 | V010__refactor_users_multi_tenant.sql | ADR-014: `users` global (drop `tenant_id`), crea `user_tenants`, drop `user_roles` | users, user_tenants, ~~user_roles~~ |
-| V011 *(pendiente — T-003 rev.2)* | `refresh_tokens.tenant_id UUID NOT NULL REFERENCES tenants(id)` — sesión de refresh por tenant | refresh_tokens |
-| V012 o siguiente *(propuesta — ADR-015, se implementa en T-005)* | `user_tenants.practitioner_fhir_id UUID NULL` — FK lógica a Practitioner FHIR | user_tenants |
+| V011__add_tenant_id_to_refresh_tokens.sql | `refresh_tokens.tenant_id UUID NOT NULL REFERENCES tenants(id)` — sesión de refresh por tenant | refresh_tokens |
+| V012__fix_missing_audit_columns.sql | Corrección de columnas de auditoría faltantes: `created_by` en `appointment_noshow_scores`; `created_at/created_by/updated_by` + trigger en `coverage_weekly_usage`; `updated_at` (trigger) + `created_by/updated_by` en `notification_log`; FK explícita `tenant_id → tenants` en `fhir_search_params` | appointment_noshow_scores, coverage_weekly_usage, notification_log, fhir_search_params |
+| V013 *(propuesta — ADR-015, se implementa en T-005)* | `user_tenants.practitioner_fhir_id UUID NULL` — FK lógica a Practitioner FHIR | user_tenants |
 
 ---
 
@@ -726,7 +742,7 @@ erDiagram
 
     fhir_search_params {
         UUID id PK
-        UUID tenant_id FK
+        UUID tenant_id FK "FK → tenants.id agregada V012"
         UUID fhir_resource_id FK
         VARCHAR param_name
         TEXT param_value
@@ -760,6 +776,8 @@ erDiagram
         VARCHAR confidence
         VARCHAR model_version
         JSONB factors
+        TIMESTAMPTZ created_at
+        UUID created_by FK
     }
 
     coverage_weekly_usage {
@@ -770,7 +788,10 @@ erDiagram
         DATE week_start_date
         SMALLINT usage_count
         SMALLINT weekly_limit
+        TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        UUID created_by FK
+        UUID updated_by FK
     }
 
     encounters {
@@ -815,6 +836,9 @@ erDiagram
         JSONB response_payload
         SMALLINT retry_count
         TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID created_by FK
+        UUID updated_by FK
     }
 
     audit_log {
@@ -925,7 +949,7 @@ erDiagram
 | ADR-003 | Arquitectura | Row-level multitenancy — `tenant_id` en todo |
 | ADR-009 | Arquitectura | FHIR JSONB storage pattern |
 | ADR-014 | Arquitectura | Identidad global + membresía `user_tenants` (V010) |
-| ADR-015 (PROPOSED) | Arquitectura | `user_tenants.practitioner_fhir_id` — migración en T-005 |
+| ADR-015 (PROPOSED) | Arquitectura | `user_tenants.practitioner_fhir_id` — migración V013 en T-005 |
 | T-003 (auth) | Tarea | Usa `users`, `user_tenants`, `refresh_tokens`; define V011 |
 | T-004 (RBAC) | Tarea | Usa `roles`, `permissions`, `role_permissions`, `user_tenants.role_id` |
 | T-005 (FHIR) | Tarea | Usa `fhir_resources`, `fhir_search_params`; implementa migración ADR-015 |
