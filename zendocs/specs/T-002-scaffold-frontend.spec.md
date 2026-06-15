@@ -1,1 +1,0 @@
-/home/julian/Documentos/Trabajo/sist_clinica/docs/specifications/T-002-scaffold-frontend.spec.md

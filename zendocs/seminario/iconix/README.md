@@ -1,1 +1,0 @@
-/home/julian/Documentos/Trabajo/sist_clinica/seminario/iconix/README.md
