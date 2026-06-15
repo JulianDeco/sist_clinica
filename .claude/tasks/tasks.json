@@ -23,12 +23,12 @@
     {
       "id": "T-001",
       "titulo": "Scaffold backend — Spring Boot 3 / Java 21",
-      "estado": "testeando",
+      "estado": "hecho",
       "agente": "backend-architect",
       "prioridad": "alta",
       "fecha_inicio": "2026-06-08",
-      "fecha_fin": "2026-06-08",
-      "descripcion": "Completado: Maven Clean Architecture, pom.xml, application.yml (dev/prod), Flyway V001..V009 (17 tablas + seed), docker-compose.yml, Dockerfiles multi-stage, nginx.conf, SecurityConfig scaffold. Verificado: V001..V009 success=t, /actuator/health UP, .env fuente de verdad. PR abierta a develop.",
+      "fecha_fin": "2026-06-15",
+      "descripcion": "Completado: Maven Clean Architecture, pom.xml, application.yml (dev/prod), Flyway V001..V009 (17 tablas + seed), docker-compose.yml, Dockerfiles multi-stage, nginx.conf, SecurityConfig scaffold. Verificado: V001..V009 success=t, /actuator/health UP, .env fuente de verdad. mvn test: 14/14 GREEN (2026-06-15).",
       "ref": ".claude/tasks/T-001.md"
     },
     {
