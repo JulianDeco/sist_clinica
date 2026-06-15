@@ -9,6 +9,8 @@ docs_dir         = "zendocs"
 repo_url  = "https://github.com/JulianDeco/sist_clinica"
 repo_name = "JulianDeco/sist_clinica"
 
+extra_javascript = ["js/mermaid-zoom.js"]
+
 nav = [
   { "Inicio"       = "index.md" },
   { "Proyecto" = [
@@ -76,7 +78,7 @@ nav = [
 
 # ---------------------------------------------------------------------------
 [project.theme]
-language = "en"
+language = "es"
 features = [
     "announce.dismiss",
     "content.code.annotate",
