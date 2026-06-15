@@ -56,13 +56,13 @@
     {
       "id": "T-004",
       "titulo": "RBAC dinámico — roles y permisos",
-      "estado": "pendiente",
-      "agente": null,
+      "estado": "testeando",
+      "agente": "backend-architect",
       "prioridad": "alta",
-      "fecha_inicio": null,
+      "fecha_inicio": "2026-06-15",
       "fecha_fin": null,
-      "descripcion": "Tablas roles/permissions/role_permissions. Cache Redis TTL 5min. @PreAuthorize por permiso. Roles: ADMIN, DOCTOR, SECRETARY. Spec SDD requerida.",
-      "ref": ".claude/tasks/T-004.md"
+      "descripcion": "Implementado: Permission + PermissionRepository (dominio), PermissionCachePort/Adapter (Redis TTL 300s), PermissionService (cache→BD→fallback), PermissionLoadingFilter, @ManyToMany en Role. @PreAuthorize directo en controllers (meta-anotación descartada). Tests unitarios TC-01..09 GREEN (27/27). TC-03/04/06 integración @Disabled hasta T-006. branch: feature/T-004-rbac.",
+      "ref": "docs/specifications/T-004-rbac-permission-check.spec.md"
     },
     {
       "id": "T-005",
