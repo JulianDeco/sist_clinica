@@ -27,8 +27,10 @@
 '   Pasos 5–6 → CTRL.registrarObservaciones ; «create» Observacion ;
 '            OBS.validarRangoClinico ; CON.registrarObservacion ;
 '            CONREPO.guardar
-'   Paso 7 → (opt) CTRL.registrarDiagnostico ; CON.registrarDiagnostico
-'   Pasos 8–9 → CTRL.cerrarConsulta ; CON.finalizar ;
+'   Paso 7 → (opt) CTRL.registrarDiagnostico ; LLM.sugerirCie10 ;
+'            CON.registrarDiagnostico (código validado por médico)
+'   Pasos 8–9 → CTRL.cerrarConsulta ; LLM.generarResumen ;
+'            médico valida resumen ; CON.finalizar ;
 '            TUR.marcarCumplido ; CONREPO/TREPO.guardar (transaccional)
 ' Cursos alternos: A1 (nota final) · A2 (alt) · A3 (alt, CU-S09)
 ' Multitenancy (ADR-003): todo método de repositorio recibe tenantId.
@@ -49,6 +51,7 @@ entity "Turno" as TUR
 entity "ConsultaMedica" as CON
 entity "NotaSOAP" as NOTA
 entity "Observacion" as OBS
+participant "ClaudeApiClient\n«infrastructure»" as LLM
 
 == Paso 1 ==
 Medico -> UI : abre la consulta vinculada al turno
@@ -121,11 +124,23 @@ opt el médico registra diagnóstico provisorio
   Medico -> UI : escribe el diagnóstico\ncomo descripción libre
   UI -> CTRL : PUT /api/v1/consultas/{id}/diagnostico\nregistrarDiagnostico(dto)
   CTRL -> UC : registrarDiagnostico(consultaId,\ntexto, tenantId)
-  UC -> CON : registrarDiagnostico(texto)
+  UC -> LLM : sugerirCie10(texto)
+  note right of LLM
+    ADR-012 / T-018 — Claude API.
+    Latencia objetivo: < 3 s.
+  end note
+  LLM --> UC : SugerenciaCie10(codigo, justificacion)
+  UC --> CTRL : 200 OK + sugerencia CIE-10
+  CTRL --> UI : código + justificación para validación
+  UI --> Medico : muestra sugerencia CIE-10
+  Medico -> UI : confirma o edita el código
+  UI -> CTRL : PUT confirmar diagnóstico (codigoFinal)
+  CTRL -> UC : confirmarDiagnostico(consultaId, codigoFinal, tenantId)
+  UC -> CON : registrarDiagnostico(codigoFinal)
   UC -> CONREPO : guardar(consulta, tenantId)
   note over UC, CON
-    La codificación CIE-10 automática
-    queda en roadmap post-MVP.
+    El médico conserva el criterio final.
+    El código CIE-10 validado queda en ConsultaMedica.
   end note
 end
 
@@ -133,9 +148,21 @@ end
 Medico -> UI : cierra la consulta
 UI -> CTRL : POST /api/v1/consultas/{id}/cierre\ncerrarConsulta()
 CTRL -> UC : cerrarConsulta(consultaId, tenantId)
-UC -> CON : finalizar()
+UC -> LLM : generarResumen(encounter FHIR)
+note right of LLM
+  ADR-012 / T-017 — Claude API.
+  Latencia objetivo: < 3 s.
+end note
+LLM --> UC : resumen en lenguaje natural
+UC --> CTRL : ResumenEncounterResponse(resumen)
+CTRL --> UI : resumen para validación del médico
+UI --> Medico : presenta resumen para validar
+Medico -> UI : valida el resumen
+UI -> CTRL : POST confirmar cierre (resumenValidado)
+CTRL -> UC : confirmarCierre(consultaId, resumenValidado, tenantId)
+UC -> CON : finalizar(resumenValidado)
 note right of CON
-  Estado FINALIZADA + fecha de cierre.
+  Estado FINALIZADA + fecha de cierre + resumen.
 end note
 UC -> TUR : marcarCumplido()
 UC -> CONREPO : guardar(consulta, tenantId)
@@ -146,7 +173,7 @@ UI --> Medico : consulta cerrada
 
 note over UC, TREPO
   Paso 9: cierre persistido en una única transacción.
-  Dos máquinas de estado separadas (decisión 2026-06-10):
+  Dos máquinas de estado separadas (ADR-016):
   · Turno (Appointment): RESERVADO → CONFIRMADO →
     LLEGO → CUMPLIDO / AUSENTE.
   · ConsultaMedica (Encounter): EN_CURSO → FINALIZADA.

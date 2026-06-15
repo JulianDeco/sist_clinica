@@ -9,6 +9,7 @@ sequenceDiagram
     participant Paciente as Paciente
     participant NotaSOAP as NotaSOAP
     participant Observacion as Observacion
+    participant ClaudeAPI as Claude API
 
     Note over Medico,ConsultaMedica: Paso 1
     Medico->>UI: abre la consulta vinculada al turno
@@ -46,18 +47,26 @@ sequenceDiagram
     UI->>ConsultaMedica: asociar observación a la consulta
     ConsultaMedica-->>UI: observación guardada
 
-    Note over Medico,ConsultaMedica: Paso 7 (opcional)
+    Note over Medico,ClaudeAPI: Paso 7 (opcional)
     opt el médico registra diagnóstico provisorio
         Medico->>UI: escribe el diagnóstico como descripción libre
-        UI->>ConsultaMedica: asociar diagnóstico a la consulta
-        Note over ConsultaMedica: La codificación CIE-10 automática queda en roadmap post-MVP.
+        UI->>ClaudeAPI: POST texto libre → sugerencia CIE-10 (T-018)
+        ClaudeAPI-->>UI: código CIE-10 sugerido + justificación
+        UI-->>Medico: muestra sugerencia para validación
+        Medico->>UI: confirma o edita el código CIE-10
+        UI->>ConsultaMedica: asociar diagnóstico con código CIE-10 validado
+        Note over ClaudeAPI: ADR-012 / T-018. El médico conserva el criterio final.
     end
 
     Note over Medico,Turno: Pasos 8–9 — Cierre de consulta
     Medico->>UI: cierra la consulta
-    UI->>ConsultaMedica: finalizar la consulta (estado → FINALIZADA)
+    UI->>ClaudeAPI: POST datos FHIR del Encounter → resumen (T-017)
+    ClaudeAPI-->>UI: resumen en lenguaje natural
+    UI-->>Medico: presenta resumen para validación
+    Medico->>UI: valida el resumen
+    UI->>ConsultaMedica: finalizar la consulta con resumen validado (estado → FINALIZADA)
     UI->>Turno: marcar turno como cumplido (estado → CUMPLIDO)
     ConsultaMedica-->>UI: consulta cerrada
     UI-->>Medico: consulta cerrada
 
-    Note over ConsultaMedica,Turno: Cierre atómico. Dos máquinas de estado separadas (decisión 2026-06-10):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema\nnotifica al médico en su próxima sesión.
+    Note over ConsultaMedica,Turno: Cierre atómico. Dos máquinas de estado separadas (ADR-016):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema\nnotifica al médico en su próxima sesión.

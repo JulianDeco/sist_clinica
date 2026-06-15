@@ -3,7 +3,6 @@ package com.clinicasaas.application.auth;
 import com.clinicasaas.api.auth.dto.*;
 import com.clinicasaas.config.JwtConfig;
 import com.clinicasaas.domain.auth.*;
-import com.clinicasaas.infrastructure.auth.JpaRoleRepository;
 import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -40,7 +39,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
   private final UserRepository userRepo;
   private final UserTenantRepository userTenantRepo;
   private final RefreshTokenRepository refreshTokenRepo;
-  private final JpaRoleRepository roleRepo;
+  private final RoleRepository roleRepo;
   private final JwtConfig jwtConfig;
   private final JwtBlocklistService blocklist;
   private final PasswordEncoder passwordEncoder;
@@ -50,7 +49,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
       UserRepository userRepo,
       UserTenantRepository userTenantRepo,
       RefreshTokenRepository refreshTokenRepo,
-      JpaRoleRepository roleRepo,
+      RoleRepository roleRepo,
       JwtConfig jwtConfig,
       JwtBlocklistService blocklist,
       PasswordEncoder passwordEncoder,

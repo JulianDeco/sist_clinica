@@ -96,10 +96,12 @@ secuencia · clases.
    (LLM — ADR-012, T-017) que el médico valida antes del registro
    definitivo.
 
-> Nota (2026-06-10): los diagramas ICONIX de la entrega del 16/06
-> documentan CU-02 sin los pasos LLM (se generaron antes de reflejar
-> ADR-012 aquí). Pendiente decidir si se incorporan a los diagramas o
-> se documentan como extensión post-entrega.
+> Actualización (2026-06-15): los diagramas ICONIX de CU-02 fueron
+> actualizados para incluir los pasos LLM — paso 7 (sugerencia CIE-10,
+> T-018) y paso 8-9 (resumen Encounter, T-017). Los controles
+> `Sugerir CIE-10 (Claude API)` y `Generar resumen LLM (Claude API)`
+> aparecen en robustez (04-robustez-cu02) y en secuencia
+> (09-secuencia-cu02). Referencias: ADR-012, ADR-016.
 
 **Flujos alternativos / excepciones**:
 - El médico abandona la consulta sin cerrar → Encounter queda en

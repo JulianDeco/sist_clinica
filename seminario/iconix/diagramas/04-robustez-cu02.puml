@@ -15,9 +15,9 @@
 '   Paso 4 → UI -> NOT ; NOT -> NOTA
 '   Paso 5 → Medico -> UI «registra signos vitales y mediciones»
 '   Paso 6 → UI -> VOBS ; VOBS -> OBS
-'   Paso 7 → (opcional) Medico -> UI ; UI -> DIAG ; DIAG -> CON
+'   Paso 7 → (opcional) Medico -> UI ; UI -> DIAG ; DIAG -> LLM_CIE ; LLM_CIE -> CON
 '   Paso 8 → Medico -> UI «cierra la consulta»
-'   Paso 9 → UI -> CIE ; CIE -> CON ; CIE -> TUR (transaccional)
+'   Paso 9 → UI -> CIE ; CIE -> LLM_RES ; LLM_RES -> CON ; CIE -> TUR (transaccional)
 ' Cursos alternos:
 '   A1 → nota sobre CIE (abandono sin cerrar: queda «en curso»)
 '   A2 → rama alt: VOBS -> UI (advierte, no bloquea)
@@ -31,6 +31,8 @@ control "Crear turno retroactivo\n(walk-in)" as WALK
 control "Registrar notas SOAP" as NOT
 control "Validar y registrar\nobservaciones" as VOBS
 control "Registrar diagnóstico\nprovisorio" as DIAG
+control "Sugerir CIE-10\n(Claude API)" as LLM_CIE
+control "Generar resumen\nLLM (Claude API)" as LLM_RES
 control "Cerrar consulta" as CIE
 entity "Turno" as TUR
 entity "ConsultaMedica" as CON
@@ -76,22 +78,31 @@ end
 opt el médico registra diagnóstico provisorio
   Medico -> UI : escribe el diagnóstico\ncomo descripción libre
   UI -> DIAG : guardar diagnóstico
-  DIAG -> CON : asocia la descripción libre\na la consulta
-  note over DIAG
-    La codificación CIE-10 automática
-    queda en roadmap post-MVP.
+  DIAG -> LLM_CIE : enviar texto libre\npara sugerencia CIE-10
+  LLM_CIE -> CON : asocia código CIE-10\nsugerido + justificación
+  note over LLM_CIE
+    ADR-012 / T-018: Claude API sugiere
+    código CIE-10 más probable.
+    El médico conserva el criterio final.
   end note
 end
 
 ' ----- Pasos 8–9 -----
 Medico -> UI : cierra la consulta
 UI -> CIE : cerrar consulta
+CIE -> LLM_RES : enviar datos FHIR\ndel Encounter
+LLM_RES -> CON : asocia resumen en\nlenguaje natural
+note over LLM_RES
+  ADR-012 / T-017: Claude API genera resumen.
+  El médico valida antes del registro definitivo.
+  Latencia objetivo: < 3 s.
+end note
 CIE -> CON : finaliza la consulta
 CIE -> TUR : marca el turno\ncomo «cumplido»
 
 note over CIE
   Paso 9: el cierre se persiste transaccionalmente.
-  Dos máquinas de estado separadas (decisión 2026-06-10):
+  Dos máquinas de estado separadas (ADR-016):
   · Turno (Appointment): reservado → confirmado →
     llegó → cumplido / ausente.
   · ConsultaMedica (Encounter): en curso → finalizada.

@@ -45,12 +45,12 @@
     {
       "id": "T-003",
       "titulo": "Autenticación JWT — login, refresh, logout",
-      "estado": "testeando",
+      "estado": "hecho",
       "agente": "backend-architect",
       "prioridad": "alta",
       "fecha_inicio": "2026-06-11",
-      "fecha_fin": null,
-      "descripcion": "Implementado: V011+V012 Flyway, dominio (User/UserTenant/RefreshToken/Role), JpaUserRepository/JpaUserTenantRepository/JpaRefreshTokenRepository/JpaRoleRepository, AuthUseCaseImpl (login/selectTenant/switchTenant/refresh/logout), JwtConfig, JwtBlocklistService, JwtAuthenticationFilter, TenantContextFilter/TenantContextHolder, RateLimitFilter, AuthController, AuthExceptionHandler, SecurityConfig actualizado. Tests unitarios: AuthUseCaseImplTest (TC-01..08,15), RateLimitFilterTest (TC-10). Pendiente: mvn test (Maven no disponible en entorno), integración con T-004 (resolveRoleName).",
+      "fecha_fin": "2026-06-15",
+      "descripcion": "Implementado y verificado. mvn test: 14/14 GREEN (AuthUseCaseImplTest TC-01..08,15 + RateLimitFilterTest TC-10). Violación de capa corregida: AuthUseCaseImpl ahora depende de RoleRepository (domain interface) en lugar de JpaRoleRepository — JpaRoleRepository implementa RoleRepository. Pendiente T-004: cache Redis sobre resolveRoleName.",
       "ref": ".claude/tasks/T-003.md"
     },
     {
@@ -237,7 +237,7 @@
       "prioridad": "alta",
       "fecha_inicio": "2026-06-10",
       "fecha_fin": null,
-      "descripcion": "PRIMORDIAL antes de seguir codeando (pedido en clase 2026-06-09). Entregables: (1) diagrama de casos de uso con mínimo 5 <<extend>> y 5 <<include>>, (2) especificación de casos de uso, (3) diagrama de dominio, (4) prototipo lo más básico posible (papel si es posible), (5) diagrama de arquitectura, (6) diagrama de robustez, (7) diagrama de secuencia, (8) diagrama de clases, (9) documentación de aplicación de mínimo 2 patrones de diseño. Base: .claude/tasks/use-cases.md (CU-01..04) + ADR-014. [2026-06-10: 9 entregables generados en seminario/iconix/ — pendiente render online + revisión de @julian; capturas y bocetos del prototipo pendientes.]",
+      "descripcion": "9 entregables generados en seminario/iconix/. Correcciones 2026-06-15: diagramas CU-02 (robustez + secuencia) actualizados para incluir pasos LLM — Sugerir CIE-10 (T-018) y Generar resumen Encounter (T-017); referencia cambiada de 'decisión 2026-06-10' a ADR-016 en notas de máquinas de estado. Pendiente: render online + revisión de @julian; capturas y bocetos del prototipo pendientes.",
       "ref": ".claude/tasks/T-020.md"
     }
   ]

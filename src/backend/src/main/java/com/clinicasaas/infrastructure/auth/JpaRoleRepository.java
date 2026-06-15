@@ -1,5 +1,7 @@
 package com.clinicasaas.infrastructure.auth;
 
+import com.clinicasaas.domain.auth.Role;
+import com.clinicasaas.domain.auth.RoleRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,8 +11,9 @@ import org.springframework.stereotype.Repository;
 
 /** Lookup de nombre de rol por id — usado solo en auth para emitir el claim `role` en el JWT. */
 @Repository
-public interface JpaRoleRepository extends JpaRepository<com.clinicasaas.domain.auth.Role, UUID> {
+public interface JpaRoleRepository extends JpaRepository<Role, UUID>, RoleRepository {
 
+  @Override
   @Query("SELECT r.name FROM Role r WHERE r.id = :id")
   Optional<String> findNameById(@Param("id") UUID id);
 }
