@@ -17,6 +17,7 @@ nav = [
       { "Propuesta de valor" = "seminario/propuesta-de-valor.md" },
       { "Roadmap"            = "seminario/roadmap.md" },
   ]},
+  { "Metodología IA" = "metodologia-ia.md" },
   { "Arquitectura" = "arquitectura/01-high-level-architecture.md" },
   { "Diagramas ICONIX" = [
       { "Índice"            = "diagramas/index.md" },

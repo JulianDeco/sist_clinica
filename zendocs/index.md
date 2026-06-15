@@ -42,6 +42,7 @@ El ausentismo de pacientes afecta entre el **23 % y el 30 % de los turnos** en A
 
 ## Documentación
 
+- [Metodología IA](metodologia-ia/) — Cómo se controla el agente: workflow, TDD, ADRs, aprobaciones
 - [Arquitectura](arquitectura/01-high-level-architecture/) — Capas, despliegue, seguridad
 - [Diagramas ICONIX](diagramas/) — Casos de uso, dominio, robustez, secuencia, clases, DER
 - [Estándares de ingeniería](estandares/01-backend-standards/) — Backend, frontend, DB, seguridad, API, Git
