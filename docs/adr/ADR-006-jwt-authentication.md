@@ -1,48 +1,51 @@
-# ADR-006: JWT Stateless Authentication with Refresh Token Rotation
+# ADR-006: Autenticación JWT Stateless con Rotación de Refresh Token
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation, security
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation, seguridad
 
 ---
 
-## Context
+## Contexto
 
-ClinicaSaaS is a stateless REST API. Authentication must be: scalable
-(no server-side session store), secure (protect against token theft),
-and practical (no re-login every 30 minutes).
+ClinicaSaaS es una API REST stateless. La autenticación debe ser: escalable
+(sin almacén de sesiones del lado del servidor), segura (protección contra robo
+de tokens), y práctica (sin requerir re-login cada 30 minutos).
 
-## Decision
+## Decisión
 
-Use **stateless JWT access tokens** (30-minute TTL) combined with
-**single-use refresh token rotation** (7-day TTL, stored hashed in PostgreSQL,
-delivered via httpOnly cookie).
+Usar **tokens de acceso JWT stateless** (TTL de 30 minutos) combinados con
+**rotación de refresh token de uso único** (TTL de 7 días, almacenado con hash en
+PostgreSQL, entregado mediante cookie httpOnly).
 
-JWT claims include: `sub` (userId), `tenant_id`, `role`, `jti` (for revocation).
-Permissions are NOT embedded in the JWT — they are loaded from Redis cache
-on demand to avoid stale authorization data.
+Los claims del JWT incluyen: `sub` (userId), `tenant_id`, `role`, `jti` (para
+revocación). Los permisos NO están embebidos en el JWT — se cargan desde la caché
+de Redis bajo demanda para evitar datos de autorización desactualizados.
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| Server-side sessions | Requires session store; less scalable; not idiomatic for REST |
-| Long-lived JWT (7 days, no refresh) | Cannot revoke on logout or compromise |
-| OAuth2 Authorization Code + PKCE | Correct for 3rd-party delegation; not needed for same-origin SPA + API |
+| Sesiones del lado del servidor | Requiere almacén de sesiones; menos escalable; no idiomático para REST |
+| JWT de larga duración (7 días, sin refresh) | No se puede revocar al cerrar sesión o ante una vulneración |
+| OAuth2 Authorization Code + PKCE | Correcto para delegación de terceros; no necesario para SPA + API de mismo origen |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Stateless — no session DB required
-- Short-lived access tokens limit exposure window to 30 minutes
-- Refresh token rotation: automatic re-issue + old token revocation prevents silent theft
-- httpOnly cookie for refresh token: not accessible by JavaScript (XSS protection)
+**Positivo:**
+- Stateless — no se requiere BD de sesiones
+- Los tokens de acceso de corta duración limitan la ventana de exposición a 30 minutos
+- Rotación de refresh token: reemisión automática + revocación del token anterior
+  previene el robo silencioso
+- Cookie httpOnly para el refresh token: no accesible por JavaScript (protección XSS)
 
-**Negative / trade-offs:**
-- Access token cannot be revoked mid-lifetime (30 min) without a JTI blocklist in Redis
-  — JTI blocklist added for logout use case
-- Refresh token rotation requires PostgreSQL write on every refresh (acceptable)
+**Negativo / compromisos:**
+- El token de acceso no puede revocarse en su vida útil (30 min) sin una blocklist
+  JTI en Redis — la blocklist JTI se agrega para el caso de uso de logout
+- La rotación del refresh token requiere una escritura en PostgreSQL en cada
+  actualización (aceptable)
 
-**Risks:**
-- Stolen refresh token before rotation: mitigated by detecting reuse (revoke entire token family)
+**Riesgos:**
+- Refresh token robado antes de la rotación: mitigado detectando reutilización
+  (revocar toda la familia de tokens)

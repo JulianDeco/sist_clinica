@@ -1,13 +1,13 @@
 # ADR-012: IA Generativa mediante Claude API (Anthropic) para Asistencia Clínica
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: T-017, T-018, UC-02
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: T-017, T-018, UC-02
 
 ---
 
-## Context
+## Contexto
 
 ClinicaSaaS necesita incorporar capacidades de IA real en el MVP del seminario.
 Dos tareas administrativas en el flujo clínico diario son candidatas naturales:
@@ -15,12 +15,12 @@ Dos tareas administrativas en el flujo clínico diario son candidatas naturales:
 (2) sugerir el código CIE-10 a partir de texto libre del motivo de consulta.
 Ambas son repetitivas, consumen tiempo del médico y tienen salida verificable.
 
-## Problem
+## Problema
 
 ¿Cómo integrar IA generativa de manera controlada, económicamente viable para
 una clínica piloto, y sin introducir dependencias de infraestructura pesada?
 
-## Options Considered
+## Opciones Consideradas
 
 | Option | Summary |
 |---|---|
@@ -29,7 +29,7 @@ una clínica piloto, y sin introducir dependencias de infraestructura pesada?
 | Modelo local (Ollama + Llama 3) | Sin costo por llamada, requiere GPU o CPU potente, latencia alta en VPS 4GB |
 | Python microservicio + scikit-learn | Solo para clasificación, no generación; no sirve para resumen |
 
-## Decision
+## Decisión
 
 Usar **Claude API (Anthropic)**, modelo **claude-haiku-4-5** para CIE-10 (bajo
 costo, respuesta estructurada) y **claude-sonnet-4-6** para resumen clínico
@@ -43,7 +43,7 @@ El módulo vive en `infrastructure/ai/` con dos clases:
 - `ClinicalSummaryClient.java` — resumen de Encounter
 - `Cie10SuggestionClient.java` — sugerencia de código
 
-## Consequences
+## Consecuencias
 
 **Positive:**
 - Sin infraestructura adicional — una llamada HTTP desde Spring Boot
@@ -57,7 +57,7 @@ El módulo vive en `infrastructure/ai/` con dos clases:
 - Costo variable: a mayor volumen de consultas, mayor costo de API
 - Datos clínicos salen del VPS hacia Anthropic — mitigado: no se envían datos identificatorios del paciente (nombre, DNI), solo datos clínicos anonimizados del Encounter
 
-## Tradeoffs
+## Compromisos
 
 - Calidad vs. costo: Haiku es suficiente para CIE-10 (tarea de clasificación);
   Sonnet es preferible para resumen (redacción más coherente). Si el costo
@@ -67,7 +67,7 @@ El módulo vive en `infrastructure/ai/` con dos clases:
 - Fallback: si la API falla, el médico completa manualmente. No es un flujo
   bloqueante — la consulta puede cerrarse sin resumen automático.
 
-## Notes
+## Notas
 
 - Modelo IDs actuales: `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`
 - La interfaz del servicio (`AiAssistancePort`) se diseña para que sea

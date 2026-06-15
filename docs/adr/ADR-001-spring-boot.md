@@ -1,62 +1,61 @@
-# ADR-001: Spring Boot 3 as Backend Framework
+# ADR-001: Spring Boot 3 como Framework Backend
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation
 
 ---
 
-## Context
+## Contexto
 
-ClinicaSaaS requires a backend that handles FHIR R4 CRUD, JWT authentication,
-multitenant data isolation, scheduled jobs (notification reminders), and
-integration with external services (WhatsApp Business API, email SMTP).
+ClinicaSaaS requiere un backend que maneje CRUD de FHIR R4, autenticación JWT,
+aislamiento de datos multitenant, trabajos programados (recordatorios de notificaciones)
+e integración con servicios externos (WhatsApp Business API, email SMTP).
 
-The previous stack (FastAPI / Python) was evaluated and discarded in favor
-of a more complete enterprise framework better suited for the domain's
-complexity and the team's long-term maintainability requirements.
+El stack anterior (FastAPI / Python) fue evaluado y descartado en favor de un framework
+empresarial más completo, mejor adaptado a la complejidad del dominio y a los requisitos
+de mantenibilidad a largo plazo del equipo.
 
-## Decision
+## Decisión
 
-Use **Spring Boot 3.x** on **Java 21** as the backend application framework.
+Usar **Spring Boot 3.x** sobre **Java 21** como framework de aplicación backend.
 
-Spring Boot 3 provides: Spring Security (auth, RBAC), Spring Data JPA
-(ORM + query DSL), Spring Scheduler (notification jobs), Spring Actuator
-(health, metrics), and mature ecosystem for every integration needed.
+Spring Boot 3 provee: Spring Security (auth, RBAC), Spring Data JPA
+(ORM + query DSL), Spring Scheduler (jobs de notificación), Spring Actuator
+(health, métricas), y un ecosistema maduro para cada integración necesaria.
 
-Java 21 Virtual Threads (Project Loom) enable high concurrency for
-notification dispatch without blocking threads or introducing reactive
-complexity.
+Los Virtual Threads de Java 21 (Project Loom) permiten alta concurrencia para
+el despacho de notificaciones sin bloquear hilos ni introducir complejidad reactiva.
 
-## Alternatives Considered
+## Alternativas Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| FastAPI (Python) | Previously used; discarded — lacks mature RBAC library, async SQLAlchemy complexity for multitenancy, less enterprise-grade exception handling pattern |
-| Quarkus | Smaller ecosystem, less team familiarity, fewer Spring Security equivalents for fine-grained RBAC |
-| Micronaut | Similar ecosystem gap; GraalVM native image benefits not critical for this VPS deployment |
+| FastAPI (Python) | Usado anteriormente; descartado — carece de biblioteca RBAC madura, complejidad de async SQLAlchemy para multitenancy, patrones de manejo de excepciones menos enterprise-grade |
+| Quarkus | Ecosistema más pequeño, menor familiaridad del equipo, menos equivalentes de Spring Security para RBAC granular |
+| Micronaut | Brecha de ecosistema similar; los beneficios de imagen nativa con GraalVM no son críticos para este despliegue en VPS |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Spring Security provides production-grade JWT + RBAC out of the box
-- Spring Data JPA eliminates most boilerplate for multitenant queries
-- Spring Scheduler covers UC-03 (notification job) natively
-- Mature, well-documented — academic references available for thesis
-- JVM startup time acceptable (< 10s) with Docker healthcheck
+**Positivo:**
+- Spring Security provee JWT + RBAC de nivel producción out of the box
+- Spring Data JPA elimina la mayor parte del boilerplate para consultas multitenant
+- Spring Scheduler cubre UC-03 (job de notificación) de forma nativa
+- Maduro y bien documentado — referencias académicas disponibles para la tesis
+- Tiempo de inicio de JVM aceptable (< 10s) con healthcheck de Docker
 
-**Negative / trade-offs:**
-- Higher memory footprint than FastAPI (JVM baseline ~200MB vs ~50MB)
-- Longer cold start (mitigated: Docker healthcheck delays traffic)
-- More verbose than Python for simple CRUD
+**Negativo / compromisos:**
+- Mayor huella de memoria que FastAPI (línea base JVM ~200MB vs ~50MB)
+- Inicio en frío más lento (mitigado: el healthcheck de Docker retrasa el tráfico)
+- Más verboso que Python para CRUD simple
 
-**Risks:**
-- VPS 4GB RAM: JVM memory limit must be explicitly capped in Docker (800MB max)
-  to leave room for PostgreSQL and Redis
+**Riesgos:**
+- VPS 4GB RAM: el límite de memoria de la JVM debe estar explícitamente limitado
+  en Docker (máx. 800MB) para dejar espacio a PostgreSQL y Redis
 
-## Notes
+## Notas
 
-Spring Boot 3 requires Java 17 minimum; we use Java 21 for Virtual Threads.
-Maven is used as build tool (Gradle is equally valid but Maven is more
-common in academic/enterprise settings for documentation purposes).
+Spring Boot 3 requiere Java 17 como mínimo; se usa Java 21 para Virtual Threads.
+Maven se usa como herramienta de build (Gradle es igualmente válido pero Maven es más
+común en entornos académicos/empresariales para propósitos de documentación).

@@ -1,40 +1,40 @@
-# ADR-014: Multi-Tenant User Membership — Identity Separated from Tenancy
+# ADR-014: Membresía Multitenant — Identidad Separada de la Pertenencia
 
-**Status**: ACCEPTED
-**Date**: 2026-06-09
-**Author**: Julián Deco
-**Supersedes**: none — extends ADR-003 (row-level multitenancy) and ADR-006 (JWT auth)
-**Relates to**: T-002, T-003, T-004
-
----
-
-## Context
-
-The original schema (`V003__create_users.sql`) modeled `users` as a
-tenant-scoped entity: each row has a `tenant_id` FK, and `email` has a
-global UNIQUE constraint. This works for a single-tenant user but breaks
-the real-world case where **one person works at multiple clinics** (e.g., a
-doctor with two practices, a shared secretary). Under the old model such a
-person would need two accounts with two emails, which is poor UX and
-duplicates identity data.
-
-ADR-006 embeds `tenant_id` and `role` directly in the JWT access token,
-which assumed a 1:1 user-to-tenant relationship. We need to revise both
-the data model and the auth flow.
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-09
+**Autor**: Julián Deco
+**Supersede**: ninguno — extiende ADR-003 (multitenancy por fila) y ADR-006 (auth JWT)
+**Relaciona con**: T-002, T-003, T-004
 
 ---
 
-## Decision
+## Contexto
 
-**Separate identity from membership.**
+El esquema original (`V003__create_users.sql`) modeló `users` como una entidad
+con alcance de tenant: cada fila tiene una FK `tenant_id`, y `email` tiene una
+restricción UNIQUE global. Esto funciona para un usuario de un solo tenant pero
+rompe el caso real donde **una persona trabaja en múltiples clínicas** (por ejemplo,
+un médico con dos consultorios, una secretaria compartida). Bajo el modelo antiguo,
+esa persona necesitaría dos cuentas con dos emails, lo que es mala UX y duplica datos
+de identidad.
 
-### Data model
+ADR-006 embebe `tenant_id` y `role` directamente en el token de acceso JWT, lo
+que asumía una relación 1:1 entre usuario y tenant. Es necesario revisar tanto el
+modelo de datos como el flujo de autenticación.
+
+---
+
+## Decisión
+
+**Separar identidad de membresía.**
+
+### Modelo de datos
 
 ```
-users (global identity)
+users (identidad global)
   id, email, password_hash, full_name, active, ...
 
-user_tenants (membership — one row per user×tenant)
+user_tenants (membresía — una fila por usuario × tenant)
   user_id  → users.id
   tenant_id → tenants.id
   role_id   → roles.id
@@ -43,75 +43,84 @@ user_tenants (membership — one row per user×tenant)
   PRIMARY KEY (user_id, tenant_id)
 ```
 
-`users.email` remains globally unique — one account per real person.
-`users` has no `tenant_id` column.
-`user_roles` (old pivot) is replaced by `user_tenants.role_id` — a user
-has exactly one role per tenant (simplest model for MVP; extend later if needed).
+`users.email` permanece globalmente único — una cuenta por persona real.
+`users` no tiene columna `tenant_id`.
+`user_roles` (pivot antiguo) se reemplaza por `user_tenants.role_id` — un usuario
+tiene exactamente un rol por tenant (modelo más simple para el MVP; extender más
+adelante si es necesario).
 
-### Auth flow (two-step)
+### Flujo de autenticación (dos pasos)
 
 ```
-Step 1 — Identity token
+Paso 1 — Token de identidad
   POST /api/v1/auth/login { email, password }
   → 200 { identityToken, tenants: [{ tenantId, tenantName, role }] }
-       identityToken: short-lived JWT (5 min), claims: { sub, purpose:"tenant-select" }
-  → If tenants.length === 1: proceed directly as if Step 2 was called.
+       identityToken: JWT de corta duración (5 min), claims: { sub, purpose:"tenant-select" }
+  → Si tenants.length === 1: proceder directamente como si el Paso 2 hubiera sido invocado.
 
-Step 2 — Session token
+Paso 2 — Token de sesión
   POST /api/v1/auth/select-tenant { tenantId }
   Authorization: Bearer <identityToken>
   → 200 { accessToken }  +  Set-Cookie: refreshToken (httpOnly, 7d)
        accessToken: JWT 30 min, claims: { sub, tenant_id, role, jti }
 
-Switch tenant (authenticated user)
+Cambiar tenant (usuario autenticado)
   POST /api/v1/auth/switch-tenant { tenantId }
   Authorization: Bearer <accessToken>
-  → 200 { accessToken }  +  rotated refreshToken cookie
-       Previous access token revoked via JTI blocklist in Redis.
+  → 200 { accessToken }  +  refreshToken rotado en cookie
+       Token de acceso anterior revocado mediante blocklist JTI en Redis.
 ```
 
-### Frontend state machine (AuthService)
+### Máquina de estados del frontend (AuthService)
 
 ```
 UNAUTHENTICATED
-    → login() success → IDENTITY_CONFIRMED  (identityToken in memory, tenants list)
+    → login() exitoso → IDENTITY_CONFIRMED  (identityToken en memoria, lista de tenants)
 IDENTITY_CONFIRMED
-    → selectTenant()  → READY               (accessToken in memory, tenantId set)
-    → auto-select if single tenant
+    → selectTenant()  → READY               (accessToken en memoria, tenantId establecido)
+    → auto-selección si un solo tenant
 READY
-    → switchTenant()  → READY               (new tenant context)
+    → switchTenant()  → READY               (nuevo contexto de tenant)
     → logout()        → UNAUTHENTICATED
 ```
 
-`AuthGuard` requires state === READY.
-`/select-tenant` route is accessible only in IDENTITY_CONFIRMED state.
+`AuthGuard` requiere estado === READY.
+La ruta `/select-tenant` es accesible solo en estado IDENTITY_CONFIRMED.
 
 ---
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| Keep `tenant_id` in `users`, allow duplicate emails per tenant | Breaks global UNIQUE on email; UX nightmare for shared users |
-| OAuth2 with per-tenant IdP | Correct for enterprise SSO; massive overkill for 1–5 person clinics |
-| Separate `user_roles` per tenant (no `user_tenants` pivot) | More joins, same semantics — `user_tenants` is cleaner |
-| Embed tenant list in access token | Token bloat; list changes when user joins/leaves a tenant mid-session |
+| Mantener `tenant_id` en `users`, permitir emails duplicados por tenant | Rompe el UNIQUE global en email; pesadilla de UX para usuarios compartidos |
+| OAuth2 con IdP por tenant | Correcto para SSO empresarial; exceso masivo para clínicas de 1–5 personas |
+| `user_roles` separado por tenant (sin pivot `user_tenants`) | Más JOINs, misma semántica — `user_tenants` es más limpio |
+| Embeber lista de tenants en el token de acceso | Inflación del token; la lista cambia cuando el usuario se une/sale de un tenant en medio de la sesión |
 
 ---
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- One account, multiple clinics — real-world UX for shared practitioners.
-- `users` is now a true global identity; all tenant data is in `user_tenants`.
-- Switching clinics does not require re-entering credentials.
-- Clean separation: identity token (prove who you are) vs session token (prove where you work).
+**Positivo:**
+- Una cuenta, múltiples clínicas — UX real para profesionales compartidos.
+- `users` es ahora una identidad global verdadera; todos los datos de tenant están en `user_tenants`.
+- Cambiar de clínica no requiere reingresar credenciales.
+- Separación clara: token de identidad (probar quién eres) vs token de sesión (probar dónde trabajas).
 
-**Negative / trade-offs:**
-- Two-step login adds one HTTP round-trip for multi-tenant users (negligible; single-tenant users skip it automatically).
-- `V003` must be replaced by `V010` migration that drops `tenant_id` from `users` and creates `user_tenants` — breaking change on the existing schema (acceptable at scaffold stage, no prod data yet).
-- `user_roles` pivot is dropped in favor of `user_tenants.role_id` — assumes one role per tenant per user (MVP constraint; revisit post-MVP if a doctor can be both DOCTOR and ADMIN in the same clinic).
+**Negativo / compromisos:**
+- El login en dos pasos agrega un round-trip HTTP para usuarios multitenant (negligible;
+  los usuarios de un solo tenant lo omiten automáticamente).
+- `V003` debe ser reemplazado por la migración `V010` que elimina `tenant_id` de `users`
+  y crea `user_tenants` — cambio que rompe el esquema existente (aceptable en la etapa de
+  scaffold, sin datos en producción aún).
+- El pivot `user_roles` se elimina en favor de `user_tenants.role_id` — asume un rol por
+  tenant por usuario (restricción del MVP; revisar post-MVP si un médico puede ser
+  DOCTOR y ADMIN en la misma clínica).
 
-**Risks:**
-- Identity token window (5 min) is tight for slow connections → mitigated by auto-retry on `/select-tenant` 401 with re-login prompt.
-- Switch-tenant invalidates current access token → any in-flight requests during the switch get a 401 → `ErrorInterceptor` must not redirect to login on 401 during switch (use a `isSwitchingTenant` flag, same pattern as `isRedirecting`).
+**Riesgos:**
+- La ventana del token de identidad (5 min) es ajustada para conexiones lentas → mitigada
+  por auto-reintento en `/select-tenant` 401 con prompt de re-login.
+- El switch de tenant invalida el token de acceso actual → cualquier solicitud en vuelo
+  durante el switch recibe un 401 → `ErrorInterceptor` no debe redirigir al login en 401
+  durante el switch (usar un flag `isSwitchingTenant`, mismo patrón que `isRedirecting`).

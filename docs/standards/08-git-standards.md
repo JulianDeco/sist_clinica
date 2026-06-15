@@ -1,56 +1,56 @@
-# Git Standards — Branch Strategy + Conventional Commits
+# Estándares de Git — Estrategia de Ramas + Conventional Commits
 
 ---
 
-## 1. Branch Strategy (Git Flow)
+## 1. Estrategia de Ramas (Git Flow)
 
 ```
-main          ← production; only merges from release/* or hotfix/*
-develop       ← integration; base for all feature branches
-feature/*     ← one task per branch; branched from develop
-release/*     ← release preparation (version bump, changelog, final tests)
-hotfix/*      ← urgent production fix; branches from main, merges to main + develop
+main          ← producción; solo merges desde release/* o hotfix/*
+develop       ← integración; base para todas las ramas de feature
+feature/*     ← una tarea por rama; bifurcada desde develop
+release/*     ← preparación de versión (bump de versión, changelog, tests finales)
+hotfix/*      ← corrección urgente de producción; bifurcada de main, merge a main + develop
 ```
 
-### Branch Naming
+### Nomenclatura de Ramas
 
 ```
-feature/T-{taskId}-{short-description}     feature/T-012-book-appointment-endpoint
-hotfix/{issue-description}                 hotfix/jwt-expiry-bug
-release/v{major}.{minor}.{patch}           release/v0.1.0
+feature/T-{taskId}-{descripcion-corta}     feature/T-012-book-appointment-endpoint
+hotfix/{descripcion-del-problema}          hotfix/jwt-expiry-bug
+release/v{mayor}.{menor}.{parche}         release/v0.1.0
 ```
 
 ---
 
-## 2. Commit Convention (Conventional Commits)
+## 2. Convención de Commits (Conventional Commits)
 
 ```
-{type}({scope}): {imperative description, lowercase, no period}
+{tipo}({alcance}): {descripción imperativa, minúsculas, sin punto}
 
-{optional body: why this change was made}
+{cuerpo opcional: por qué se hizo este cambio}
 
-{optional footer: references}
+{pie opcional: referencias}
 ```
 
-### Types
+### Tipos
 
-| Type | When |
+| Tipo | Cuándo |
 |---|---|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `test` | Add or fix tests |
-| `docs` | Documentation only |
-| `refactor` | Code change with no behavior change |
-| `chore` | Build, deps, config, CI |
-| `spec` | New or updated spec file (SDD) |
-| `adr` | New Architecture Decision Record |
+| `feat` | Nueva feature |
+| `fix` | Corrección de bug |
+| `test` | Agregar o corregir tests |
+| `docs` | Solo documentación |
+| `refactor` | Cambio de código sin cambio de comportamiento |
+| `chore` | Build, dependencias, configuración, CI |
+| `spec` | Archivo de spec nuevo o actualizado (SDD) |
+| `adr` | Nuevo Architecture Decision Record |
 
-### Scopes
+### Alcances
 
 `auth` · `rbac` · `agenda` · `patients` · `clinical` · `intelligence`
 `coverage` · `notifications` · `fhir` · `frontend` · `db` · `infra` · `ci`
 
-### Examples
+### Ejemplos
 
 ```
 feat(agenda): implement slot availability validation for UC-01
@@ -65,105 +65,105 @@ refactor(fhir): extract FhirResourceMapper to dedicated class
 
 ---
 
-## 3. Workflow per Task
+## 3. Workflow por Tarea
 
 ```
 1.  git checkout develop && git pull
-2.  git checkout -b feature/T-XXX-short-name
-3.  Write spec file (if new feature)  ← MANDATORY before code
-4.  Write failing tests (TDD)
-5.  Implement until tests pass
-6.  Update module documentation
-7.  git add {specific files}          ← NEVER git add .
+2.  git checkout -b feature/T-XXX-nombre-corto
+3.  Escribir archivo de spec (si es nueva feature)  ← OBLIGATORIO antes del código
+4.  Escribir tests fallando (TDD)
+5.  Implementar hasta que los tests pasen
+6.  Actualizar la documentación del módulo
+7.  git add {archivos específicos}          ← NUNCA git add .
 8.  git commit -m "..."
-9.  git push origin feature/T-XXX-short-name
-10. Open PR → develop
-11. Request review
-12. Merge only with approval
+9.  git push origin feature/T-XXX-nombre-corto
+10. Abrir PR → develop
+11. Solicitar revisión
+12. Merge solo con aprobación
 ```
 
-**Commit frequency**: at minimum one commit per logical step (test written,
-feature implemented, docs updated). Do not batch an entire feature into one commit.
+**Frecuencia de commits**: al menos un commit por paso lógico (test escrito,
+feature implementada, docs actualizadas). No acumular una feature entera en un solo commit.
 
 ---
 
-## 4. Pull Request Template
+## 4. Template de Pull Request
 
 ```markdown
-## Summary
-<!-- What does this PR do? One paragraph. -->
+## Resumen
+<!-- ¿Qué hace este PR? Un párrafo. -->
 
-## Related Task
-<!-- T-XXX link -->
+## Tarea Relacionada
+<!-- Enlace a T-XXX -->
 
 ## Spec
-<!-- Link to spec file, or N/A -->
+<!-- Enlace al archivo de spec, o N/A -->
 
-## Type of Change
-- [ ] New feature
-- [ ] Bug fix
+## Tipo de Cambio
+- [ ] Nueva feature
+- [ ] Corrección de bug
 - [ ] Refactor
-- [ ] Documentation
-- [ ] Infrastructure / configuration
+- [ ] Documentación
+- [ ] Infraestructura / configuración
 
 ## Testing
-- [ ] Unit tests written and passing
-- [ ] Integration tests written and passing
-- [ ] Coverage threshold maintained (80% backend / 75% frontend)
+- [ ] Tests unitarios escritos y pasando
+- [ ] Tests de integración escritos y pasando
+- [ ] Umbral de cobertura mantenido (80% backend / 75% frontend)
 
-## Documentation
-- [ ] Spec file written (if new feature)
-- [ ] Module doc updated
-- [ ] ADR created (if significant architectural decision)
-- [ ] JavaDoc on all new public classes and methods
+## Documentación
+- [ ] Archivo de spec escrito (si es nueva feature)
+- [ ] Doc del módulo actualizada
+- [ ] ADR creado (si hay decisión arquitectónica significativa)
+- [ ] JavaDoc en todas las nuevas clases y métodos públicos
 
 ## Checklist
-- [ ] Tests pass locally
-- [ ] No secrets or .env files committed
-- [ ] No file exceeds 200 lines without justification
-- [ ] git add with specific files (not git add .)
-- [ ] Commit messages follow Conventional Commits
-- [ ] PR targets develop (not main)
+- [ ] Tests pasan localmente
+- [ ] Sin secretos ni archivos .env confirmados
+- [ ] Ningún archivo supera 200 líneas sin justificación
+- [ ] git add con archivos específicos (no git add .)
+- [ ] Los mensajes de commit siguen Conventional Commits
+- [ ] El PR apunta a develop (no a main)
 ```
 
 ---
 
-## 5. Code Review Checklist
+## 5. Checklist de Revisión de Código
 
-Reviewer responsibilities before approving:
+Responsabilidades del revisor antes de aprobar:
 
-**Correctness**
-- [ ] Logic matches the spec business rules
-- [ ] Edge cases and error paths handled
-- [ ] No race conditions in concurrent paths
+**Corrección**
+- [ ] La lógica coincide con las reglas de negocio del spec
+- [ ] Casos límite y rutas de error manejados
+- [ ] Sin condiciones de carrera en rutas concurrentes
 
-**Architecture**
-- [ ] Correct layer separation (no business logic in controllers)
-- [ ] tenant_id present in all repository queries
-- [ ] No new abstractions without justification
+**Arquitectura**
+- [ ] Separación correcta de capas (sin lógica de negocio en controladores)
+- [ ] tenant_id presente en todas las consultas de repositorio
+- [ ] Sin nuevas abstracciones sin justificación
 
-**Security**
-- [ ] No secrets hardcoded or logged
-- [ ] Input validated at HTTP boundary
-- [ ] Auth/permission check present on new endpoints
+**Seguridad**
+- [ ] Sin secretos codificados directamente ni registrados
+- [ ] Entrada validada en el límite HTTP
+- [ ] Verificación de auth/permiso presente en nuevos endpoints
 
 **Tests**
-- [ ] Tests cover all spec test cases
-- [ ] Integration test includes tenant isolation check
-- [ ] Test names describe behavior (not implementation)
+- [ ] Los tests cubren todos los casos de prueba del spec
+- [ ] El test de integración incluye verificación de aislamiento de tenant
+- [ ] Los nombres de test describen el comportamiento (no la implementación)
 
-**Documentation**
-- [ ] JavaDoc on all public classes and methods
-- [ ] Spec file present (if new feature)
-- [ ] Module doc updated (if module changed)
+**Documentación**
+- [ ] JavaDoc en todas las clases y métodos públicos
+- [ ] Archivo de spec presente (si es nueva feature)
+- [ ] Doc del módulo actualizada (si el módulo cambió)
 
 ---
 
-## 6. Rules
+## 6. Reglas
 
-- Never commit directly to `main` or `develop`
-- Never force-push to `develop` or `main`
-- PRs to `main` require approval from @julian
-- Every PR has a linked task (T-XXX)
-- Delete feature branches after merge
-- No `--no-verify` to skip hooks — fix the hook failure instead
+- Nunca confirmar directamente en `main` ni en `develop`
+- Nunca hacer force-push a `develop` ni a `main`
+- Los PRs a `main` requieren aprobación de @julian
+- Todo PR tiene una tarea vinculada (T-XXX)
+- Eliminar las ramas de feature tras el merge
+- Sin `--no-verify` para saltear hooks — corregir la falla del hook en su lugar

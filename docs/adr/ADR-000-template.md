@@ -1,49 +1,49 @@
-# ADR-{NNN}: {Title}
+# ADR-{NNN}: {Título}
 
-**Status**: DRAFT | ACCEPTED | DEPRECATED | SUPERSEDED by ADR-{NNN}
-**Date**: {YYYY-MM-DD}
-**Author**: {name}
-**Relates to**: {UC, task, spec, or feature}
+**Estado**: DRAFT | ACCEPTED | DEPRECATED | SUPERSEDED by ADR-{NNN}
+**Fecha**: {YYYY-MM-DD}
+**Autor**: {nombre}
+**Relaciona con**: {UC, tarea, spec o feature}
 
 ---
 
-## Context
+## Contexto
 
-What is the situation or problem that forced this decision?
-Describe the technical, business, and constraint forces at play.
+¿Cuál es la situación o el problema que motivó esta decisión?
+Describir las fuerzas técnicas, de negocio y de restricciones que están en juego.
 
-## Problem
+## Problema
 
-One clear sentence: what specific problem must this decision solve?
+Una oración clara: ¿qué problema específico debe resolver esta decisión?
 
-## Options Considered
+## Opciones Consideradas
 
-| Option | Summary |
+| Opción | Resumen |
 |---|---|
-| Option A | ... |
-| Option B | ... |
-| Option C | ... |
+| Opción A | ... |
+| Opción B | ... |
+| Opción C | ... |
 
-## Decision
+## Decisión
 
-What was decided? State it directly. Minimum one paragraph.
-Reference the chosen option and explain why it was selected over the others.
+¿Qué se decidió? Expresarlo directamente. Mínimo un párrafo.
+Referenciar la opción elegida y explicar por qué fue seleccionada sobre las demás.
 
-## Consequences
+## Consecuencias
 
-**Positive:**
+**Positivo:**
 - ...
 
-**Negative:**
+**Negativo:**
 - ...
 
-## Tradeoffs
+## Compromisos
 
-What is accepted as a known limitation of this decision?
-What would need to change for this decision to be revisited?
+¿Qué se acepta como limitación conocida de esta decisión?
+¿Qué tendría que cambiar para que esta decisión sea revisada?
 
 - ...
 
-## Notes
+## Notas
 
-Implementation guidance, related ADRs, follow-up decisions expected.
+Guía de implementación, ADRs relacionados, decisiones de seguimiento esperadas.

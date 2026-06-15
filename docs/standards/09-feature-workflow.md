@@ -1,303 +1,306 @@
-# Feature Development Workflow
+# Workflow de Desarrollo de Features
 
-> Applies to: every feature, bug fix, refactor, and enhancement.
-> Methodology: SDD → TDD → Clean Architecture → DDD → ADR.
-> **Never skip steps. Never guess business rules. Stop and ask when ambiguous.**
+> Aplica a: toda feature, corrección de bug, refactor y mejora.
+> Metodología: SDD → TDD → Clean Architecture → DDD → ADR.
+> **Nunca saltear pasos. Nunca adivinar reglas de negocio. Detenerse y preguntar
+> cuando haya ambigüedad.**
 
 ---
 
-## TDD Cycle — Explicit Rules
+## Ciclo TDD — Reglas Explícitas
 
-Every unit of implementation (domain entity, use case, controller endpoint,
-Angular component) follows this cycle without exception:
+Toda unidad de implementación (entidad de dominio, caso de uso, endpoint de controlador,
+componente Angular) sigue este ciclo sin excepción:
 
 ```
-RED   → Write a failing test that expresses the requirement.
-         Run mvn test / ng test → confirm it FAILS.
-         If it passes immediately, the test is wrong or redundant.
+RED      → Escribir un test fallando que exprese el requisito.
+            Ejecutar mvn test / ng test → confirmar que FALLA.
+            Si pasa de inmediato, el test está mal o es redundante.
 
-GREEN → Write the minimum production code to make the test pass.
-         No extra logic, no "while I'm here" cleanup.
-         Run mvn test / ng test → confirm it PASSES.
+GREEN    → Escribir el código de producción mínimo para que el test pase.
+            Sin lógica extra, sin limpieza "mientras estoy aquí".
+            Ejecutar mvn test / ng test → confirmar que PASA.
 
-REFACTOR → Clean up without changing behavior.
-            Rename, extract, simplify. Run tests again → still GREEN.
-            Only then commit.
+REFACTOR → Limpiar sin cambiar el comportamiento.
+            Renombrar, extraer, simplificar. Volver a ejecutar los tests → siguen en GREEN.
+            Solo entonces confirmar el commit.
 ```
 
-**Hard blockers for TDD:**
+**Bloqueantes estrictos de TDD:**
 
-| Situation | Required action |
+| Situación | Acción requerida |
 |---|---|
-| Writing production code with no failing test | STOP — write the test first |
-| Test passes on first run before any impl | DELETE it — it tests nothing |
-| Skipping Red phase ("I know it will fail") | NOT acceptable — run it, see it fail |
-| Committing Green code before Refactor | Only allowed if refactor is a separate commit |
-| Mocking the database in integration tests | FORBIDDEN — use Testcontainers |
+| Escribir código de producción sin test fallando | DETENER — escribir el test primero |
+| El test pasa en la primera ejecución antes de cualquier implementación | ELIMINAR — no prueba nada |
+| Saltear la fase Red ("sé que fallará") | NO aceptable — ejecutarlo, ver que falla |
+| Confirmar código Green antes del Refactor | Solo permitido si el refactor es un commit separado |
+| Mockear la base de datos en tests de integración | PROHIBIDO — usar Testcontainers |
 
-**Scope of TDD per layer (backend):**
+**Alcance de TDD por capa (backend):**
 
-| Layer | Test type | Tooling |
+| Capa | Tipo de test | Herramientas |
 |---|---|---|
-| Domain entity / value object | Unit | JUnit 5 + AssertJ |
-| Application service / use case | Unit | JUnit 5 + Mockito |
-| Controller (HTTP round-trip) | Integration | `@SpringBootTest` + MockMvc + Testcontainers |
-| Repository (SQL + tenant isolation) | Integration | `@DataJpaTest` + Testcontainers |
+| Entidad de dominio / value object | Unitario | JUnit 5 + AssertJ |
+| Servicio de aplicación / caso de uso | Unitario | JUnit 5 + Mockito |
+| Controlador (round-trip HTTP) | Integración | `@SpringBootTest` + MockMvc + Testcontainers |
+| Repositorio (SQL + aislamiento de tenant) | Integración | `@DataJpaTest` + Testcontainers |
 
-**Scope of TDD per layer (frontend):**
+**Alcance de TDD por capa (frontend):**
 
-| Layer | Test type | Tooling |
+| Capa | Tipo de test | Herramientas |
 |---|---|---|
-| Store (Signals state) | Unit | Jasmine + Karma |
-| API client service | Unit | `HttpClientTestingModule` |
-| Guard / interceptor | Unit | TestBed |
-| Container component | Component | Angular Testing Library |
+| Store (estado con Signals) | Unitario | Jasmine + Karma |
+| Servicio de cliente de API | Unitario | `HttpClientTestingModule` |
+| Guard / interceptor | Unitario | TestBed |
+| Componente contenedor | Componente | Angular Testing Library |
 
 ---
 
-## Mandatory Development Order
+## Orden Obligatorio de Desarrollo
 
 ```
-1. Specification        ← no code before this is APPROVED
-2. ADR impact analysis  ← architectural decisions before domain design
-3. Domain design        ← DDD: entities, value objects, aggregates, events
-4. Test design          ← TC-XX derived from AC-XX in spec; test stubs created
-5. TDD — Red phase      ← write failing tests; mvn test / ng test confirms FAIL
-6. TDD — Green phase    ← minimum production code to pass tests; confirm PASS
-7. TDD — Refactor       ← clean up; tests still GREEN; commit
-8. Documentation        ← spec IMPLEMENTED, JavaDoc, module doc, ADR
-9. Review               ← PR against develop, checklist, approval
+1. Especificación        ← sin código antes de que esto esté APROBADO
+2. Análisis de impacto ADR  ← decisiones arquitectónicas antes del diseño de dominio
+3. Diseño de dominio    ← DDD: entidades, value objects, agregados, eventos
+4. Diseño de tests      ← TC-XX derivados de AC-XX en el spec; stubs de tests creados
+5. TDD — Fase Red       ← escribir tests fallando; mvn test / ng test confirma FALLO
+6. TDD — Fase Green     ← código de producción mínimo para pasar tests; confirmar PASA
+7. TDD — Refactor       ← limpiar; tests siguen en GREEN; commit
+8. Documentación        ← spec IMPLEMENTED, JavaDoc, doc del módulo, ADR
+9. Revisión             ← PR contra develop, checklist, aprobación
 ```
 
 ---
 
 ## Definition of Ready
 
-A task cannot start implementation until ALL of these are true:
+Una tarea no puede comenzar implementación hasta que TODOS estos puntos sean verdaderos:
 
-- [ ] Specification written and **explicitly approved**
-- [ ] Acceptance criteria defined (AC-XX in spec)
-- [ ] Edge cases identified
-- [ ] Dependencies known (other modules, FHIR resources, DB changes)
-- [ ] ADR impact evaluated (does this decision need a new ADR?)
+- [ ] Especificación escrita y **aprobada explícitamente**
+- [ ] Criterios de aceptación definidos (AC-XX en el spec)
+- [ ] Casos límite identificados
+- [ ] Dependencias conocidas (otros módulos, recursos FHIR, cambios en BD)
+- [ ] Impacto ADR evaluado (¿esta decisión requiere un nuevo ADR?)
 
 ---
 
 ## Definition of Done
 
-A task is complete only when ALL of these are true:
+Una tarea está completa solo cuando TODOS estos puntos son verdaderos:
 
-- [ ] Specification status updated to `IMPLEMENTED`
-- [ ] All tests implemented and passing (`mvn verify` / `ng test`)
-- [ ] Coverage threshold maintained (80% backend / 75% frontend)
-- [ ] All documentation updated (JavaDoc, module doc, ADR if needed)
-- [ ] Architecture respected — no layer violations
-- [ ] No critical code smells
-- [ ] PR reviewed and approved
+- [ ] Estado de la especificación actualizado a `IMPLEMENTED`
+- [ ] Todos los tests implementados y pasando (`mvn verify` / `ng test`)
+- [ ] Umbral de cobertura mantenido (80% backend / 75% frontend)
+- [ ] Toda la documentación actualizada (JavaDoc, doc del módulo, ADR si corresponde)
+- [ ] Arquitectura respetada — sin violaciones de capas
+- [ ] Sin code smells críticos
+- [ ] PR revisado y aprobado
 - [ ] `tasks.json` → `estado: hecho` + `fecha_fin`
 
 ---
 
-## Step 1 — Specification (SDD)
+## Paso 1 — Especificación (SDD)
 
-**Goal**: Produce the written contract before any code is written.
+**Objetivo**: Producir el contrato escrito antes de escribir cualquier código.
 
-**Location**: `docs/specifications/{FeatureName}.spec.md`
+**Ubicación**: `docs/specifications/{NombreFeature}.spec.md`
 
-Every spec must include:
+Todo spec debe incluir:
 
-| Section | Content |
+| Sección | Contenido |
 |---|---|
-| Business goal | Why this feature exists |
-| Functional requirements | What the system must do (FR-XX) |
-| Non-functional requirements | Performance, security, constraints (NFR-XX) |
-| Acceptance criteria | Verifiable conditions for done (AC-XX) |
-| Edge cases | All non-happy-path scenarios |
-| Constraints | Technical or business limits |
-| Dependencies | Other modules, FHIR resources, external services |
-| Risks | What could go wrong |
-| Open questions | Unresolved decisions — **resolve before implementation** |
+| Objetivo de negocio | Por qué existe esta feature |
+| Requisitos funcionales | Qué debe hacer el sistema (FR-XX) |
+| Requisitos no funcionales | Rendimiento, seguridad, restricciones (NFR-XX) |
+| Criterios de aceptación | Condiciones verificables para "hecho" (AC-XX) |
+| Casos límite | Todos los escenarios fuera del camino feliz |
+| Restricciones | Límites técnicos o de negocio |
+| Dependencias | Otros módulos, recursos FHIR, servicios externos |
+| Riesgos | Qué podría salir mal |
+| Preguntas abiertas | Decisiones no resueltas — **resolver antes de implementar** |
 
-**Blocker**: no implementation starts before spec status is `APPROVED`.
-If requirements are ambiguous → stop and ask. Never guess business rules.
+**Bloqueante**: ninguna implementación comienza antes de que el estado del spec sea `APPROVED`.
+Si los requisitos son ambiguos → detenerse y preguntar. Nunca adivinar reglas de negocio.
 
-Spec template: `docs/specifications/_template.spec.md`
-
----
-
-## Step 2 — ADR Impact Analysis
-
-**Goal**: Confirm existing architecture handles this feature, or decide and
-document how it must evolve.
-
-Actions:
-- Read `docs/architecture/01-high-level-architecture.md`
-- Identify which layers are touched (Domain / Application / Infrastructure / Presentation)
-- Search for existing patterns in `src/` — reuse before creating
-- Ask: does this require a new architectural decision?
-  - If **yes** → write ADR in `docs/adr/` **before** domain design
-  - If **no** → document confirmation in spec (reference existing ADRs)
-- Validate DB impact: migration needed?
-- Validate cache impact: Redis keys to invalidate?
-
-**Rule**: never generate code that bypasses the defined architecture.
-Prefer simple solutions. Prefer composition over inheritance.
-Avoid premature abstractions and overengineering.
+Template de spec: `docs/specifications/_template.spec.md`
 
 ---
 
-## Step 3 — Domain Design (DDD)
+## Paso 2 — Análisis de Impacto ADR
 
-**Goal**: Model the domain before touching infrastructure or frameworks.
+**Objetivo**: Confirmar que la arquitectura existente maneja esta feature, o decidir y
+documentar cómo debe evolucionar.
 
-Actions:
-- Identify **Entities** (have identity, mutable state)
-- Identify **Value Objects** (defined by value, immutable)
-- Identify **Aggregates** (consistency boundary) and their root
-- Identify **Domain Events** (something that happened)
-- Identify **Domain Services** (logic that doesn't belong to one entity)
-- Map state machines for entities with lifecycle (e.g. Appointment status)
+Acciones:
+- Leer `docs/architecture/01-high-level-architecture.md`
+- Identificar qué capas se tocan (Dominio / Aplicación / Infraestructura / Presentación)
+- Buscar patrones existentes en `src/` — reutilizar antes de crear
+- Preguntar: ¿requiere esto una nueva decisión arquitectónica?
+  - Si **sí** → escribir ADR en `docs/adr/` **antes** del diseño de dominio
+  - Si **no** → documentar confirmación en el spec (referenciar ADRs existentes)
+- Validar impacto en BD: ¿se necesita migración?
+- Validar impacto en caché: ¿claves de Redis a invalidar?
 
-**Rule**: Domain layer must not depend on any framework (no Spring annotations
-on domain objects except JPA mapping annotations).
-Business rules belong in Domain and Application layers only.
-
-Deliverable: class diagram (Mermaid) added to spec or module doc.
-
----
-
-## Step 4 — Test Design
-
-**Goal**: Derive test cases directly from the spec acceptance criteria.
-
-Actions:
-- For each AC-XX in the spec, write at least one TC-XX (test case)
-- Classify each test: unit (use case / domain) or integration (controller / repository)
-- For integration tests: identify Testcontainers requirements
-- Define tenant isolation test (mandatory for every new repository method)
-- Document TC-XX list in the spec file under `## Test Cases`
-
-Deliverable: TC-XX list in spec; test class stubs created (empty `@Test` methods
-annotated with `@Disabled("TDD: not yet implemented")` so the build stays green
-until Step 5 removes the annotation and implements the assertion).
+**Regla**: nunca generar código que eluda la arquitectura definida.
+Preferir soluciones simples. Preferir composición sobre herencia.
+Evitar abstracciones prematuras y sobreingeniería.
 
 ---
 
-## Step 5 — TDD Red Phase (failing tests first)
+## Paso 3 — Diseño de Dominio (DDD)
 
-**Goal**: Every production class is preceded by a failing test. No exceptions.
+**Objetivo**: Modelar el dominio antes de tocar infraestructura o frameworks.
 
-Order:
-1. Create test class for domain entity — write assertions for state transitions
-   and invariants. The domain class does **not exist yet** — the test file will
-   not compile. That is expected and correct.
-2. Create test class for application use case — mock all collaborators with
-   Mockito. The use case class does **not exist yet**.
-3. Create integration test class for controller — set up MockMvc, Testcontainers.
-4. Create repository integration test — include tenant isolation assertion.
-5. Run `mvn test` (backend) or `ng test` (frontend).
-   **Required outcome**: compilation errors or test failures. If everything
-   passes, the test is wrong — fix it before proceeding.
+Acciones:
+- Identificar **Entidades** (tienen identidad, estado mutable)
+- Identificar **Value Objects** (definidos por valor, inmutables)
+- Identificar **Agregados** (límite de consistencia) y su raíz
+- Identificar **Eventos de Dominio** (algo que ocurrió)
+- Identificar **Servicios de Dominio** (lógica que no pertenece a una sola entidad)
+- Mapear máquinas de estados para entidades con ciclo de vida (por ejemplo, estado del turno)
 
-**Rule**: the Red phase ends only when `mvn test` shows failing tests (not
-passing, not compilation warnings — actual failures or errors).
+**Regla**: la capa de dominio no debe depender de ningún framework (sin anotaciones de Spring
+en los objetos de dominio excepto las de mapeo JPA).
+Las reglas de negocio pertenecen únicamente a las capas de Dominio y Aplicación.
 
-Test names follow: `method_givenCondition_expectedBehavior`
+Entregable: diagrama de clases (Mermaid) agregado al spec o doc del módulo.
 
 ---
 
-## Step 6 — TDD Green Phase (minimum code to pass)
+## Paso 4 — Diseño de Tests
 
-**Goal**: Make the failing tests pass with the least code necessary.
+**Objetivo**: Derivar casos de prueba directamente de los criterios de aceptación del spec.
 
-Order (backend — inside → outside, Clean Architecture):
-1. Domain entity / value object → makes domain unit tests compile and pass
-2. Repository interface (in `domain/`) → needed by use case
-3. Application use case → makes use case unit tests pass
-4. Infrastructure JPA repository impl → makes repository integration tests pass
-5. Redis adapter if caching needed
-6. Controller + DTOs → makes controller integration tests pass
-7. Exception classes for new error cases
+Acciones:
+- Para cada AC-XX en el spec, escribir al menos un TC-XX (caso de prueba)
+- Clasificar cada test: unitario (caso de uso / dominio) o integración (controlador / repositorio)
+- Para tests de integración: identificar requisitos de Testcontainers
+- Definir test de aislamiento de tenant (obligatorio para cada nuevo método de repositorio)
+- Documentar la lista TC-XX en el archivo de spec bajo `## Casos de Prueba`
 
-Run `mvn test` after each class. Stay in Green phase until all tests pass.
-
-**Rule**: never add logic beyond what the failing test demands. If no test
-requires it, it does not get implemented.
+Entregable: lista TC-XX en el spec; stubs de clase de tests creados (métodos `@Test` vacíos
+anotados con `@Disabled("TDD: not yet implemented")` para que el build permanezca verde
+hasta que el Paso 5 elimine la anotación e implemente la aserción).
 
 ---
 
-## Step 6b — TDD Refactor Phase
+## Paso 5 — Fase Red de TDD (tests fallando primero)
 
-**Goal**: Improve structure without changing behavior.
+**Objetivo**: Toda clase de producción está precedida por un test fallando. Sin excepciones.
 
-Actions:
-- Rename for clarity, extract private methods, eliminate duplication
-- Run `mvn test` after every change → must stay GREEN
-- If a refactor breaks a test, revert — the test is correct, the refactor is wrong
+Orden:
+1. Crear clase de test para entidad de dominio — escribir aserciones para transiciones
+   de estado e invariantes. La clase de dominio **no existe aún** — el archivo de test no
+   compilará. Eso es esperado y correcto.
+2. Crear clase de test para caso de uso de aplicación — mockear todos los colaboradores
+   con Mockito. La clase de caso de uso **no existe aún**.
+3. Crear clase de test de integración para controlador — configurar MockMvc, Testcontainers.
+4. Crear test de integración de repositorio — incluir aserción de aislamiento de tenant.
+5. Ejecutar `mvn test` (backend) o `ng test` (frontend).
+   **Resultado requerido**: errores de compilación o fallos en los tests. Si todo
+   pasa, el test está mal — corregirlo antes de continuar.
 
-Deliverable: clean code with all tests still passing. Commit here.
+**Regla**: la fase Red termina solo cuando `mvn test` muestra tests fallando (no
+pasando, no advertencias de compilación — fallos o errores reales).
 
----
-
-## Step 7 — Documentation
-
-**Goal**: Leave every artifact in a state ready for thesis review and future
-sessions.
-
-Actions:
-- Update spec status → `IMPLEMENTED`
-- Update `docs/modules/{module}.md` if state machine or API changed
-- Write/update JavaDoc on all new public classes and methods
-- Write ADR if a significant architectural decision was made during implementation
-- Append to `docs/adr/decisions-log.md` for informal decisions
-- Update `tasks.json` → `estado: testeando`
+Los nombres de test siguen: `metodo_dadaCondicion_comportamientoEsperado`
 
 ---
 
-## Step 8 — Review + Merge
+## Paso 6 — Fase Green de TDD (código mínimo para pasar)
 
-**Goal**: Validate against Definition of Done before merging.
+**Objetivo**: Hacer pasar los tests fallando con el menor código necesario.
 
-Actions:
-- Open PR against `develop` using the PR template (`docs/standards/08-git-standards.md`)
-- Self-review against DoD checklist above
-- Request review from @julian
-- Address all review comments
-- Merge only with approval
-- Update `tasks.json` → `estado: hecho` + `fecha_fin`
+Orden (backend — de adentro hacia afuera, Clean Architecture):
+1. Entidad de dominio / value object → hace que los tests unitarios de dominio compilen y pasen
+2. Interfaz de repositorio (en `domain/`) → necesaria por el caso de uso
+3. Caso de uso de aplicación → hace que los tests unitarios del caso de uso pasen
+4. Implementación JPA de repositorio en infraestructura → hace que los tests de integración
+   del repositorio pasen
+5. Adaptador Redis si se necesita caché
+6. Controlador + DTOs → hace que los tests de integración del controlador pasen
+7. Clases de excepción para nuevos casos de error
+
+Ejecutar `mvn test` después de cada clase. Permanecer en la fase Green hasta que todos
+los tests pasen.
+
+**Regla**: nunca agregar lógica más allá de lo que el test fallando exige. Si ningún test
+lo requiere, no se implementa.
 
 ---
 
-## Traceability Matrix
+## Paso 6b — Fase Refactor de TDD
 
-Every feature must maintain this chain end-to-end:
+**Objetivo**: Mejorar la estructura sin cambiar el comportamiento.
+
+Acciones:
+- Renombrar para mayor claridad, extraer métodos privados, eliminar duplicación
+- Ejecutar `mvn test` después de cada cambio → debe permanecer en GREEN
+- Si un refactor rompe un test, revertir — el test es correcto, el refactor está mal
+
+Entregable: código limpio con todos los tests pasando. Confirmar commit aquí.
+
+---
+
+## Paso 7 — Documentación
+
+**Objetivo**: Dejar cada artefacto en un estado listo para revisión de tesis y
+sesiones futuras.
+
+Acciones:
+- Actualizar estado del spec → `IMPLEMENTED`
+- Actualizar `docs/modules/{module}.md` si la máquina de estados o la API cambió
+- Escribir/actualizar JavaDoc en todas las nuevas clases y métodos públicos
+- Escribir ADR si se tomó una decisión arquitectónica significativa durante la implementación
+- Agregar entrada a `docs/adr/decisions-log.md` para decisiones informales
+- Actualizar `tasks.json` → `estado: testeando`
+
+---
+
+## Paso 8 — Revisión + Merge
+
+**Objetivo**: Validar contra la Definition of Done antes de mergear.
+
+Acciones:
+- Abrir PR contra `develop` usando el template de PR (`docs/standards/08-git-standards.md`)
+- Auto-revisión contra el checklist de DoD anterior
+- Solicitar revisión a @julian
+- Abordar todos los comentarios de revisión
+- Merge solo con aprobación
+- Actualizar `tasks.json` → `estado: hecho` + `fecha_fin`
+
+---
+
+## Matriz de Trazabilidad
+
+Toda feature debe mantener esta cadena de extremo a extremo:
 
 ```
-Use Case (use-cases.md)
-  └── Task (tasks.json  ← single source of truth)
-        └── Branch (feature/T-XXX-name)
+Caso de Uso (use-cases.md)
+  └── Tarea (tasks.json  ← fuente única de verdad)
+        └── Rama (feature/T-XXX-nombre)
               └── Spec (docs/specifications/{Feature}.spec.md)
-                    └── ADR (docs/adr/ADR-NNN-*.md) if applicable
-                          └── Test cases (TC-XX in spec)
-                                └── Tests (named after TC-XX)
-                                      └── Implementation (domain → application → infra → api)
-                                            └── PR (links task + spec + ADR)
+                    └── ADR (docs/adr/ADR-NNN-*.md) si corresponde
+                          └── Casos de prueba (TC-XX en el spec)
+                                └── Tests (nombrados según TC-XX)
+                                      └── Implementación (dominio → aplicación → infra → api)
+                                            └── PR (enlaza tarea + spec + ADR)
 ```
 
-This chain allows the thesis committee, a reviewer, or a future session
-to follow any business requirement all the way to the code implementing it.
+Esta cadena permite al comité de tesis, a un revisor o a una sesión futura
+seguir cualquier requisito de negocio hasta el código que lo implementa.
 
 ---
 
-## Hard Rules
+## Reglas Estrictas
 
-| Rule | Consequence of breaking |
+| Regla | Consecuencia de infringir |
 |---|---|
-| No spec → no code | Blocked — write spec first |
-| Ambiguous requirement | Stop and ask — never guess |
-| Test before production code | Blocked — write failing test first |
-| Layer violation | Rejected in code review |
-| Missing tenant_id in query | Security issue — mandatory fix before merge |
-| Missing JavaDoc on public API | Rejected in code review |
-| `git add .` | Blocked — add specific files only |
-| Modify committed Flyway migration | Blocked — add new migration instead |
+| Sin spec → sin código | Bloqueado — escribir el spec primero |
+| Requisito ambiguo | Detenerse y preguntar — nunca adivinar |
+| Test antes del código de producción | Bloqueado — escribir el test fallando primero |
+| Violación de capas | Rechazado en revisión de código |
+| tenant_id faltante en consulta | Problema de seguridad — corrección obligatoria antes del merge |
+| JavaDoc faltante en API pública | Rechazado en revisión de código |
+| `git add .` | Bloqueado — agregar archivos específicos únicamente |
+| Modificar migración Flyway ya confirmada | Bloqueado — agregar nueva migración en su lugar |

@@ -1,13 +1,13 @@
 # ADR-016: Máquinas de estado separadas para Appointment y Encounter
 
-**Status**: ACCEPTED
-**Date**: 2026-06-15
-**Author**: JulianDeco
-**Relates to**: UC-01, UC-02, T-006, T-007
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-15
+**Autor**: JulianDeco
+**Relaciona con**: UC-01, UC-02, T-006, T-007
 
 ---
 
-## Context
+## Contexto
 
 El dominio clínico tiene dos recursos FHIR con ciclos de vida propios:
 `Appointment` (turno) y `Encounter` (consulta médica). Una decisión temprana
@@ -20,13 +20,13 @@ El diseño impacta directamente las entidades JPA (T-006/T-007), las
 migraciones Flyway, los tests de dominio, y los diagramas ICONIX de CU-01
 y CU-02.
 
-## Problem
+## Problema
 
 ¿Deben Appointment y Encounter compartir una única máquina de estados o
 tener ciclos de vida independientes? La respuesta afecta el modelo de datos,
 la lógica de transición y la complejidad de la API.
 
-## Options Considered
+## Opciones Consideradas
 
 | Option | Summary |
 |---|---|
@@ -34,7 +34,7 @@ la lógica de transición y la complejidad de la API.
 | B — Máquinas de estado separadas | Appointment y Encounter tienen campos `status` propios con transiciones independientes |
 | C — Encounter hereda estado de Appointment | Encounter no tiene estado propio; su estado se deriva del Appointment |
 
-## Decision
+## Decisión
 
 **Opción B — máquinas de estado separadas**, consistente con FHIR R4
 (`Appointment.status` y `Encounter.status` son recursos independientes con
@@ -87,7 +87,7 @@ Un `Appointment` puede crearse con la asociación `Appointment—Coverage`
 vacía (`0..1`). No tiene estado especial — el flag se resuelve al imputar
 a obra social en el momento del Encounter.
 
-## Consequences
+## Consecuencias
 
 **Positive:**
 - Alineamiento con FHIR R4 (valuesets `appointment-status` y
@@ -104,7 +104,7 @@ a obra social en el momento del Encounter.
 - Mayor superficie de test: se necesitan tests para ambas máquinas y
   para la invariante de cierre atómico.
 
-## Tradeoffs
+## Compromisos
 
 - Se acepta la complejidad adicional en el use case de cierre a cambio de
   fidelidad al estándar FHIR y separación de responsabilidades.
@@ -112,7 +112,7 @@ a obra social en el momento del Encounter.
   unificada, se puede agregar una proyección de lectura (CQRS read model)
   sin cambiar el dominio.
 
-## Notes
+## Notas
 
 - Los estados de `Appointment` mapean al valueset FHIR
   `http://hl7.org/fhir/appointmentstatus`.

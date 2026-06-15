@@ -1,13 +1,13 @@
 # ADR-015: Vínculo Usuario ↔ Practitioner por membresía
 
-**Status**: ACCEPTED
-**Date**: 2026-06-10
-**Author**: Julián Deco
-**Relates to**: ADR-003 (row-level multitenancy), ADR-009 (FHIR JSONB), ADR-014 (multi-tenant membership), T-005, T-006
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-10
+**Autor**: Julián Deco
+**Relaciona con**: ADR-003 (row-level multitenancy), ADR-009 (FHIR JSONB), ADR-014 (multi-tenant membership), T-005, T-006
 
 ---
 
-## Context
+## Contexto
 
 CU-02 (gestionar consulta) y CU-01 (agenda) requieren que un usuario con rol
 DOCTOR opere sobre *su propia* agenda y *sus* consultas. El rol en el JWT
@@ -24,7 +24,7 @@ pero no tiene soporte en el esquema físico.
 
 ---
 
-## Decision
+## Decisión
 
 Agregar a `user_tenants` una columna opcional:
 
@@ -47,7 +47,7 @@ ALTER TABLE user_tenants
 
 ---
 
-## Alternatives Considered
+## Opciones Consideradas
 
 | Alternativa | Por qué se descarta |
 |---|---|
@@ -58,7 +58,7 @@ ALTER TABLE user_tenants
 
 ---
 
-## Consequences
+## Consecuencias
 
 **Positivas:**
 - "Mi agenda / mis consultas" se resuelve con un join directo

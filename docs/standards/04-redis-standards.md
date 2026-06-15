@@ -1,31 +1,31 @@
-# Redis Standards — Redis 8
+# Estándares de Redis — Redis 8
 
 ---
 
-## 1. Allowed Use Cases
+## 1. Casos de Uso Permitidos
 
-Redis is a **cache and ephemeral store only** — never primary storage.
+Redis es **solo caché y almacén efímero** — nunca almacenamiento primario.
 
-| Use Case | Key Pattern | TTL | Notes |
+| Caso de Uso | Patrón de Clave | TTL | Notas |
 |---|---|---|---|
-| RBAC permission cache | `clinica:{tenantId}:perms:{userId}` | 5 min | Invalidated on role/permission change |
-| Coverage weekly limit counter | `clinica:{tenantId}:coverage:{patientId}:{isoWeek}` | 1 hour | Decremented on appointment booking |
-| No-show risk score cache | `clinica:{tenantId}:noshow:{appointmentId}` | 30 min | Recalculated on appointment update |
-| JWT revocation list | `clinica:jti:{jti}` | = token remaining TTL | Set on logout or token rotation |
-| Notification deduplication | `clinica:{tenantId}:notif:{appointmentId}:{channel}` | 48 hours | Prevents duplicate SMS/email |
-| Login rate limiting | `clinica:ratelimit:login:{ip}` | 60 s | Counter, max 5 attempts/min (T-003); not tenant-scoped — pre-auth |
+| Caché de permisos RBAC | `clinica:{tenantId}:perms:{userId}` | 5 min | Invalidada ante cambio de rol/permiso |
+| Contador semanal de cobertura | `clinica:{tenantId}:coverage:{patientId}:{isoWeek}` | 1 hora | Decrementado al reservar turno |
+| Caché de puntuación de riesgo de ausentismo | `clinica:{tenantId}:noshow:{appointmentId}` | 30 min | Recalculada al actualizar el turno |
+| Lista de revocación JWT | `clinica:jti:{jti}` | = TTL restante del token | Establecida al cerrar sesión o rotar token |
+| Deduplicación de notificaciones | `clinica:{tenantId}:notif:{appointmentId}:{channel}` | 48 horas | Previene SMS/email duplicados |
+| Rate limiting de login | `clinica:ratelimit:login:{ip}` | 60 s | Contador, máx. 5 intentos/min (T-003); sin alcance de tenant — pre-auth |
 
-**Not allowed in Redis:**
-- Patient records or any FHIR resource
-- Appointment data (PostgreSQL is source of truth)
-- User credentials or hashed passwords
-- Any data that would cause data loss if Redis restarts
+**No permitido en Redis:**
+- Registros de pacientes ni ningún recurso FHIR
+- Datos de turnos (PostgreSQL es la fuente de verdad)
+- Credenciales de usuario o contraseñas con hash
+- Cualquier dato cuya pérdida sería problemática si Redis se reinicia
 
 ---
 
-## 2. Key Naming Conventions
+## 2. Convenciones de Nomenclatura de Claves
 
-Format: `clinica:{tenantId}:{domain}:{identifier}[:{qualifier}]`
+Formato: `clinica:{tenantId}:{dominio}:{identificador}[:{calificador}]`
 
 ```
 clinica:550e8400-e29b-...:perms:user-uuid-here
@@ -34,19 +34,21 @@ clinica:550e8400-e29b-...:noshow:appointment-uuid-here
 clinica:jti:jwt-jti-claim-here
 ```
 
-Rules:
-- Always prefix with `clinica:` — prevents collision with other apps on same Redis
-- Always include `tenantId` in tenant-scoped keys — prevents cross-tenant cache poisoning
-- Use UUIDs as identifiers, never names or emails
-- Keep keys under 100 characters
-- Use `:` as separator (Redis convention)
+Reglas:
+- Siempre prefijar con `clinica:` — previene colisiones con otras apps en el mismo Redis
+- Siempre incluir `tenantId` en claves con alcance de tenant — previene envenenamiento
+  de caché entre tenants
+- Usar UUIDs como identificadores, nunca nombres ni emails
+- Mantener las claves en menos de 100 caracteres
+- Usar `:` como separador (convención de Redis)
 
 ---
 
-## 3. TTL Strategy
+## 3. Estrategia de TTL
 
-- **Every key must have a TTL** — no persistent keys in Redis
-- TTLs are defined as constants in `RedisConstants.java`, not scattered in business code:
+- **Toda clave debe tener un TTL** — sin claves persistentes en Redis
+- Los TTLs se definen como constantes en `RedisConstants.java`, no dispersos en el
+  código de negocio:
 
 ```java
 public final class RedisConstants {
@@ -59,37 +61,37 @@ public final class RedisConstants {
 }
 ```
 
-- Never hardcode TTL values inline in service code
+- Nunca codificar valores de TTL directamente en el código de servicio
 
 ---
 
-## 4. Invalidation Strategy
+## 4. Estrategia de Invalidación
 
-| Trigger | Keys to invalidate |
+| Disparador | Claves a invalidar |
 |---|---|
-| Role or permission modified | `clinica:{tenantId}:perms:*` (all users in tenant) |
-| Appointment booked / cancelled | `clinica:{tenantId}:coverage:{patientId}:{week}` |
-| Appointment data changed | `clinica:{tenantId}:noshow:{appointmentId}` |
-| User logout | `clinica:jti:{jti}` (set with remaining TTL) |
+| Rol o permiso modificado | `clinica:{tenantId}:perms:*` (todos los usuarios del tenant) |
+| Turno reservado / cancelado | `clinica:{tenantId}:coverage:{patientId}:{semana}` |
+| Datos del turno modificados | `clinica:{tenantId}:noshow:{appointmentId}` |
+| Cierre de sesión del usuario | `clinica:jti:{jti}` (establecido con TTL restante) |
 
-Invalidation is performed by the **Application Service** that performs the
-write, not by the controller or repository:
+La invalidación la realiza el **Servicio de Aplicación** que ejecuta la escritura,
+no el controlador ni el repositorio:
 
 ```java
-// In BookAppointmentUseCaseImpl
+// En BookAppointmentUseCaseImpl
 appointmentRepository.save(appointment);
 cacheService.invalidateCoverageCache(tenantId, patientId, weekKey);
 ```
 
 ---
 
-## 5. Availability and Fallback
+## 5. Disponibilidad y Fallback
 
-Redis is a non-critical dependency. The application must operate (with
-degraded performance) when Redis is unavailable:
+Redis es una dependencia no crítica. La aplicación debe operar (con rendimiento
+degradado) cuando Redis no está disponible:
 
 ```java
-// RedisCircuitBreaker wraps all Redis calls
+// RedisCircuitBreaker envuelve todas las llamadas a Redis
 try {
     return permissionCache.get(key);
 } catch (RedisConnectionFailureException e) {
@@ -98,21 +100,21 @@ try {
 }
 ```
 
-Every Redis call is wrapped in try-catch; exceptions are logged as WARN,
-not ERROR. The system falls back to the database source of truth.
+Toda llamada a Redis está envuelta en try-catch; las excepciones se registran como
+WARN, no como ERROR. El sistema recurre a la fuente de verdad de la base de datos.
 
 ---
 
-## 6. Serialization
+## 6. Serialización
 
-- Store Java objects as JSON (using Jackson `ObjectMapper`)
-- Use `GenericJackson2JsonRedisSerializer` for values
-- Use `StringRedisSerializer` for keys
-- Never use Java serialization (`JdkSerializationRedisSerializer`) — not portable
+- Almacenar objetos Java como JSON (usando Jackson `ObjectMapper`)
+- Usar `GenericJackson2JsonRedisSerializer` para valores
+- Usar `StringRedisSerializer` para claves
+- Nunca usar serialización Java (`JdkSerializationRedisSerializer`) — no es portable
 
 ---
 
-## 7. Configuration
+## 7. Configuración
 
 ```yaml
 # application.yml

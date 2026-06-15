@@ -1,57 +1,59 @@
-# ADR-003: Row-Level Multitenancy over Schema-per-Tenant
+# ADR-003: Multitenancy por Fila en lugar de Esquema por Tenant
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation, UC-01, UC-02, UC-03, UC-04
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation, UC-01, UC-02, UC-03, UC-04
 
 ---
 
-## Context
+## Contexto
 
-ClinicaSaaS is a multitenant SaaS platform. Every tenant (clinic) must be
-fully isolated: a tenant must never see another tenant's patients,
-appointments, or clinical records.
+ClinicaSaaS es una plataforma SaaS multitenant. Cada tenant (clínica) debe estar
+completamente aislado: un tenant nunca debe ver los pacientes, turnos o registros
+clínicos de otro tenant.
 
-Two main strategies exist: schema-per-tenant (separate PostgreSQL schema
-per clinic) and row-level (all tenants in shared tables, filtered by
-`tenant_id` column).
+Existen dos estrategias principales: esquema por tenant (esquema PostgreSQL separado
+por clínica) y por fila (todos los tenants en tablas compartidas, filtrados por columna
+`tenant_id`).
 
-## Decision
+## Decisión
 
-Use **row-level multitenancy**: all tenant-scoped tables include a
-`tenant_id UUID NOT NULL` column. Every query that reads or writes
-tenant data must include `WHERE tenant_id = ?`.
+Usar **multitenancy por fila**: todas las tablas con alcance de tenant incluyen una
+columna `tenant_id UUID NOT NULL`. Cada consulta que lea o escriba datos del tenant
+debe incluir `WHERE tenant_id = ?`.
 
-Enforcement mechanism: `TenantContextFilter` populates a ThreadLocal
-from the JWT `tenant_id` claim. `TenantAwareRepository` base class
-automatically applies the filter to all derived queries.
+Mecanismo de aplicación: `TenantContextFilter` pobla un ThreadLocal
+a partir del claim `tenant_id` del JWT. La clase base `TenantAwareRepository`
+aplica el filtro automáticamente a todas las consultas derivadas.
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| Schema-per-tenant | VPS 4GB RAM: N separate connection pools (one per schema) unsustainable for 5–20 tenants. Flyway migrations require iterating all schemas. |
-| Database-per-tenant | Impractical on a single VPS — requires N PostgreSQL instances or N databases with separate credentials |
+| Esquema por tenant | VPS 4GB RAM: N connection pools separados (uno por esquema) no son sostenibles para 5–20 tenants. Las migraciones Flyway requieren iterar todos los esquemas. |
+| Base de datos por tenant | Impracticable en un solo VPS — requiere N instancias de PostgreSQL o N bases de datos con credenciales separadas |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Single connection pool — efficient on constrained VPS
-- Flyway: `flyway migrate` applies to all tenants in one pass
-- Simpler operations: one backup, one database to monitor
-- Intelligence / reporting queries can aggregate across tenants for platform analytics (with explicit permission)
+**Positivo:**
+- Pool de conexiones único — eficiente en un VPS con recursos limitados
+- Flyway: `flyway migrate` se aplica a todos los tenants en un solo pase
+- Operaciones más simples: un solo backup, una sola base de datos para monitorear
+- Las consultas de inteligencia / reporte pueden agregar datos entre tenants para
+  análisis de plataforma (con permiso explícito)
 
-**Negative / trade-offs:**
-- A bug that omits `WHERE tenant_id = ?` would leak cross-tenant data
-  — mitigated by: `TenantAwareRepository` base class, mandatory integration test for tenant isolation per repository
+**Negativo / compromisos:**
+- Un bug que omita `WHERE tenant_id = ?` filtraría datos entre tenants
+  — mitigado por: clase base `TenantAwareRepository`, test de integración obligatorio
+  para aislamiento de tenant por repositorio
 
-**Risks:**
-- Developer error is the primary risk. Mitigation: code review checklist
-  includes explicit item "tenant_id present in all queries"
+**Riesgos:**
+- El error del desarrollador es el riesgo principal. Mitigación: el checklist de
+  revisión de código incluye un ítem explícito "tenant_id presente en todas las consultas"
 
-## Notes
+## Notas
 
-PostgreSQL Row-Level Security (RLS) can be added as an additional safety
-layer in a future ADR (requires a separate DB role per tenant). For MVP,
-application-level filtering is sufficient and simpler to manage.
+PostgreSQL Row-Level Security (RLS) puede agregarse como capa de seguridad adicional
+en un ADR futuro (requiere un rol de BD separado por tenant). Para el MVP,
+el filtrado a nivel de aplicación es suficiente y más simple de gestionar.

@@ -1,47 +1,50 @@
-# ADR-010: Clean Architecture Layering
+# ADR-010: Capas de Clean Architecture
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation, backend standards
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation, estándares backend
 
 ---
 
-## Context
+## Contexto
 
-The project has complex business rules (UC-01 through UC-04) that involve
-multiple collaborating domain objects, external services, and transaction
-boundaries. Without a clear layer structure, business rules tend to leak
-into controllers or repositories, making them untestable in isolation.
+El proyecto tiene reglas de negocio complejas (UC-01 a UC-04) que involucran
+múltiples objetos de dominio colaboradores, servicios externos y límites de transacción.
+Sin una estructura de capas clara, las reglas de negocio tienden a filtrarse
+hacia los controladores o repositorios, volviéndolas imposibles de probar de forma aislada.
 
-## Decision
+## Decisión
 
-Adopt **Clean Architecture** (Robert C. Martin) adapted for Spring Boot:
+Adoptar **Clean Architecture** (Robert C. Martin) adaptada para Spring Boot:
 
 ```
-API layer (controllers, DTOs)
-  → Application layer (use cases, application services)
-    → Domain layer (entities, value objects, repository interfaces)
-      ← Infrastructure layer (JPA repos, Redis adapters, HTTP clients)
+Capa API (controladores, DTOs)
+  → Capa de aplicación (casos de uso, servicios de aplicación)
+    → Capa de dominio (entidades, value objects, interfaces de repositorio)
+      ← Capa de infraestructura (repos JPA, adaptadores Redis, clientes HTTP)
 ```
 
-Dependency rule: inner layers know nothing about outer layers.
-Domain entities have zero Spring dependencies.
-Application services depend on domain interfaces, not infrastructure implementations.
+Regla de dependencia: las capas internas no saben nada sobre las capas externas.
+Las entidades de dominio no tienen dependencias de Spring.
+Los servicios de aplicación dependen de interfaces de dominio, no de implementaciones
+de infraestructura.
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Use cases testable in pure unit tests (no Spring context, no database)
-- Infrastructure swappable (e.g. swap Redis for Hazelcast) without touching business logic
-- Clear place for every class — no "where does this go?" questions
-- Academically defensible for thesis (DDD + Clean Architecture well-documented in literature)
+**Positivo:**
+- Casos de uso testeables en tests unitarios puros (sin contexto Spring, sin base de datos)
+- Infraestructura intercambiable (por ejemplo, cambiar Redis por Hazelcast) sin tocar
+  la lógica de negocio
+- Lugar claro para cada clase — sin preguntas de "¿dónde va esto?"
+- Académicamente defendible para la tesis (DDD + Clean Architecture bien documentados
+  en la literatura)
 
-**Negative / trade-offs:**
-- More classes than a simple 3-layer MVC approach
-- Indirection: a booking request touches 5–6 classes vs 2 in a simple approach
+**Negativo / compromisos:**
+- Más clases que un enfoque MVC simple de 3 capas
+- Indirección: una solicitud de reserva toca 5–6 clases vs 2 en un enfoque simple
 
-**Risks:**
-- Over-engineering simple CRUD: for pure data-management endpoints (tenant setup, user admin)
-  a lightweight approach (no use case class, direct service → repository) is acceptable
-  and documented as an exception
+**Riesgos:**
+- Sobreingeniería de CRUD simple: para endpoints de gestión de datos pura (configuración
+  de tenant, administración de usuarios), un enfoque liviano (sin clase de caso de uso,
+  servicio directo → repositorio) es aceptable y está documentado como excepción

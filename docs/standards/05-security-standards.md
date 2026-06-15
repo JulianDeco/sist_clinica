@@ -1,64 +1,64 @@
-# Security Standards — Spring Security + JWT
+# Estándares de Seguridad — Spring Security + JWT
 
 ---
 
-## 1. Authentication Approach
+## 1. Enfoque de Autenticación
 
-**Stateless JWT authentication** — no server-side session state.
+**Autenticación JWT stateless** — sin estado de sesión del lado del servidor.
 
-Flow:
+Flujo:
 ```
 1. POST /api/v1/auth/login  { email, password }
-   → Validates credentials against BCrypt hash
-   → Returns: { access_token (JWT), expires_in }
-   → Sets: refresh_token in httpOnly + Secure + SameSite=Strict cookie
+   → Valida credenciales contra hash BCrypt
+   → Retorna: { access_token (JWT), expires_in }
+   → Establece: refresh_token en cookie httpOnly + Secure + SameSite=Strict
 
-2. All subsequent requests:
+2. Todas las solicitudes posteriores:
    → Authorization: Bearer <access_token>
-   → JwtAuthenticationFilter validates token, loads SecurityContext
+   → JwtAuthenticationFilter valida el token, carga el SecurityContext
 
-3. Token refresh:
-   → POST /api/v1/auth/refresh  (cookie sent automatically)
-   → Validates refresh token in DB (single-use rotation)
-   → Returns new access_token; rotates refresh_token cookie
+3. Renovación de token:
+   → POST /api/v1/auth/refresh  (cookie enviada automáticamente)
+   → Valida el refresh token en la BD (rotación de uso único)
+   → Retorna nuevo access_token; rota la cookie de refresh_token
 ```
 
 ---
 
-## 2. JWT Strategy
+## 2. Estrategia JWT
 
-### Access Token
+### Token de Acceso
 
-| Claim | Value | Notes |
+| Claim | Valor | Notas |
 |---|---|---|
-| `sub` | `{userId}` | UUID string |
-| `tenant_id` | `{tenantId}` | UUID string — REQUIRED in every token |
-| `role` | `DOCTOR` / `SECRETARY` / `ADMIN` | Single role per session |
-| `iss` | `clinicasaas` | Issuer constant |
-| `iat` | Unix timestamp | Issued at |
-| `exp` | `iat + 1800` | 30 minutes |
-| `jti` | UUID | JWT ID — used for revocation |
+| `sub` | `{userId}` | String UUID |
+| `tenant_id` | `{tenantId}` | String UUID — REQUERIDO en cada token |
+| `role` | `DOCTOR` / `SECRETARY` / `ADMIN` | Rol único por sesión |
+| `iss` | `clinicasaas` | Constante de emisor |
+| `iat` | Timestamp Unix | Emitido en |
+| `exp` | `iat + 1800` | 30 minutos |
+| `jti` | UUID | ID del JWT — usado para revocación |
 
-**What is NOT in the JWT:**
-- Permissions list (fetched from Redis/DB on demand)
-- Patient data
-- Tenant config
+**Lo que NO va en el JWT:**
+- Lista de permisos (se obtienen de Redis/BD bajo demanda)
+- Datos del paciente
+- Configuración del tenant
 
-Rationale: permissions change frequently; embedding them in a 30-min token
-causes stale authorization. Load from Redis cache (5-min TTL) instead.
+Justificación: los permisos cambian frecuentemente; embebidos en un token de 30 min
+causan autorización desactualizada. Cargar desde la caché de Redis (TTL de 5 min).
 
-### Token Signing
+### Firma del Token
 
-- Algorithm: **HS256** (minimum); **RS256** preferred for production
-  (allows public key distribution for future microservice validation)
-- Secret: minimum 512-bit random key, stored in `JWT_SECRET` env var
-- Never hardcode secrets
+- Algoritmo: **HS256** (mínimo); **RS256** preferido para producción
+  (permite distribución de clave pública para validación futura en microservicios)
+- Secreto: clave aleatoria de mínimo 512 bits, almacenada en la variable de entorno `JWT_SECRET`
+- Nunca codificar secretos directamente
 
-### Access Token Library
+### Biblioteca para Token de Acceso
 
-Use **JJWT** (`io.jsonwebtoken:jjwt-api`):
+Usar **JJWT** (`io.jsonwebtoken:jjwt-api`):
 ```java
-// Token creation
+// Creación del token
 String token = Jwts.builder()
     .subject(userId.toString())
     .claim("tenant_id", tenantId.toString())
@@ -72,16 +72,16 @@ String token = Jwts.builder()
 
 ---
 
-## 3. Refresh Token Strategy
+## 3. Estrategia de Refresh Token
 
-- Stored in PostgreSQL `refresh_tokens` table as **SHA-256 hash** (never plaintext)
-- Single-use rotation: each use generates a new token and invalidates the old one
-- TTL: 7 days
-- Delivered via `httpOnly; Secure; SameSite=Strict; Path=/api/v1/auth/refresh` cookie
-- On suspicious reuse (token already marked `revoked = true`):
-  - Revoke ALL tokens for that user
-  - Force re-authentication
-  - Log security event
+- Almacenado en la tabla `refresh_tokens` de PostgreSQL como **hash SHA-256** (nunca en texto plano)
+- Rotación de uso único: cada uso genera un nuevo token e invalida el anterior
+- TTL: 7 días
+- Entregado mediante cookie `httpOnly; Secure; SameSite=Strict; Path=/api/v1/auth/refresh`
+- Ante reutilización sospechosa (token ya marcado como `revoked = true`):
+  - Revocar TODOS los tokens de ese usuario
+  - Forzar re-autenticación
+  - Registrar evento de seguridad
 
 ```java
 public TokenResult refresh(String rawRefreshToken) {
@@ -89,13 +89,13 @@ public TokenResult refresh(String rawRefreshToken) {
     RefreshToken stored = refreshTokenRepository.findByHashOrThrow(hashed);
 
     if (stored.isRevoked()) {
-        refreshTokenRepository.revokeAllForUser(stored.getUserId()); // revoke family
+        refreshTokenRepository.revokeAllForUser(stored.getUserId()); // revocar familia
         throw new RefreshTokenReusedException();
     }
     if (stored.isExpired()) throw new RefreshTokenExpiredException();
 
-    stored.revoke();                          // single-use: invalidate old
-    RefreshToken newToken = issueNewToken(...); // rotate
+    stored.revoke();                          // uso único: invalidar el anterior
+    RefreshToken newToken = issueNewToken(...); // rotar
     refreshTokenRepository.save(stored);
     refreshTokenRepository.save(newToken);
     return buildTokenResult(newToken);
@@ -104,43 +104,45 @@ public TokenResult refresh(String rawRefreshToken) {
 
 ---
 
-## 4. Authorization Approach
+## 4. Enfoque de Autorización
 
-**Role-Based with Permission Checks** (hybrid):
+**Basado en Roles con Verificación de Permisos** (híbrido):
 
-- JWT carries `role` (coarse authorization — allows entering a feature area)
-- Fine-grained permission checks via Spring Security `@PreAuthorize` + Redis cache
+- El JWT lleva `role` (autorización gruesa — permite entrar en un área de feature)
+- Verificaciones de permisos granulares mediante `@PreAuthorize` de Spring Security
+  + caché de Redis
 
 ```java
-// Controller method level
+// A nivel de método en el controlador
 @PreAuthorize("hasAuthority('APPOINTMENT_CREATE')")
 @PostMapping
 public ResponseEntity<AppointmentResponse> book(...) { ... }
 
-// Or via custom annotation
+// O mediante anotación personalizada
 @RequiresPermission("APPOINTMENT_CREATE")
 ```
 
-Permission loading:
+Carga de permisos:
 ```java
 @Service
 public class PermissionCacheService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userId) {
-        // 1. Check Redis cache (clinica:{tenantId}:perms:{userId})
-        // 2. If miss → load from DB → store in Redis with 5-min TTL
-        // 3. Return UserDetails with GrantedAuthority list
+        // 1. Verificar caché de Redis (clinica:{tenantId}:perms:{userId})
+        // 2. Si hay cache miss → cargar desde BD → almacenar en Redis con TTL de 5 min
+        // 3. Retornar UserDetails con lista de GrantedAuthority
     }
 }
 ```
 
 ---
 
-## 5. Password Handling
+## 5. Manejo de Contraseñas
 
-- BCrypt with **strength 12** (≈ 300ms per hash on modern hardware)
-- Never log passwords, never store plaintext
-- Password reset via time-limited (15 min) single-use token sent to email
-- Minimum password policy (enforced by Bean Validation): 8 characters
+- BCrypt con **fuerza 12** (≈ 300ms por hash en hardware moderno)
+- Nunca registrar contraseñas, nunca almacenar en texto plano
+- Restablecimiento de contraseña mediante token de uso único de tiempo limitado (15 min)
+  enviado por email
+- Política mínima de contraseñas (aplicada por Bean Validation): 8 caracteres
 
 ```java
 @Bean
@@ -151,56 +153,56 @@ public PasswordEncoder passwordEncoder() {
 
 ---
 
-## 6. Secret Management
+## 6. Gestión de Secretos
 
-| Secret | Storage |
+| Secreto | Almacenamiento |
 |---|---|
-| `JWT_SECRET` | Environment variable |
-| `DB_PASSWORD` | Environment variable |
-| `REDIS_PASSWORD` | Environment variable |
-| `SMTP_PASSWORD` | Environment variable |
-| `WHATSAPP_API_KEY` | Environment variable |
+| `JWT_SECRET` | Variable de entorno |
+| `DB_PASSWORD` | Variable de entorno |
+| `REDIS_PASSWORD` | Variable de entorno |
+| `SMTP_PASSWORD` | Variable de entorno |
+| `WHATSAPP_API_KEY` | Variable de entorno |
 
-Rules:
-- No secrets in `application.yml` committed to Git
-- Use `.env` locally (gitignored); `.env.example` with placeholder values committed
-- Docker Compose reads from `.env`
-- Production: inject via Docker secrets or VPS environment
+Reglas:
+- Sin secretos en `application.yml` confirmado en Git
+- Usar `.env` localmente (en .gitignore); `.env.example` con valores de marcador confirmado
+- Docker Compose lee desde `.env`
+- Producción: inyectar mediante Docker secrets o entorno del VPS
 
 ---
 
-## 7. Spring Security Filter Chain Order
+## 7. Orden del Filter Chain de Spring Security
 
 ```
-Request
+Solicitud
   │
   ▼
-CorsFilter                    → Validates CORS headers
+CorsFilter                    → Valida encabezados CORS
   ▼
-JwtAuthenticationFilter       → Validates JWT, populates SecurityContext
+JwtAuthenticationFilter       → Valida JWT, popula SecurityContext
   ▼
-TenantContextFilter           → Extracts tenant_id claim, sets ThreadLocal
+TenantContextFilter           → Extrae claim tenant_id, establece ThreadLocal
   ▼
-AuthorizationFilter           → Checks @PreAuthorize / access rules
+AuthorizationFilter           → Verifica @PreAuthorize / reglas de acceso
   ▼
-Controller
+Controlador
 ```
 
 ---
 
-## 8. CORS Configuration
+## 8. Configuración CORS
 
-Allowed origins: explicit list from `ALLOWED_ORIGINS` env var.
-Wildcard `*` is **never allowed** in production.
+Orígenes permitidos: lista explícita desde la variable de entorno `ALLOWED_ORIGINS`.
+El wildcard `*` **nunca está permitido** en producción.
 
 ```java
 @Bean
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(allowedOrigins);    // from env var
+    config.setAllowedOrigins(allowedOrigins);    // desde variable de entorno
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
     config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID"));
-    config.setAllowCredentials(true);            // required for httpOnly cookie
+    config.setAllowCredentials(true);            // requerido para cookie httpOnly
     config.setMaxAge(3600L);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/api/**", config);
@@ -210,9 +212,9 @@ public CorsConfigurationSource corsConfigurationSource() {
 
 ---
 
-## 9. Security Headers
+## 9. Encabezados de Seguridad
 
-Configured via Spring Security:
+Configurados mediante Spring Security:
 ```java
 http.headers(headers -> headers
     .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
@@ -226,12 +228,12 @@ http.headers(headers -> headers
 
 ---
 
-## 10. Sensitive Endpoints
+## 10. Endpoints Sensibles
 
-| Endpoint | Protection |
+| Endpoint | Protección |
 |---|---|
-| `POST /api/v1/auth/login` | Rate-limited (5 req/min per IP); BCrypt timing-safe compare |
-| `POST /api/v1/auth/refresh` | httpOnly cookie required; DB token validation |
-| `DELETE /api/v1/auth/logout` | Revokes refresh token; adds JTI to Redis blocklist |
-| `GET /actuator/**` | Restricted to internal network only (Nginx config) |
-| `GET /api/v1/admin/**` | Requires `ADMIN` role |
+| `POST /api/v1/auth/login` | Rate-limited (5 req/min por IP); comparación BCrypt timing-safe |
+| `POST /api/v1/auth/refresh` | Cookie httpOnly requerida; validación de token en BD |
+| `DELETE /api/v1/auth/logout` | Revoca el refresh token; agrega JTI a la blocklist de Redis |
+| `GET /actuator/**` | Restringido solo a la red interna (configuración de Nginx) |
+| `GET /api/v1/admin/**` | Requiere rol `ADMIN` |

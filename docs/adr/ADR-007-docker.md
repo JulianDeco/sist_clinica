@@ -1,37 +1,39 @@
-# ADR-007: Docker + Docker Compose for Deployment
+# ADR-007: Docker + Docker Compose para Despliegue
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation, infrastructure
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation, infraestructura
 
 ---
 
-## Context
+## Contexto
 
-The system runs on a single VPS with 4GB RAM. Development environment
-must match production as closely as possible. The team is a single developer.
+El sistema corre en un solo VPS con 4GB RAM. El entorno de desarrollo debe
+coincidir con el de producción lo más posible. El equipo es un solo desarrollador.
 
-## Decision
+## Decisión
 
-Use **Docker** containers for all services and **Docker Compose** for
-orchestration (dev and production). No Kubernetes for MVP.
+Usar contenedores **Docker** para todos los servicios y **Docker Compose** para
+la orquestación (desarrollo y producción). Sin Kubernetes para el MVP.
 
-Services: `nginx`, `backend` (Spring Boot), `frontend` (Angular built static),
+Servicios: `nginx`, `backend` (Spring Boot), `frontend` (Angular compilado estático),
 `postgres`, `redis`.
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Dev/prod parity: same images locally and on VPS
-- Nginx, PostgreSQL, Redis require zero manual installation
-- `docker compose up` starts the complete stack
-- Memory limits per container enforceable via `mem_limit`
+**Positivo:**
+- Paridad dev/prod: las mismas imágenes localmente y en el VPS
+- Nginx, PostgreSQL, Redis no requieren instalación manual
+- `docker compose up` inicia el stack completo
+- Límites de memoria por contenedor aplicables mediante `mem_limit`
 
-**Negative / trade-offs:**
-- No auto-scaling (single VPS, not needed for MVP 1–5 clinics)
-- No rolling deploys (brief downtime on `docker compose up` with new image)
+**Negativo / compromisos:**
+- Sin auto-escalado (VPS único, no necesario para el MVP con 1–5 clínicas)
+- Sin despliegues progresivos (breve tiempo de inactividad con `docker compose up`
+  con nueva imagen)
 
-**Risks:**
-- VPS 4GB RAM: total container memory must stay under 1.5GB to leave OS overhead
-  See: [High-Level Architecture §7](../architecture/01-high-level-architecture.md) for limits
+**Riesgos:**
+- VPS 4GB RAM: la memoria total de los contenedores debe mantenerse por debajo de
+  1.5GB para dejar margen al sistema operativo
+  Ver: [Arquitectura de Alto Nivel §7](../architecture/01-high-level-architecture.md) para los límites

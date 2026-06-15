@@ -1,13 +1,13 @@
 # ADR-013: Abstracción de Canales de Notificación — Telegram MVP, WhatsApp Post-Piloto
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: T-009, UC-03
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: T-009, UC-03
 
 ---
 
-## Context
+## Contexto
 
 CU-03 requiere enviar notificaciones a pacientes por distintos canales según
 el score de riesgo de ausentismo. Los canales candidatos son Telegram, WhatsApp,
@@ -21,13 +21,13 @@ teléfono dedicado verificado. No es viable para el piloto inicial.
 Telegram Bot API es gratuita, sin aprobación, sin límite de mensajes, y tiene
 una biblioteca Java madura (TelegramBots).
 
-## Problem
+## Problema
 
 ¿Cómo implementar notificaciones comenzando con Telegram para el piloto, sin
 bloquear la incorporación de WhatsApp y SMS en producción, y sin que la lógica
 de negocio de CU-03 tenga que cambiar al agregar nuevos canales?
 
-## Options Considered
+## Opciones Consideradas
 
 | Option | Summary |
 |---|---|
@@ -35,7 +35,7 @@ de negocio de CU-03 tenga que cambiar al agregar nuevos canales?
 | Implementar Telegram hardcodeado en el servicio | Rápido pero imposible de extender sin refactor |
 | Port/Adapter con NotificationPort (Clean Architecture) | La lógica de negocio llama al puerto; los adaptadores son intercambiables |
 
-## Decision
+## Decisión
 
 Diseñar el módulo de notificaciones con una **interfaz de puerto**
 (`NotificationPort`) que la capa de aplicación llama sin conocer el canal
@@ -69,7 +69,7 @@ infrastructure/
 La selección de canal por score queda en el Application Service (CU-03),
 no en los adaptadores.
 
-## Consequences
+## Consecuencias
 
 **Positive:**
 - Piloto arranca el día 1 sin aprobaciones externas ni costo variable
@@ -81,7 +81,7 @@ no en los adaptadores.
 - Telegram no es el canal dominante en el segmento médico adulto argentino — WhatsApp tiene mayor penetración; el piloto puede tener menor tasa de respuesta por este motivo
 - Requiere que el paciente tenga cuenta Telegram y haya iniciado conversación con el bot (limitación del modelo de bots de Telegram)
 
-## Tradeoffs
+## Compromisos
 
 La limitación de Telegram (el paciente debe iniciar la conversación con el bot
 primero) es el trade-off central del MVP. Se mitiga documentando el proceso de
@@ -90,7 +90,7 @@ onboarding del paciente como parte del onboarding de la clínica piloto.
 Si la tasa de respuesta por Telegram es significativamente menor que la
 esperada, se acelera la integración de WhatsApp antes de lo planificado.
 
-## Notes
+## Notas
 
 - Biblioteca Java para Telegram: `org.telegram:telegrambots` (Maven)
 - La interfaz `NotificationPort` se diseña para soportar mensajes con botones

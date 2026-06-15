@@ -1,37 +1,39 @@
-# ADR-008: Flyway for Database Migrations
+# ADR-008: Flyway para Migraciones de Base de Datos
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation, database
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation, base de datos
 
 ---
 
-## Context
+## Contexto
 
-Database schema changes need version control with a repeatable,
-auditable process. Spring Boot's JPA `ddl-auto=create` or `update`
-is dangerous in production — it can silently drop columns or fail.
+Los cambios de esquema de la base de datos necesitan control de versiones con un
+proceso repetible y auditable. El `ddl-auto=create` o `update` de Spring Boot JPA
+es peligroso en producción — puede eliminar columnas silenciosamente o fallar.
 
-## Decision
+## Decisión
 
-Use **Flyway** as the sole schema migration mechanism.
+Usar **Flyway** como el único mecanismo de migración de esquema.
 
-`spring.jpa.hibernate.ddl-auto=validate` (never `create` or `update`).
-Flyway runs on application startup before Spring context is fully initialized.
-Migration files live in `src/main/resources/db/migration/V{N}__{desc}.sql`.
+`spring.jpa.hibernate.ddl-auto=validate` (nunca `create` ni `update`).
+Flyway se ejecuta al inicio de la aplicación antes de que el contexto de Spring
+esté completamente inicializado.
+Los archivos de migración residen en `src/main/resources/db/migration/V{N}__{desc}.sql`.
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Schema history tracked in `flyway_schema_history` table
-- Failed migration halts application startup — prevents running against wrong schema
-- SQL migrations (not Java) — readable, reviewable, no ORM abstraction
+**Positivo:**
+- El historial del esquema se rastrea en la tabla `flyway_schema_history`
+- Una migración fallida detiene el inicio de la aplicación — evita ejecutar
+  contra un esquema incorrecto
+- Migraciones SQL (no Java) — legibles, revisables, sin abstracción del ORM
 
-**Negative / trade-offs:**
-- Community edition: no out-of-the-box rollback — rollback must be a new migration
-- Developer must never modify a committed migration file
+**Negativo / compromisos:**
+- Edición Community: sin rollback automático — el rollback debe ser una nueva migración
+- El desarrollador nunca debe modificar un archivo de migración ya confirmado en git
 
-**Risks:**
-- Large migrations on production data: must be tested against a data volume
-  representative of production before deploying
+**Riesgos:**
+- Migraciones grandes sobre datos de producción: deben probarse contra un volumen de datos
+  representativo de producción antes de desplegar

@@ -1,45 +1,45 @@
-# ADR-002: PostgreSQL 16 as Primary Database
+# ADR-002: PostgreSQL 16 como Base de Datos Principal
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation
 
 ---
 
-## Context
+## Contexto
 
-ClinicaSaaS needs a database that supports: JSONB for FHIR resources,
-UUID primary keys, row-level multitenancy (tenant_id filtering), full
-ACID transactions, GIN indexes for JSONB search, and compliance with
-Argentine health data privacy law (Ley 25.326).
+ClinicaSaaS necesita una base de datos que soporte: JSONB para recursos FHIR,
+claves primarias UUID, multitenancy por fila (filtrado por `tenant_id`), transacciones
+ACID completas, índices GIN para búsqueda en JSONB, y cumplimiento con la ley
+argentina de privacidad de datos de salud (Ley 25.326).
 
-## Decision
+## Decisión
 
-Use **PostgreSQL 16** as the sole primary database.
+Usar **PostgreSQL 16** como la única base de datos primaria.
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| MySQL 8 | No native JSONB type — FHIR storage would require separate document store or complex schema |
-| MongoDB | No ACID multi-document transactions — critical for atomic appointment booking (slot + appointment + coverage in one transaction) |
-| MariaDB | Same JSONB limitation as MySQL |
-| H2 (for tests) | Not production-equivalent; Testcontainers with real PostgreSQL preferred |
+| MySQL 8 | Sin tipo JSONB nativo — el almacenamiento FHIR requeriría un almacén de documentos separado o un esquema complejo |
+| MongoDB | Sin transacciones ACID multi-documento — crítico para la reserva atómica de turnos (slot + appointment + coverage en una sola transacción) |
+| MariaDB | Misma limitación de JSONB que MySQL |
+| H2 (para tests) | No equivalente a producción; se prefiere Testcontainers con PostgreSQL real |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- JSONB with GIN index: FHIR resources searchable without full-scan
-- Native UUID type: primary keys + FK constraints without conversion
-- ACID transactions: atomic booking (UC-01) is safe
-- Row-Level Security (PostgreSQL RLS): additional layer for tenant isolation
-- Ley 25.326 compliance: data isolation between tenants provable via query plans
+**Positivo:**
+- JSONB con índice GIN: recursos FHIR buscables sin full-scan
+- Tipo UUID nativo: claves primarias + restricciones FK sin conversión
+- Transacciones ACID: la reserva atómica de turnos (UC-01) es segura
+- Row-Level Security (PostgreSQL RLS): capa adicional para el aislamiento de tenants
+- Cumplimiento con Ley 25.326: el aislamiento de datos entre tenants es demostrable mediante planes de consulta
 
-**Negative / trade-offs:**
-- More configuration than SQLite for local dev (mitigated: Docker Compose)
-- Flyway migrations required (no auto-schema creation)
+**Negativo / compromisos:**
+- Más configuración que SQLite para desarrollo local (mitigado: Docker Compose)
+- Migraciones Flyway requeridas (sin creación automática de esquema)
 
-**Risks:**
-- VPS constraint: `shared_buffers` must be capped at 128MB to stay within
-  512MB container memory limit
+**Riesgos:**
+- Restricción del VPS: `shared_buffers` debe limitarse a 128MB para mantenerse
+  dentro del límite de memoria del contenedor de 512MB

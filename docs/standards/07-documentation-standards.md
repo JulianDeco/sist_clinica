@@ -1,45 +1,45 @@
-# Documentation Standards
+# Estándares de Documentación
 
-> Principle: every decision, every class, every public method must be
-> documented at the time of creation — not retroactively. Documentation
-> is a first-class deliverable, not an afterthought.
+> Principio: cada decisión, cada clase, cada método público debe estar
+> documentado en el momento de su creación — no de forma retroactiva. La
+> documentación es un entregable de primer nivel, no una ocurrencia tardía.
 
 ---
 
-## 1. Documentation Levels
+## 1. Niveles de Documentación
 
-| Level | What | Where |
+| Nivel | Qué | Dónde |
 |---|---|---|
-| **Architecture** | Why a technology or pattern was chosen | `docs/adr/` (ADRs) |
-| **Feature spec** | What a feature must do before coding begins | `docs/modules/specs/` |
-| **Module context** | How a module works, its contracts and state machine | `docs/modules/` |
-| **Code-level** | What a class or method does | JavaDoc on every public element |
-| **Decision log** | Why code was written a specific way (non-obvious) | Inline comment when critical |
+| **Arquitectura** | Por qué se eligió una tecnología o patrón | `docs/adr/` (ADRs) |
+| **Spec de feature** | Qué debe hacer una feature antes de comenzar a codificar | `docs/modules/specs/` |
+| **Contexto de módulo** | Cómo funciona un módulo, sus contratos y máquina de estados | `docs/modules/` |
+| **Nivel de código** | Qué hace una clase o método | JavaDoc en todo elemento público |
+| **Registro de decisiones** | Por qué el código se escribió de una manera específica (no obvio) | Comentario inline cuando sea crítico |
 
 ---
 
-## 2. JavaDoc Standards
+## 2. Estándares de JavaDoc
 
-Every `public` class, interface, and method in the backend requires JavaDoc.
+Toda clase `public`, interfaz y método en el backend requiere JavaDoc.
 
-### Class-Level JavaDoc
+### JavaDoc a Nivel de Clase
 
 ```java
 /**
- * Application service implementing the book-appointment use case (UC-01).
+ * Servicio de aplicación que implementa el caso de uso de reserva de turno (UC-01).
  *
- * <p>Orchestrates slot availability check, insurance coverage validation,
- * no-show risk scoring, and atomic appointment creation.
+ * <p>Orquesta la verificación de disponibilidad del slot, validación de cobertura
+ * de obra social, puntuación de riesgo de ausentismo y creación atómica del turno.
  *
- * <p>Business rules enforced:
+ * <p>Reglas de negocio aplicadas:
  * <ul>
- *   <li>The requested slot must be in {@code FREE} status.</li>
- *   <li>Patient coverage weekly limit must not be exceeded.</li>
- *   <li>If risk score exceeds threshold and practitioner has overbooking
- *       enabled, an overbooking suggestion is included in the result.</li>
+ *   <li>El slot solicitado debe estar en estado {@code FREE}.</li>
+ *   <li>El límite semanal de cobertura del paciente no debe superarse.</li>
+ *   <li>Si la puntuación de riesgo supera el umbral y el profesional tiene habilitado
+ *       el overbooking, se incluye una sugerencia de overbooking en el resultado.</li>
  * </ul>
  *
- * <p>See spec: {@code docs/modules/agenda/specs/BookAppointment.spec.md}
+ * <p>Ver spec: {@code docs/modules/agenda/specs/BookAppointment.spec.md}
  *
  * @see BookAppointmentCommand
  * @see AppointmentResult
@@ -49,114 +49,118 @@ Every `public` class, interface, and method in the backend requires JavaDoc.
 public class BookAppointmentUseCaseImpl implements BookAppointmentUseCase { ... }
 ```
 
-### Method-Level JavaDoc
+### JavaDoc a Nivel de Método
 
 ```java
 /**
- * Executes the book-appointment use case.
+ * Ejecuta el caso de uso de reserva de turno.
  *
- * <p>Performs slot reservation, coverage decrement, and risk score
- * attachment in a single database transaction. On failure, the
- * transaction is rolled back and no side effects are committed.
+ * <p>Realiza la reserva del slot, decremento de cobertura y vinculación de la
+ * puntuación de riesgo en una única transacción de base de datos. Ante un fallo,
+ * la transacción se revierte y no se confirman efectos secundarios.
  *
- * @param command the booking request containing slot, patient, and tenant identifiers
- * @return the created appointment with its FHIR ID and risk assessment
- * @throws SlotAlreadyBookedException  if the slot is not in FREE status
- * @throws CoverageExceededException   if the patient's weekly coverage limit is reached
- * @throws ResourceNotFoundException   if slot or patient does not exist in this tenant
+ * @param command la solicitud de reserva que contiene los identificadores de slot,
+ *                paciente y tenant
+ * @return el turno creado con su ID FHIR y la evaluación de riesgo
+ * @throws SlotAlreadyBookedException  si el slot no está en estado FREE
+ * @throws CoverageExceededException   si se alcanzó el límite semanal de cobertura del paciente
+ * @throws ResourceNotFoundException   si el slot o el paciente no existen en este tenant
  */
 AppointmentResult execute(BookAppointmentCommand command);
 ```
 
-### Rules
+### Reglas
 
-- Do not repeat what the method name already says — document the **why** and **constraints**
-- Always document `@throws` for checked and meaningful runtime exceptions
-- Reference the spec file and related ADRs with `@see` or inline link
-- Avoid Javadoc on private methods unless the logic is non-obvious
-
----
-
-## 3. Spec File Documentation (Spec-Driven Development)
-
-Every feature starts with a spec file before any implementation.
-See [Testing Standards §5](../testing/01-testing-standards.md) for the full spec template.
-
-Key rule: the spec file is **committed before the first line of implementation code**.
+- No repetir lo que el nombre del método ya dice — documentar el **por qué** y las
+  **restricciones**
+- Siempre documentar `@throws` para excepciones verificadas y runtime significativas
+- Referenciar el archivo de spec y los ADRs relacionados con `@see` o enlace inline
+- Evitar Javadoc en métodos privados a menos que la lógica sea no obvia
 
 ---
 
-## 4. Module Documentation Files
+## 3. Documentación de Archivos Spec (Spec-Driven Development)
 
-For every backend module, create `docs/modules/{module}.md`:
+Cada feature comienza con un archivo de spec antes de cualquier implementación.
+Ver [Estándares de Testing §5](../testing/01-testing-standards.md) para el template completo.
+
+Regla clave: el archivo de spec se **confirma antes de la primera línea de código
+de implementación**.
+
+---
+
+## 4. Archivos de Documentación de Módulos
+
+Para cada módulo backend, crear `docs/modules/{module}.md`:
 
 ```markdown
-# Module: Agenda
+# Módulo: Agenda
 
-**Status**: IN DEVELOPMENT
-**Last updated**: 2026-06-08
-**Relates to**: UC-01, UC-04
+**Estado**: EN DESARROLLO
+**Última actualización**: 2026-06-08
+**Relaciona con**: UC-01, UC-04
 
 ---
 
-## Responsibility
-Manages appointment booking, slot management, and overbooking logic.
+## Responsabilidad
+Gestiona la reserva de turnos, administración de slots y lógica de overbooking.
 
-## Domain Model
-(Mermaid class diagram)
+## Modelo de Dominio
+(Diagrama de clases Mermaid)
 
-## State Machine
-(Appointment status transitions)
+## Máquina de Estados
+(Transiciones de estado del turno)
 
-## Public API
-(Endpoint list)
+## API Pública
+(Lista de endpoints)
 
-## Business Rules
-(Numbered list)
+## Reglas de Negocio
+(Lista numerada)
 
-## Dependencies
-(Other modules this module calls)
+## Dependencias
+(Otros módulos que este módulo llama)
 
-## Configuration
-(Configurable parameters)
+## Configuración
+(Parámetros configurables)
 
-## Known Limitations / TODOs
+## Limitaciones Conocidas / TODOs
 ```
 
 ---
 
-## 5. ADR Format
+## 5. Formato de ADR
 
-See `docs/adr/README.md` for the full ADR template. Every ADR is immutable
-once merged — amend by creating a new ADR that supersedes it.
+Ver `docs/adr/README.md` para el template completo de ADR. Todo ADR es inmutable
+una vez fusionado — modificar creando un nuevo ADR que lo supersede.
 
 ---
 
-## 6. Code Comment Policy
+## 6. Política de Comentarios en Código
 
-Inline comments are rare and high-value only:
+Los comentarios inline son raros y de alto valor únicamente:
 
 ```java
-// CORRECT — explains a non-obvious constraint
-// BCrypt strength 12 is deliberately higher than default (10) to increase
-// brute-force cost. At 300ms/hash this is acceptable for login latency.
+// CORRECTO — explica una restricción no obvia
+// La fuerza 12 de BCrypt es deliberadamente mayor que el valor predeterminado (10)
+// para aumentar el costo de fuerza bruta. A 300ms/hash esto es aceptable para
+// la latencia de login.
 return new BCryptPasswordEncoder(12);
 
-// WRONG — restates what the code already says
-// Create a new BCrypt encoder with strength 12
+// INCORRECTO — reitera lo que el código ya dice
+// Crear un nuevo codificador BCrypt con fuerza 12
 return new BCryptPasswordEncoder(12);
 ```
 
-Rules:
-- Comment the **why**, never the **what**
-- Use TODO comments for known limitations: `// TODO(T-042): add rate limiting`
-- Never leave commented-out code — delete it, Git history is the archive
+Reglas:
+- Comentar el **por qué**, nunca el **qué**
+- Usar comentarios TODO para limitaciones conocidas: `// TODO(T-042): agregar rate limiting`
+- Nunca dejar código comentado — eliminarlo, el historial de Git es el archivo
 
 ---
 
-## 7. Commit Message as Documentation
+## 7. El Mensaje de Commit como Documentación
 
-Commit messages are permanent project documentation. Follow Conventional Commits:
+Los mensajes de commit son documentación permanente del proyecto. Seguir Conventional Commits:
 
 ```
 feat(agenda): implement slot availability check for UC-01
@@ -168,41 +172,41 @@ Spec: docs/modules/agenda/specs/BookAppointment.spec.md
 ADR: docs/adr/ADR-009-appointment-booking-rules.md
 ```
 
-- Subject line: `{type}({scope}): {imperative, lowercase, no period}`
-- Body: explain *why* the change was made if not obvious from the title
-- Reference spec and ADR when relevant
+- Línea de asunto: `{tipo}({alcance}): {imperativo, minúsculas, sin punto}`
+- Cuerpo: explicar *por qué* se hizo el cambio si no es obvio desde el título
+- Referenciar spec y ADR cuando sea relevante
 
 ---
 
-## 8. Documentation Workflow
+## 8. Workflow de Documentación
 
 ```
-New feature:
-  1. Write spec file (docs/modules/{x}/specs/{X}.spec.md)
-  2. Get spec approved (PR review or explicit OK in chat)
-  3. Write implementation + tests
-  4. Write/update module doc (docs/modules/{x}.md)
-  5. Write ADR if a significant decision was made
-  6. Commit everything together (spec + code + tests + module doc)
+Nueva feature:
+  1. Escribir archivo de spec (docs/modules/{x}/specs/{X}.spec.md)
+  2. Obtener aprobación del spec (revisión en PR o OK explícito en chat)
+  3. Escribir implementación + tests
+  4. Escribir/actualizar doc del módulo (docs/modules/{x}.md)
+  5. Escribir ADR si se tomó una decisión significativa
+  6. Confirmar todo junto (spec + código + tests + doc del módulo)
 
-All in one PR — documentation is never a follow-up.
+Todo en un solo PR — la documentación nunca es un seguimiento posterior.
 ```
 
 ---
 
-## 9. Decision Log
+## 9. Registro de Decisiones
 
-Every non-obvious technical decision made during a session is recorded in
-a decision log entry at `docs/adr/decisions-log.md` (informal, append-only)
-before a formal ADR is written. This captures the reasoning while it is fresh.
+Toda decisión técnica no obvia tomada durante una sesión se registra en una entrada del
+registro de decisiones en `docs/adr/decisions-log.md` (informal, solo adición) antes
+de que se escriba un ADR formal. Esto captura el razonamiento mientras está fresco.
 
-Format:
+Formato:
 ```markdown
-## 2026-06-08 — Chose row-level multitenancy over schema-per-tenant
+## 2026-06-08 — Se eligió multitenancy por fila en lugar de esquema por tenant
 
-**Context**: VPS has 4GB RAM. Schema-per-tenant would require N connection pools.
-**Decision**: Row-level with tenant_id column.
-**Trade-off**: All tenants share tables — a missing WHERE tenant_id clause
-  would leak data cross-tenant. Mitigated by TenantAwareRepository base class.
-**Formalized in**: ADR-003
+**Contexto**: El VPS tiene 4GB RAM. El esquema por tenant requeriría N connection pools.
+**Decisión**: Por fila con columna tenant_id.
+**Trade-off**: Todos los tenants comparten tablas — una cláusula WHERE tenant_id faltante
+  filtraría datos entre tenants. Mitigado por la clase base TenantAwareRepository.
+**Formalizado en**: ADR-003
 ```

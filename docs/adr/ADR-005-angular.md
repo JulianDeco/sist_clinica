@@ -1,47 +1,50 @@
-# ADR-005: Angular 18 as Frontend Framework
+# ADR-005: Angular 18 como Framework Frontend
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation
 
 ---
 
-## Context
+## Contexto
 
-ClinicaSaaS requires a frontend with: complex form management (appointment
-booking with multi-step validation), role-based view control (doctors see
-different views than secretaries), a calendar-based agenda view, and
-integration with a Spring Boot REST API protected by JWT.
+ClinicaSaaS requiere un frontend con: gestión compleja de formularios (reserva de
+turnos con validación en múltiples pasos), control de vistas basado en roles (los
+médicos ven vistas distintas a las secretarias), una vista de agenda basada en
+calendario, e integración con una API REST de Spring Boot protegida por JWT.
 
-## Decision
+## Decisión
 
-Use **Angular 18** with **Angular Material** for the frontend.
+Usar **Angular 18** con **Angular Material** para el frontend.
 
-Angular 18 provides: Signals for state management (no NgRx needed for MVP),
-built-in HTTP interceptors for auth headers, RxJS for async operations,
-and Angular Material for the full component library.
+Angular 18 provee: Signals para la gestión de estado (no se necesita NgRx para el MVP),
+interceptores HTTP integrados para encabezados de autenticación, RxJS para operaciones
+asíncronas, y Angular Material para la biblioteca completa de componentes.
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| Next.js (App Router) | Previously used stack. The project is moving to Java/Spring — Angular aligns the tech stack more naturally for an enterprise/academic project |
-| React (Vite SPA) | No built-in routing, state management, or HTTP interceptor conventions — requires assembling 4–5 separate libraries |
-| Vue 3 | Smaller ecosystem for enterprise Angular Material–equivalent; fewer academic references |
+| Next.js (App Router) | Stack usado anteriormente. El proyecto migra a Java/Spring — Angular alinea el stack tecnológico de forma más natural para un proyecto empresarial/académico |
+| React (Vite SPA) | Sin convenciones integradas de enrutamiento, gestión de estado o interceptores HTTP — requiere ensamblar 4–5 bibliotecas separadas |
+| Vue 3 | Ecosistema más pequeño para el equivalente empresarial de Angular Material; menos referencias académicas |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Angular Material: full enterprise component library (calendar, tables, forms) without custom CSS
-- Built-in dependency injection — consistent with Spring Boot patterns
-- Interceptors: auth + tenant header injection in one place
-- TypeScript strict mode: reduces runtime errors for complex data models
-- Angular Signals (17+): no NgRx needed for MVP scale
+**Positivo:**
+- Angular Material: biblioteca completa de componentes empresariales (calendario, tablas,
+  formularios) sin CSS personalizado
+- Inyección de dependencias integrada — consistente con los patrones de Spring Boot
+- Interceptores: inyección de encabezados de auth + tenant en un solo lugar
+- Modo estricto de TypeScript: reduce errores en tiempo de ejecución para modelos
+  de datos complejos
+- Angular Signals (17+): no se necesita NgRx para la escala del MVP
 
-**Negative / trade-offs:**
-- Higher learning curve than React for simple components
-- More boilerplate (modules/standalone components) than Next.js
+**Negativo / compromisos:**
+- Curva de aprendizaje más alta que React para componentes simples
+- Más boilerplate (módulos/componentes standalone) que Next.js
 
-**Risks:**
-- Angular 18 Signals are relatively new — limited StackOverflow answers compared to NgRx patterns
+**Riesgos:**
+- Los Signals de Angular 18 son relativamente nuevos — respuestas limitadas en
+  StackOverflow comparado con patrones NgRx

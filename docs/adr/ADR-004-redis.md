@@ -1,51 +1,52 @@
-# ADR-004: Redis for Cache and Ephemeral State Only
+# ADR-004: Redis Solo para Caché y Estado Efímero
 
-**Status**: ACCEPTED
-**Date**: 2026-06-08
-**Author**: Julián Deco
-**Relates to**: Foundation
+**Estado**: ACCEPTED
+**Fecha**: 2026-06-08
+**Autor**: Julián Deco
+**Relaciona con**: Foundation
 
 ---
 
-## Context
+## Contexto
 
-Several system operations are hot paths that would be too slow if they
-hit PostgreSQL on every request: RBAC permission checks (every API call),
-insurance coverage limit lookups (every booking), and JWT revocation checks.
+Varias operaciones del sistema son hot paths que serían demasiado lentas si
+consultaran PostgreSQL en cada solicitud: verificaciones de permisos RBAC (cada llamada
+a la API), búsquedas del límite de cobertura de obra social (cada reserva), y
+verificaciones de revocación de JWT.
 
-## Decision
+## Decisión
 
-Use **Redis 8** for caching and ephemeral state only. Redis is never the
-system of record — PostgreSQL is authoritative. If Redis is unavailable,
-the system falls back to the database and continues operating.
+Usar **Redis 8** solo para caché y estado efímero. Redis nunca es el sistema de
+registro — PostgreSQL es la fuente autoritativa. Si Redis no está disponible,
+el sistema recurre a la base de datos y sigue operando.
 
-Allowed uses:
-1. RBAC permission cache per user/tenant (TTL 5 min)
-2. Insurance coverage weekly counter (TTL 1 hour)
-3. No-show risk score cache (TTL 30 min)
-4. JWT JTI revocation list (TTL = token remaining TTL)
-5. Notification deduplication keys (TTL 48 hours)
+Usos permitidos:
+1. Caché de permisos RBAC por usuario/tenant (TTL 5 min)
+2. Contador semanal de cobertura de obra social (TTL 1 hora)
+3. Caché de puntuación de riesgo de ausentismo (TTL 30 min)
+4. Lista de revocación JTI de JWT (TTL = TTL restante del token)
+5. Claves de deduplicación de notificaciones (TTL 48 horas)
 
-## Alternatives Considered
+## Opciones Consideradas
 
-| Alternative | Why rejected |
+| Alternativa | Por qué se descartó |
 |---|---|
-| Caffeine (in-memory cache) | Not shareable across future instances; loses data on restart |
-| Hazelcast | Too heavy for VPS 4GB RAM; operational complexity |
-| No cache | RBAC permission DB query on every API call would add 5–20ms latency per request |
+| Caffeine (caché en memoria) | No compartible entre futuras instancias; pierde datos al reiniciar |
+| Hazelcast | Demasiado pesado para VPS 4GB RAM; complejidad operacional |
+| Sin caché | La consulta de permisos RBAC a la BD en cada llamada a la API agregaría 5–20ms de latencia por solicitud |
 
-## Consequences
+## Consecuencias
 
-**Positive:**
-- Sub-millisecond permission lookups
-- Coverage counter updates atomic (Redis DECR is atomic)
-- JWT revocation without storing all tokens in DB
+**Positivo:**
+- Búsquedas de permisos en sub-milisegundos
+- Actualizaciones del contador de cobertura atómicas (DECR de Redis es atómico)
+- Revocación de JWT sin almacenar todos los tokens en la BD
 
-**Negative / trade-offs:**
-- Extra infrastructure component
-- Cache invalidation logic must be maintained
-- Stale cache window: up to 5 min for permissions (acceptable for MVP)
+**Negativo / compromisos:**
+- Componente de infraestructura adicional
+- La lógica de invalidación de caché debe mantenerse
+- Ventana de caché desactualizada: hasta 5 min para permisos (aceptable para el MVP)
 
-**Risks:**
-- Redis OOM: `maxmemory-policy allkeys-lru` + 128MB limit set in Docker
-  prevents the container from growing unbounded
+**Riesgos:**
+- OOM de Redis: `maxmemory-policy allkeys-lru` + límite de 128MB definido en Docker
+  evita que el contenedor crezca sin límite

@@ -1,47 +1,47 @@
-# Backend Standards — Java 21 + Spring Boot 3
+# Estándares de Backend — Java 21 + Spring Boot 3
 
 ---
 
-## 1. Package Structure
+## 1. Estructura de Paquetes
 
 ```
 com.clinicasaas
-├── config/                         # @Configuration, @Bean definitions
+├── config/                         # @Configuration, definiciones de @Bean
 │   ├── SecurityConfig.java
 │   ├── RedisConfig.java
 │   ├── JpaConfig.java
 │   ├── FlywayConfig.java
 │   └── OpenApiConfig.java
 │
-├── domain/                         # Pure domain: entities, value objects, enums
-│   ├── shared/                     # Cross-domain: TenantId, AuditFields, etc.
+├── domain/                         # Dominio puro: entidades, value objects, enums
+│   ├── shared/                     # Dominio transversal: TenantId, AuditFields, etc.
 │   ├── user/
-│   │   ├── User.java               # JPA Entity
-│   │   ├── UserRepository.java     # Interface (Spring Data JPA)
-│   │   └── Role.java               # Enum or Entity
+│   │   ├── User.java               # Entidad JPA
+│   │   ├── UserRepository.java     # Interfaz (Spring Data JPA)
+│   │   └── Role.java               # Enum o Entidad
 │   ├── patient/
 │   ├── appointment/
 │   ├── encounter/
 │   └── fhir/
 │
-├── application/                    # Use cases — no framework dependencies here
+├── application/                    # Casos de uso — sin dependencias de framework aquí
 │   ├── auth/
-│   │   ├── LoginUseCase.java       # Interface
-│   │   ├── LoginUseCaseImpl.java   # @Service implementation
+│   │   ├── LoginUseCase.java       # Interfaz
+│   │   ├── LoginUseCaseImpl.java   # Implementación @Service
 │   │   ├── command/
-│   │   │   └── LoginCommand.java   # Input record/DTO
+│   │   │   └── LoginCommand.java   # Record/DTO de entrada
 │   │   └── result/
-│   │       └── TokenResult.java    # Output record
+│   │       └── TokenResult.java    # Record de salida
 │   ├── agenda/
 │   └── clinical/
 │
-├── infrastructure/                 # Adapters to external systems
-│   ├── persistence/                # JPA repository implementations, Specifications
-│   ├── cache/                      # Redis adapter implementations
-│   ├── notifications/              # Email, WhatsApp, SMS clients
-│   └── security/                   # JWT provider, password encoder
+├── infrastructure/                 # Adaptadores a sistemas externos
+│   ├── persistence/                # Implementaciones de repositorio JPA, Specifications
+│   ├── cache/                      # Implementaciones de adaptadores Redis
+│   ├── notifications/              # Clientes de email, WhatsApp, SMS
+│   └── security/                   # Proveedor JWT, codificador de contraseñas
 │
-└── api/                            # HTTP layer — controllers and DTOs
+└── api/                            # Capa HTTP — controladores y DTOs
     ├── v1/
     │   ├── auth/
     │   │   ├── AuthController.java
@@ -50,7 +50,7 @@ com.clinicasaas
     │   │       └── TokenResponse.java
     │   ├── appointments/
     │   └── patients/
-    ├── fhir/                       # FHIR R4 endpoints
+    ├── fhir/                       # Endpoints FHIR R4
     └── exception/
         ├── GlobalExceptionHandler.java
         └── ErrorResponse.java
@@ -58,25 +58,25 @@ com.clinicasaas
 
 ---
 
-## 2. Layer Responsibilities
+## 2. Responsabilidades por Capa
 
-### Controllers (`api/`)
+### Controladores (`api/`)
 
-**Allowed:**
-- Parse and validate HTTP requests (via `@Valid`)
-- Map request DTOs to application commands
-- Call exactly one application service / use case
-- Map application results to response DTOs
-- Return `ResponseEntity<T>` with explicit HTTP status
+**Permitido:**
+- Parsear y validar solicitudes HTTP (mediante `@Valid`)
+- Mapear DTOs de solicitud a comandos de aplicación
+- Llamar exactamente a un servicio de aplicación / caso de uso
+- Mapear resultados de aplicación a DTOs de respuesta
+- Retornar `ResponseEntity<T>` con código de estado HTTP explícito
 
-**Forbidden:**
-- Business logic of any kind
-- Direct repository access
-- Catching exceptions (delegate to `GlobalExceptionHandler`)
-- Constructing domain entities
+**Prohibido:**
+- Lógica de negocio de cualquier tipo
+- Acceso directo a repositorios
+- Capturar excepciones (delegar a `GlobalExceptionHandler`)
+- Construir entidades de dominio
 
 ```java
-// CORRECT
+// CORRECTO
 @PostMapping
 public ResponseEntity<AppointmentResponse> book(
         @Valid @RequestBody BookAppointmentRequest request) {
@@ -86,10 +86,10 @@ public ResponseEntity<AppointmentResponse> book(
             .body(AppointmentResponse.from(result));
 }
 
-// WRONG — business logic in controller
+// INCORRECTO — lógica de negocio en el controlador
 @PostMapping
 public ResponseEntity<?> book(@RequestBody BookAppointmentRequest request) {
-    if (request.getDate().isBefore(LocalDate.now())) { // ← belongs in domain
+    if (request.getDate().isBefore(LocalDate.now())) { // ← pertenece al dominio
         return ResponseEntity.badRequest().build();
     }
     ...
@@ -98,22 +98,22 @@ public ResponseEntity<?> book(@RequestBody BookAppointmentRequest request) {
 
 ---
 
-### Application Services (`application/`)
+### Servicios de Aplicación (`application/`)
 
-**Allowed:**
-- Orchestrate domain objects and repositories
-- Enforce business rules and invariants
-- Manage transactions (`@Transactional`)
-- Publish domain events
-- Call infrastructure ports (cache, notifications, external services)
+**Permitido:**
+- Orquestar objetos de dominio y repositorios
+- Aplicar reglas de negocio e invariantes
+- Gestionar transacciones (`@Transactional`)
+- Publicar eventos de dominio
+- Llamar a puertos de infraestructura (caché, notificaciones, servicios externos)
 
-**Forbidden:**
-- HTTP concepts (no `HttpServletRequest`, no Spring MVC annotations)
-- Direct JPA `EntityManager` calls (use repository interfaces)
-- Returning JPA entities — always return result records/DTOs
+**Prohibido:**
+- Conceptos HTTP (sin `HttpServletRequest`, sin anotaciones de Spring MVC)
+- Llamadas directas a `EntityManager` de JPA (usar interfaces de repositorio)
+- Retornar entidades JPA — siempre retornar records/DTOs de resultado
 
 ```java
-// CORRECT
+// CORRECTO
 @Service
 @Transactional
 public class BookAppointmentUseCaseImpl implements BookAppointmentUseCase {
@@ -122,7 +122,7 @@ public class BookAppointmentUseCaseImpl implements BookAppointmentUseCase {
     public AppointmentResult execute(BookAppointmentCommand command) {
         Slot slot = slotRepository.findByIdAndTenantOrThrow(
                 command.slotId(), command.tenantId());
-        slot.reserve(); // domain logic inside entity
+        slot.reserve(); // lógica de dominio dentro de la entidad
         appointmentRepository.save(appointment);
         return AppointmentResult.from(appointment);
     }
@@ -131,25 +131,25 @@ public class BookAppointmentUseCaseImpl implements BookAppointmentUseCase {
 
 ---
 
-### Domain Entities (`domain/`)
+### Entidades de Dominio (`domain/`)
 
-**Allowed:**
-- JPA annotations (`@Entity`, `@Column`, etc.)
-- Business behavior methods that enforce invariants
-- Value objects as `@Embeddable`
-- Domain state transitions
+**Permitido:**
+- Anotaciones JPA (`@Entity`, `@Column`, etc.)
+- Métodos de comportamiento de negocio que aplican invariantes
+- Value objects como `@Embeddable`
+- Transiciones de estado del dominio
 
-**Forbidden:**
-- Spring `@Autowired` (entities must not depend on Spring beans)
-- Direct database calls
-- HTTP or serialization concerns
+**Prohibido:**
+- `@Autowired` de Spring (las entidades no deben depender de beans de Spring)
+- Llamadas directas a la base de datos
+- Preocupaciones HTTP o de serialización
 
 ```java
 @Entity
 @Table(name = "appointments")
 public class Appointment {
 
-    // state transition — business logic lives here, not in service
+    // transición de estado — la lógica de negocio vive aquí, no en el servicio
     public void cancel(String reason) {
         if (this.status == AppointmentStatus.FULFILLED) {
             throw new AppointmentAlreadyFulfilledException(this.id);
@@ -162,12 +162,12 @@ public class Appointment {
 
 ---
 
-### Repositories (`domain/*/XxxRepository.java`)
+### Repositorios (`domain/*/XxxRepository.java`)
 
-- Define as interfaces extending `JpaRepository<Entity, ID>`
-- Custom finders use **Spring Data derived queries** for simple cases
-- Complex queries use `@Query` (JPQL preferred over native SQL)
-- Multitenancy filter applied via `TenantAwareRepository` base interface:
+- Definir como interfaces que extienden `JpaRepository<Entity, ID>`
+- Los finders personalizados usan **consultas derivadas de Spring Data** para casos simples
+- Las consultas complejas usan `@Query` (se prefiere JPQL sobre SQL nativo)
+- El filtro de multitenancy se aplica mediante la interfaz base `TenantAwareRepository`:
 
 ```java
 public interface AppointmentRepository
@@ -187,23 +187,23 @@ public interface AppointmentRepository
 
 ---
 
-## 3. DTO Strategy
+## 3. Estrategia de DTOs
 
-- **Request DTOs**: Java `record` classes with `@Valid` and Bean Validation annotations
-- **Response DTOs**: Java `record` classes with static factory `from(Domain)` method
-- **Command objects**: `record` in `application/*/command/` — bridge between API and application
-- **Result objects**: `record` in `application/*/result/` — bridge between application and API
-- DTOs never cross the application boundary (entities stay inside)
+- **DTOs de solicitud**: clases Java `record` con anotaciones `@Valid` y Bean Validation
+- **DTOs de respuesta**: clases Java `record` con método factory estático `from(Domain)`
+- **Objetos de comando**: `record` en `application/*/command/` — puente entre API y aplicación
+- **Objetos de resultado**: `record` en `application/*/result/` — puente entre aplicación y API
+- Los DTOs nunca cruzan el límite de la aplicación (las entidades permanecen dentro)
 
 ```java
-// Request DTO
+// DTO de solicitud
 public record BookAppointmentRequest(
     @NotNull UUID slotId,
     @NotNull UUID patientId,
     @Size(max = 500) String notes
 ) {}
 
-// Response DTO
+// DTO de respuesta
 public record AppointmentResponse(UUID id, String status, LocalDateTime date) {
     public static AppointmentResponse from(AppointmentResult result) {
         return new AppointmentResponse(result.id(), result.status(), result.date());
@@ -213,18 +213,18 @@ public record AppointmentResponse(UUID id, String status, LocalDateTime date) {
 
 ---
 
-## 4. Exception Handling Strategy
+## 4. Estrategia de Manejo de Excepciones
 
-Define a hierarchy in `api/exception/`:
+Definir una jerarquía en `api/exception/`:
 
 ```java
-// Base — all business exceptions extend this
+// Base — todas las excepciones de negocio extienden esta
 public abstract class ClinicaSaasException extends RuntimeException {
     public abstract HttpStatus httpStatus();
-    public abstract String errorCode();   // e.g. "SLOT_ALREADY_BOOKED"
+    public abstract String errorCode();   // por ejemplo "SLOT_ALREADY_BOOKED"
 }
 
-// Concrete exceptions
+// Excepciones concretas
 public class SlotAlreadyBookedException extends ClinicaSaasException {
     @Override public HttpStatus httpStatus() { return HttpStatus.CONFLICT; }
     @Override public String errorCode() { return "SLOT_ALREADY_BOOKED"; }
@@ -241,7 +241,7 @@ public class TenantAccessDeniedException extends ClinicaSaasException {
 }
 ```
 
-`GlobalExceptionHandler` maps to `ErrorResponse`:
+`GlobalExceptionHandler` mapea a `ErrorResponse`:
 
 ```java
 @RestControllerAdvice
@@ -266,49 +266,51 @@ public class GlobalExceptionHandler {
 
 ---
 
-## 5. Validation Strategy
+## 5. Estrategia de Validación
 
-- All input validated at the HTTP boundary using **Jakarta Bean Validation**
-- No manual `if (x == null)` checks in controllers or services for input
-- Domain-level validation (business rules) lives in domain entities and throws domain exceptions
-- Use `@Validated` on service classes for method-level parameter validation when needed
+- Toda entrada validada en el límite HTTP usando **Jakarta Bean Validation**
+- Sin verificaciones manuales `if (x == null)` en controladores o servicios para la entrada
+- La validación a nivel de dominio (reglas de negocio) vive en las entidades de dominio
+  y lanza excepciones de dominio
+- Usar `@Validated` en clases de servicio para validación de parámetros a nivel de método
+  cuando sea necesario
 
-Annotations used:
+Anotaciones usadas:
 ```
 @NotNull, @NotBlank, @Size, @Email, @Min, @Max, @Pattern, @Future, @PastOrPresent
 ```
 
 ---
 
-## 6. Logging Strategy
+## 6. Estrategia de Logging
 
-- Use **SLF4J** with Logback (Spring Boot default)
-- Logger as static final field: `private static final Logger log = LoggerFactory.getLogger(X.class)`
-- **Do not log passwords, tokens, or PII**
-- Log levels:
-  - `ERROR`: unrecoverable errors, unexpected states
-  - `WARN`: recoverable issues, degraded operation (e.g. cache miss)
-  - `INFO`: business events (appointment created, user authenticated)
-  - `DEBUG`: internal flow, only in development
+- Usar **SLF4J** con Logback (predeterminado de Spring Boot)
+- Logger como campo static final: `private static final Logger log = LoggerFactory.getLogger(X.class)`
+- **No registrar contraseñas, tokens ni PII**
+- Niveles de log:
+  - `ERROR`: errores irrecuperables, estados inesperados
+  - `WARN`: problemas recuperables, operación degradada (por ejemplo, cache miss)
+  - `INFO`: eventos de negocio (turno creado, usuario autenticado)
+  - `DEBUG`: flujo interno, solo en desarrollo
 
 ```java
-// CORRECT
+// CORRECTO
 log.info("Appointment created: id={}, tenant={}, patient={}", 
          appointment.getId(), tenantId, patientId);
 
-// WRONG — logs sensitive data
+// INCORRECTO — registra datos sensibles
 log.debug("User login attempt: email={}, password={}", email, password);
 ```
 
 ---
 
-## 7. Multitenancy Pattern
+## 7. Patrón de Multitenancy
 
-Every request carries `tenant_id` from the JWT claim.
-`TenantContextHolder` (ThreadLocal) is populated by `TenantContextFilter`.
+Cada solicitud lleva `tenant_id` del claim del JWT.
+`TenantContextHolder` (ThreadLocal) es poblado por `TenantContextFilter`.
 
 ```java
-// Filter populates ThreadLocal
+// El filtro popula el ThreadLocal
 @Component
 public class TenantContextFilter extends OncePerRequestFilter {
     @Override
@@ -324,9 +326,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
     }
 }
 
-// Repository usage — ALWAYS pass tenantId explicitly
+// Uso en repositorio — SIEMPRE pasar tenantId explícitamente
 List<Appointment> findByTenantIdAndDate(UUID tenantId, LocalDate date);
 ```
 
-**Rule**: Every repository query that touches tenant data **must** include
-`tenantId` as a parameter. No exceptions.
+**Regla**: Toda consulta de repositorio que toque datos del tenant **debe** incluir
+`tenantId` como parámetro. Sin excepciones.
