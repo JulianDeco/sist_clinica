@@ -1,7 +1,9 @@
 package com.clinicasaas.config;
 
+import com.clinicasaas.application.auth.PermissionService;
 import com.clinicasaas.application.auth.TokenBlocklistPort;
 import com.clinicasaas.config.filter.JwtAuthenticationFilter;
+import com.clinicasaas.config.filter.PermissionLoadingFilter;
 import com.clinicasaas.config.filter.RateLimitFilter;
 import com.clinicasaas.config.filter.TenantContextFilter;
 import java.util.List;
@@ -33,13 +35,16 @@ public class SecurityConfig {
 
   private final JwtConfig jwtConfig;
   private final TokenBlocklistPort blocklist;
+  private final PermissionService permissionService;
 
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
 
-  public SecurityConfig(JwtConfig jwtConfig, TokenBlocklistPort blocklist) {
+  public SecurityConfig(
+      JwtConfig jwtConfig, TokenBlocklistPort blocklist, PermissionService permissionService) {
     this.jwtConfig = jwtConfig;
     this.blocklist = blocklist;
+    this.permissionService = permissionService;
   }
 
   @Bean
@@ -66,7 +71,8 @@ public class SecurityConfig {
         .addFilterBefore(
             new JwtAuthenticationFilter(jwtConfig, blocklist),
             UsernamePasswordAuthenticationFilter.class)
-        .addFilterAfter(new TenantContextFilter(), JwtAuthenticationFilter.class);
+        .addFilterAfter(new TenantContextFilter(), JwtAuthenticationFilter.class)
+        .addFilterAfter(new PermissionLoadingFilter(permissionService), TenantContextFilter.class);
 
     return http.build();
   }
