@@ -3,7 +3,6 @@ package com.clinicasaas.application.auth;
 import com.clinicasaas.api.auth.dto.*;
 import com.clinicasaas.config.JwtConfig;
 import com.clinicasaas.domain.auth.*;
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
@@ -41,7 +40,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
   private final RefreshTokenRepository refreshTokenRepo;
   private final RoleRepository roleRepo;
   private final JwtConfig jwtConfig;
-  private final JwtBlocklistService blocklist;
+  private final TokenBlocklistPort blocklist;
   private final PasswordEncoder passwordEncoder;
   private final long refreshTokenMs;
 
@@ -51,7 +50,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
       RefreshTokenRepository refreshTokenRepo,
       RoleRepository roleRepo,
       JwtConfig jwtConfig,
-      JwtBlocklistService blocklist,
+      TokenBlocklistPort blocklist,
       PasswordEncoder passwordEncoder,
       @Value("${app.jwt.refresh-token-expiration-ms}") long refreshTokenMs) {
     this.userRepo = userRepo;

@@ -1,7 +1,7 @@
 package com.clinicasaas.config.filter;
 
+import com.clinicasaas.application.auth.TokenBlocklistPort;
 import com.clinicasaas.config.JwtConfig;
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -22,9 +22,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtConfig jwtConfig;
-  private final JwtBlocklistService blocklist;
+  private final TokenBlocklistPort blocklist;
 
-  public JwtAuthenticationFilter(JwtConfig jwtConfig, JwtBlocklistService blocklist) {
+  public JwtAuthenticationFilter(JwtConfig jwtConfig, TokenBlocklistPort blocklist) {
     this.jwtConfig = jwtConfig;
     this.blocklist = blocklist;
   }

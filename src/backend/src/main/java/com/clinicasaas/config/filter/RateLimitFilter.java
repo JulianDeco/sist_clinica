@@ -1,6 +1,6 @@
 package com.clinicasaas.config.filter;
 
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
+import com.clinicasaas.application.auth.TokenBlocklistPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,16 +9,16 @@ import java.io.IOException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Rate limiting en POST /api/v1/auth/login: máximo 5 req/IP/min (FR-09). IP extraída de
- * X-Forwarded-For (primer valor) porque el backend corre detrás de Nginx.
+ * Rate limiting en POST /api/v1/auth/login: máximo 5 req/IP/min (FR-09). IP extraída de X-Real-IP
+ * porque el backend corre detrás de Nginx.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
   private static final String LOGIN_PATH = "/api/v1/auth/login";
 
-  private final JwtBlocklistService blocklist;
+  private final TokenBlocklistPort blocklist;
 
-  public RateLimitFilter(JwtBlocklistService blocklist) {
+  public RateLimitFilter(TokenBlocklistPort blocklist) {
     this.blocklist = blocklist;
   }
 

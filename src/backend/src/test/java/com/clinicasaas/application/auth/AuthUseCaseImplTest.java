@@ -7,8 +7,6 @@ import static org.mockito.BDDMockito.*;
 import com.clinicasaas.api.auth.dto.*;
 import com.clinicasaas.config.JwtConfig;
 import com.clinicasaas.domain.auth.*;
-import com.clinicasaas.infrastructure.auth.JpaRoleRepository;
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,9 +36,9 @@ class AuthUseCaseImplTest {
   @Mock UserRepository userRepo;
   @Mock UserTenantRepository userTenantRepo;
   @Mock RefreshTokenRepository refreshTokenRepo;
-  @Mock JpaRoleRepository roleRepo;
+  @Mock RoleRepository roleRepo;
+  @Mock TokenBlocklistPort blocklist;
   @Mock JwtConfig jwtConfig;
-  @Mock JwtBlocklistService blocklist;
   @Mock PasswordEncoder passwordEncoder;
   @Mock HttpServletResponse httpResponse;
 

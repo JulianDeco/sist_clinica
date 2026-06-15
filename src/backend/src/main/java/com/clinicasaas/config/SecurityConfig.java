@@ -1,9 +1,9 @@
 package com.clinicasaas.config;
 
+import com.clinicasaas.application.auth.TokenBlocklistPort;
 import com.clinicasaas.config.filter.JwtAuthenticationFilter;
 import com.clinicasaas.config.filter.RateLimitFilter;
 import com.clinicasaas.config.filter.TenantContextFilter;
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +32,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private final JwtConfig jwtConfig;
-  private final JwtBlocklistService blocklist;
+  private final TokenBlocklistPort blocklist;
 
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
 
-  public SecurityConfig(JwtConfig jwtConfig, JwtBlocklistService blocklist) {
+  public SecurityConfig(JwtConfig jwtConfig, TokenBlocklistPort blocklist) {
     this.jwtConfig = jwtConfig;
     this.blocklist = blocklist;
   }

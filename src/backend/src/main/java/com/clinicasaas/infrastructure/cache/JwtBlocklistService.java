@@ -1,15 +1,16 @@
 package com.clinicasaas.infrastructure.cache;
 
+import com.clinicasaas.application.auth.TokenBlocklistPort;
 import java.time.Duration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Blocklist de JTIs y rate limiting de login en Redis. Claves: clinica:jti:{jti} ·
- * clinica:ratelimit:login:{ip} (estándar 04-redis-standards).
+ * Adaptador Redis para TokenBlocklistPort. Claves: clinica:jti:{jti} · clinica:ratelimit:login:{ip}
+ * (estándar 04-redis-standards).
  */
 @Service
-public class JwtBlocklistService {
+public class JwtBlocklistService implements TokenBlocklistPort {
 
   private static final String JTI_PREFIX = "clinica:jti:";
   private static final String RATELIMIT_PREFIX = "clinica:ratelimit:login:";

@@ -2,7 +2,7 @@ package com.clinicasaas.config.filter;
 
 import static org.mockito.BDDMockito.*;
 
-import com.clinicasaas.infrastructure.cache.JwtBlocklistService;
+import com.clinicasaas.application.auth.TokenBlocklistPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RateLimitFilterTest {
 
-  @Mock JwtBlocklistService blocklist;
+  @Mock TokenBlocklistPort blocklist;
   @Mock HttpServletRequest request;
   @Mock HttpServletResponse response;
   @Mock FilterChain chain;
