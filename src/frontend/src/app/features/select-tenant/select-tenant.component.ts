@@ -37,37 +37,47 @@ import { TenantMembership } from '../../core/auth/models/tenant-membership.model
       </mat-card>
     </div>
   `,
-  styles: [`
-    .wrapper {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: #e3f2fd; padding: 24px;
-    }
-    .card { width: 100%; max-width: 440px; }
-  `],
+  styles: [
+    `
+      .wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #e3f2fd;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 440px;
+      }
+    `,
+  ],
 })
 export class SelectTenantComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  private static readonly ROLE_LABELS: Record<string, string> = {
+    ADMIN: 'Administrador',
+    DOCTOR: 'Médico',
+    SECRETARY: 'Secretaria',
+  };
+
   ngOnInit(): void {
-    // Auto-select si solo hay un tenant (no debería llegar aquí, pero como seguro)
-    if (this.auth.availableTenants().length === 1) {
-      this.select(this.auth.availableTenants()[0]);
-    }
+    const tenants = this.auth.availableTenants();
+    if (tenants.length === 1) this.select(tenants[0]);
   }
 
+  /** Selecciona el tenant indicado y navega a la agenda. */
   select(tenant: TenantMembership): void {
     this.auth.selectTenant(tenant.tenantId).subscribe({
       next: () => this.router.navigate(['/app/agenda']),
     });
   }
 
+  /** Devuelve la etiqueta en español para un rol dado. */
   roleLabel(role: string): string {
-    const labels: Record<string, string> = {
-      ADMIN: 'Administrador',
-      DOCTOR: 'Médico',
-      SECRETARY: 'Secretaria',
-    };
-    return labels[role] ?? role;
+    return SelectTenantComponent.ROLE_LABELS[role] ?? role;
   }
 }

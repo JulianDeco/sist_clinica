@@ -24,12 +24,22 @@ interface NavItem {
       }
     </mat-nav-list>
   `,
-  styles: [`
-    :host { display: block; width: 240px; height: 100%; padding-top: 64px; }
-    .active-link { background: rgba(0,0,0,.06); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 240px;
+        height: 100%;
+        padding-top: 64px;
+      }
+      .active-link {
+        background: rgba(0, 0, 0, 0.06);
+      }
+    `,
+  ],
 })
 export class SidebarComponent {
+  /** Ítems de navegación del panel lateral, uno por feature. */
   readonly navItems: NavItem[] = [
     { label: 'Agenda', icon: 'calendar_today', route: '/app/agenda' },
     { label: 'Pacientes', icon: 'people', route: '/app/patients' },

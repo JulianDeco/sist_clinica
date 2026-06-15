@@ -34,12 +34,12 @@
     {
       "id": "T-002",
       "titulo": "Scaffold frontend — Angular 18 + Angular Material",
-      "estado": "en_progreso",
+      "estado": "hecho",
       "agente": "frontend-developer",
       "prioridad": "alta",
       "fecha_inicio": "2026-06-09",
-      "fecha_fin": null,
-      "descripcion": "Spec APPROVED (2026-06-09). Workspace Angular 18: core/shared/features/layout, Angular Material tema azul médico, interceptores (auth/tenant/error), guards (auth/role/select-tenant), rutas lazy-loaded, LandingComponent, SelectTenantComponent, MainLayout con tenant switcher. AuthService con máquina de estados 3-fase (ADR-014): UNAUTHENTICATED→IDENTITY_CONFIRMED→READY. Migración V010 (refactor users multi-tenant) incluida.",
+      "fecha_fin": "2026-06-15",
+      "descripcion": "Spec APPROVED (2026-06-09). Workspace Angular 18: core/shared/features/layout, Angular Material tema azul médico, interceptores (auth/tenant/error), guards (auth/role/select-tenant), rutas lazy-loaded, LandingComponent, SelectTenantComponent, MainLayout con tenant switcher. AuthService máquina de estados 3-fase (ADR-014). Tests: 31/31 GREEN (auth.service, auth.guard, role.guard, select-tenant.guard, auth.interceptor, tenant.interceptor, error.interceptor). JSDoc completo. Antipatrón CommonModule eliminado de NavbarComponent.",
       "ref": "docs/specifications/T-002-scaffold-frontend.spec.md"
     },
     {
@@ -232,12 +232,12 @@
     {
       "id": "T-020",
       "titulo": "Entrega académica ICONIX — diagramas, prototipo y patrones",
-      "estado": "testeando",
+      "estado": "hecho",
       "agente": "software-architect",
       "prioridad": "alta",
       "fecha_inicio": "2026-06-10",
-      "fecha_fin": null,
-      "descripcion": "9 entregables generados en seminario/iconix/. Correcciones 2026-06-15: diagramas CU-02 (robustez + secuencia) actualizados para incluir pasos LLM — Sugerir CIE-10 (T-018) y Generar resumen Encounter (T-017); referencia cambiada de 'decisión 2026-06-10' a ADR-016 en notas de máquinas de estado. Pendiente: render online + revisión de @julian; capturas y bocetos del prototipo pendientes.",
+      "fecha_fin": "2026-06-16",
+      "descripcion": "9 entregables generados en seminario/iconix/. Correcciones 2026-06-15: diagramas CU-02 (robustez + secuencia) actualizados para incluir pasos LLM (T-017/T-018); ADR-016 referenciado en notas de máquinas de estado. Revisado y aprobado por @julian. Entregado 2026-06-16.",
       "ref": ".claude/tasks/T-020.md"
     }
   ]

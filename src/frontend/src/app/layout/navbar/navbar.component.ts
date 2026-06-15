@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,13 +11,13 @@ import { TenantService } from '../../core/tenant/tenant.service';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule],
+  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule],
   template: `
     <mat-toolbar color="primary" class="navbar">
       <span class="brand">ClinicaSaaS</span>
-      <span class="tenant-name" *ngIf="tenant.tenantName()">
-        — {{ tenant.tenantName() }}
-      </span>
+      @if (tenant.tenantName()) {
+        <span class="tenant-name">— {{ tenant.tenantName() }}</span>
+      }
       <span class="spacer"></span>
 
       <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
@@ -40,26 +39,46 @@ import { TenantService } from '../../core/tenant/tenant.service';
 
       <mat-menu #tenantMenu="matMenu">
         @for (t of auth.availableTenants(); track t.tenantId) {
-          <button mat-menu-item (click)="switchTenant(t.tenantId)"
-                  [disabled]="t.tenantId === tenant.tenantId()">
+          <button
+            mat-menu-item
+            (click)="switchTenant(t.tenantId)"
+            [disabled]="t.tenantId === tenant.tenantId()"
+          >
             {{ t.tenantName }}
           </button>
         }
       </mat-menu>
     </mat-toolbar>
   `,
-  styles: [`
-    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
-    .brand { font-weight: 600; }
-    .tenant-name { margin-left: 8px; font-weight: 400; opacity: .85; }
-    .spacer { flex: 1; }
-  `],
+  styles: [
+    `
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+      }
+      .brand {
+        font-weight: 600;
+      }
+      .tenant-name {
+        margin-left: 8px;
+        font-weight: 400;
+        opacity: 0.85;
+      }
+      .spacer {
+        flex: 1;
+      }
+    `,
+  ],
 })
 export class NavbarComponent {
   readonly auth = inject(AuthService);
   readonly tenant = inject(TenantService);
   private readonly router = inject(Router);
 
+  /** Cambia al tenant indicado y navega a la agenda. */
   switchTenant(tenantId: string): void {
     this.auth.switchTenant(tenantId).subscribe({
       next: () => this.router.navigate(['/app/agenda']),

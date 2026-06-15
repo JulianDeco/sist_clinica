@@ -6,7 +6,10 @@ import { AuthService } from '../auth/auth.service';
 export class TenantService {
   private readonly auth = inject(AuthService);
 
-  readonly activeTenant = computed(() => this.auth.activeTenant());
-  readonly tenantId = computed(() => this.auth.activeTenant()?.tenantId ?? null);
-  readonly tenantName = computed(() => this.auth.activeTenant()?.tenantName ?? null);
+  /** Membresía completa del tenant activo, o null si no hay sesión activa. */
+  readonly activeTenant = this.auth.activeTenant;
+  /** ID del tenant activo, o null si no hay sesión activa. */
+  readonly tenantId = computed(() => this.activeTenant()?.tenantId ?? null);
+  /** Nombre del tenant activo, o null si no hay sesión activa. */
+  readonly tenantName = computed(() => this.activeTenant()?.tenantName ?? null);
 }
