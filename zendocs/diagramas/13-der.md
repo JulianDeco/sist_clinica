@@ -1,0 +1,280 @@
+# DER Físico
+
+Diagrama entidad-relación físico — PostgreSQL 16.
+
+```mermaid
+erDiagram
+
+    %% ══════════════════════════════════════════════════
+    %% IDENTIDAD Y MULTITENANT  (tablas globales)
+    %% ══════════════════════════════════════════════════
+
+    tenants {
+        UUID        id              PK
+        VARCHAR     slug            UK
+        VARCHAR     name
+        VARCHAR     plan
+        BOOLEAN     active
+        JSONB       enabled_modules
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    users {
+        UUID        id              PK
+        VARCHAR     email           UK
+        VARCHAR     password_hash
+        VARCHAR     full_name
+        BOOLEAN     active
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by      FK
+        UUID        updated_by      FK
+    }
+
+    roles {
+        UUID    id      PK
+        VARCHAR name    UK
+    }
+
+    permissions {
+        UUID    id          PK
+        VARCHAR name        UK
+        VARCHAR module
+        VARCHAR description
+    }
+
+    role_permissions {
+        UUID role_id        FK
+        UUID permission_id  FK
+    }
+
+    user_tenants {
+        UUID        user_id     FK
+        UUID        tenant_id   FK
+        UUID        role_id     FK
+        BOOLEAN     active
+        TIMESTAMPTZ joined_at
+    }
+
+    refresh_tokens {
+        UUID        id                  PK
+        UUID        user_id             FK
+        UUID        tenant_id           FK
+        VARCHAR     jti                 UK
+        VARCHAR     token_hash
+        TIMESTAMPTZ issued_at
+        TIMESTAMPTZ expires_at
+        TIMESTAMPTZ revoked_at
+        VARCHAR     revocation_reason
+        VARCHAR     device_id
+        VARCHAR     user_agent
+        VARCHAR     ip_address
+        TIMESTAMPTZ last_used_at
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% FHIR STORAGE  (tenant-scoped)
+    %% ══════════════════════════════════════════════════
+
+    fhir_resources {
+        UUID        id              PK
+        UUID        tenant_id       FK
+        VARCHAR     fhir_id         UK  "UK compuesta (tenant_id, resource_type, fhir_id)"
+        VARCHAR     resource_type
+        INTEGER     version_id
+        JSONB       resource_data
+        CHAR        resource_hash
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by      FK
+        UUID        updated_by      FK
+        TIMESTAMPTZ deleted_at
+        UUID        deleted_by      FK
+    }
+
+    fhir_search_params {
+        UUID    id                  PK
+        UUID    tenant_id           FK
+        UUID    fhir_resource_id    FK
+        VARCHAR param_name
+        TEXT    param_value
+        VARCHAR param_type
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% AGENDA Y TURNOS  (tenant-scoped)
+    %% ══════════════════════════════════════════════════
+
+    appointments {
+        UUID        id                      PK
+        UUID        tenant_id               FK
+        UUID        fhir_resource_id        FK
+        VARCHAR     fhir_appointment_id     UK  "UK compuesta con tenant_id"
+        VARCHAR     patient_fhir_id
+        VARCHAR     practitioner_fhir_id
+        VARCHAR     slot_fhir_id
+        DATE        appointment_date
+        TIMESTAMPTZ start_time
+        TIMESTAMPTZ end_time
+        VARCHAR     status
+        BOOLEAN     is_overbooked
+        VARCHAR     cancellation_reason
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by              FK
+        UUID        updated_by              FK
+        TIMESTAMPTZ deleted_at
+        UUID        deleted_by              FK
+    }
+
+    appointment_noshow_scores {
+        UUID        id              PK
+        UUID        tenant_id       FK
+        UUID        appointment_id  FK
+        TIMESTAMPTZ calculated_at
+        SMALLINT    score
+        VARCHAR     confidence
+        VARCHAR     model_version
+        JSONB       factors
+        TIMESTAMPTZ created_at
+        UUID        created_by      FK
+    }
+
+    coverage_weekly_usage {
+        UUID        id                  PK
+        UUID        tenant_id           FK
+        VARCHAR     patient_fhir_id
+        VARCHAR     coverage_fhir_id
+        DATE        week_start_date
+        SMALLINT    usage_count
+        SMALLINT    weekly_limit
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by          FK
+        UUID        updated_by          FK
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% CONSULTAS MÉDICAS  (tenant-scoped)
+    %% ══════════════════════════════════════════════════
+
+    encounters {
+        UUID        id                      PK
+        UUID        tenant_id               FK
+        UUID        fhir_resource_id        FK
+        VARCHAR     fhir_encounter_id       UK  "UK compuesta con tenant_id"
+        UUID        appointment_id          FK
+        VARCHAR     patient_fhir_id
+        VARCHAR     practitioner_fhir_id
+        VARCHAR     status
+        VARCHAR     class_code
+        TIMESTAMPTZ started_at
+        TIMESTAMPTZ finished_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by              FK
+        UUID        updated_by              FK
+        TIMESTAMPTZ deleted_at
+        UUID        deleted_by              FK
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% OVERBOOKING  (tenant-scoped)
+    %% ══════════════════════════════════════════════════
+
+    overbooking_config {
+        UUID        id                          PK
+        UUID        tenant_id                   FK
+        VARCHAR     practitioner_fhir_id
+        BOOLEAN     enabled
+        SMALLINT    risk_threshold
+        SMALLINT    max_weekly_overbookings
+        JSONB       excluded_appointment_types
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by                  FK
+        UUID        updated_by                  FK
+        TIMESTAMPTZ deleted_at
+        UUID        deleted_by                  FK
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% NOTIFICACIONES  (tenant-scoped)
+    %% ══════════════════════════════════════════════════
+
+    notification_log {
+        UUID        id              PK
+        UUID        tenant_id       FK
+        UUID        appointment_id  FK
+        VARCHAR     channel
+        VARCHAR     message_type
+        VARCHAR     recipient
+        VARCHAR     status
+        TIMESTAMPTZ sent_at
+        TIMESTAMPTZ response_at
+        JSONB       response_payload
+        SMALLINT    retry_count
+        TEXT        error_message
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        UUID        created_by      FK
+        UUID        updated_by      FK
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% AUDITORÍA  (tenant-scoped, inmutable)
+    %% ══════════════════════════════════════════════════
+
+    audit_log {
+        UUID        id              PK
+        UUID        tenant_id       FK
+        UUID        user_id         FK  "nullable: acciones de sistema"
+        VARCHAR     user_email
+        VARCHAR     action
+        VARCHAR     resource_type
+        VARCHAR     resource_id
+        JSONB       old_values
+        JSONB       new_values
+        VARCHAR     ip_address
+        VARCHAR     user_agent
+        VARCHAR     request_id
+        TIMESTAMPTZ occurred_at
+    }
+
+    %% ══════════════════════════════════════════════════
+    %% RELACIONES
+    %% ══════════════════════════════════════════════════
+
+    %% Identidad y membresía
+    tenants         ||--o{ user_tenants             : "agrupa"
+    users           ||--o{ user_tenants             : "pertenece a"
+    roles           ||--o{ user_tenants             : "asignado en"
+    roles           ||--o{ role_permissions         : "tiene"
+    permissions     ||--o{ role_permissions         : "asignado a"
+    users           ||--o{ refresh_tokens           : "emite"
+    tenants         ||--o{ refresh_tokens           : "contexto de sesión"
+
+    %% FHIR storage
+    tenants         ||--o{ fhir_resources           : "almacena"
+    fhir_resources  ||--o{ fhir_search_params       : "indexado en"
+
+    %% Agenda
+    tenants         ||--o{ appointments             : "tiene"
+    fhir_resources  ||--o{ appointments             : "proyecta"
+    appointments    ||--o{ appointment_noshow_scores : "evaluado por"
+    tenants         ||--o{ coverage_weekly_usage    : "controla"
+
+    %% Consultas
+    tenants         ||--o{ encounters               : "tiene"
+    fhir_resources  ||--o{ encounters               : "proyecta"
+    appointments    ||--|| encounters               : "origina"
+
+    %% Overbooking
+    tenants         ||--o{ overbooking_config       : "configura"
+
+    %% Notificaciones y auditoría
+    tenants         ||--o{ notification_log         : "registra"
+    appointments    ||--o{ notification_log         : "notificado en"
+    tenants         ||--o{ audit_log                : "audita"
+```

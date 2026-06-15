@@ -1,0 +1,1 @@
+/home/julian/Documentos/Trabajo/sist_clinica/docs/standards/02-frontend-standards.md

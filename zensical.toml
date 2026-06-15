@@ -1,0 +1,148 @@
+[project]
+site_name        = "ClinicaSaaS — Docs"
+site_description = "Documentación técnica y académica del SaaS multitenant FHIR R4 — Seminario UAI 2026"
+site_author      = "Julian Deco"
+site_url         = "https://juliandeco.github.io/sist_clinica/"
+copyright        = "Copyright &copy; 2026 Julian Deco — UAI Seminario de Trabajo Final"
+docs_dir         = "zendocs"
+
+repo_url  = "https://github.com/JulianDeco/sist_clinica"
+repo_name = "JulianDeco/sist_clinica"
+
+nav = [
+  { "Inicio"       = "index.md" },
+  { "Arquitectura" = "arquitectura/01-high-level-architecture.md" },
+  { "Diagramas ICONIX" = [
+      { "Índice"            = "diagramas/index.md" },
+      { "General" = [
+          { "Casos de Uso"      = "diagramas/01-casos-de-uso.md" },
+          { "Modelo de Dominio" = "diagramas/02-dominio.md" },
+          { "Arquitectura"      = "diagramas/07-arquitectura.md" },
+          { "Clases de Dominio" = "diagramas/12-clases.md" },
+          { "DER Físico"        = "diagramas/13-der.md" },
+      ]},
+      { "Robustez" = [
+          { "CU-01 Reservar turno"      = "diagramas/03-robustez-cu01.md" },
+          { "CU-02 Consulta médica"     = "diagramas/04-robustez-cu02.md" },
+          { "CU-03 Predicción ausent."  = "diagramas/05-robustez-cu03.md" },
+          { "CU-04 Overbooking"         = "diagramas/06-robustez-cu04.md" },
+      ]},
+      { "Secuencia" = [
+          { "CU-01 Reservar turno"      = "diagramas/08-secuencia-cu01.md" },
+          { "CU-02 Consulta médica"     = "diagramas/09-secuencia-cu02.md" },
+          { "CU-03 Predicción ausent."  = "diagramas/10-secuencia-cu03.md" },
+          { "CU-04 Overbooking"         = "diagramas/11-secuencia-cu04.md" },
+      ]},
+  ]},
+  { "Estándares" = [
+      { "Backend Java/Spring"   = "estandares/01-backend-standards.md" },
+      { "Frontend Angular"      = "estandares/02-frontend-standards.md" },
+      { "Base de datos"         = "estandares/03-database-standards.md" },
+      { "Redis"                 = "estandares/04-redis-standards.md" },
+      { "Seguridad"             = "estandares/05-security-standards.md" },
+      { "API REST"              = "estandares/06-api-standards.md" },
+      { "Documentación JavaDoc" = "estandares/07-documentation-standards.md" },
+      { "Git & commits"         = "estandares/08-git-standards.md" },
+      { "Feature workflow"      = "estandares/09-feature-workflow.md" },
+      { "Reglas agente IA"      = "estandares/10-ai-agent-rules.md" },
+  ]},
+  { "ADRs" = [
+      { "Índice"                         = "adr/README.md" },
+      { "Log de decisiones"              = "adr/decisions-log.md" },
+      { "ADR-001 Spring Boot"            = "adr/ADR-001-spring-boot.md" },
+      { "ADR-002 PostgreSQL"             = "adr/ADR-002-postgresql.md" },
+      { "ADR-003 Multitenancy"           = "adr/ADR-003-row-level-multitenancy.md" },
+      { "ADR-004 Redis"                  = "adr/ADR-004-redis.md" },
+      { "ADR-005 Angular"                = "adr/ADR-005-angular.md" },
+      { "ADR-006 JWT"                    = "adr/ADR-006-jwt-authentication.md" },
+      { "ADR-007 Docker"                 = "adr/ADR-007-docker.md" },
+      { "ADR-008 Flyway"                 = "adr/ADR-008-flyway.md" },
+      { "ADR-009 FHIR JSONB"             = "adr/ADR-009-fhir-jsonb-storage.md" },
+      { "ADR-010 Clean Architecture"     = "adr/ADR-010-clean-architecture.md" },
+      { "ADR-011 SDD"                    = "adr/ADR-011-spec-driven-development.md" },
+      { "ADR-012 LLM Integration"        = "adr/ADR-012-llm-integration.md" },
+      { "ADR-013 Notificaciones"         = "adr/ADR-013-notification-channels.md" },
+      { "ADR-014 Membresía multitenant"  = "adr/ADR-014-multi-tenant-membership.md" },
+      { "ADR-015 User-Practitioner"      = "adr/ADR-015-user-practitioner-mapping.md" },
+      { "ADR-016 State Machines"         = "adr/ADR-016-appointment-encounter-state-machines.md" },
+  ]},
+  { "Testing" = "testing/01-testing-standards.md" },
+  { "Specs"   = [
+      { "Template"  = "specs/_template.spec.md" },
+      { "DB Schema" = "specs/DB-Schema.spec.md" },
+      { "T-002 Frontend scaffold" = "specs/T-002-scaffold-frontend.spec.md" },
+      { "T-003 Auth JWT"          = "specs/T-003-auth-jwt.spec.md" },
+  ]},
+  { "Seminario UAI" = [
+      { "Plan de trabajo"   = "seminario/plan-de-trabajo.md" },
+      { "Plan de negocios"  = "seminario/plan-de-negocios.md" },
+      { "BMC"               = "seminario/bmc.md" },
+      { "Entrega 2"         = "seminario/entrega-2.md" },
+      { "ICONIX — Especificación CU" = "seminario/iconix/02-especificacion-casos-de-uso.md" },
+      { "ICONIX — Glosario dominio"  = "seminario/iconix/03-glosario-dominio.md" },
+      { "ICONIX — Patrones diseño"   = "seminario/iconix/04-patrones-de-diseno.md" },
+      { "ICONIX — Prototipo"         = "seminario/iconix/05-prototipo.md" },
+  ]},
+]
+
+# ---------------------------------------------------------------------------
+[project.theme]
+language = "en"
+features = [
+    "announce.dismiss",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.footnote.tooltips",
+    "content.tabs.link",
+    "content.tooltips",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+]
+
+[[project.theme.palette]]
+scheme      = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Cambiar a modo oscuro"
+
+[[project.theme.palette]]
+scheme      = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Cambiar a modo claro"
+
+# ---------------------------------------------------------------------------
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.betterem]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums      = true
+line_spans           = "__span"
+pygments_lang_class  = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.keys]
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.smartsymbols]
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style     = true
+combine_header_slug = true
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+[project.markdown_extensions.pymdownx.tilde]

@@ -1,0 +1,58 @@
+# Arquitectura
+
+Despliegue y componentes del sistema.
+
+```mermaid
+graph TB
+    USR(["👤 Usuario\nsecretaria / profesional"])
+
+    subgraph NAV["Navegador"]
+        SPA["SPA Angular 18\nAngular Material · Signals"]
+    end
+
+    subgraph VPS["VPS 4 GB RAM — Docker Compose"]
+        NGINX["Nginx\nreverse proxy + SSL · 80/443"]
+        FE["Frontend\nNginx estático · build Angular"]
+
+        subgraph BACKEND["Backend — Spring Boot 3 · Java 21 · :8080"]
+            direction TB
+            API["api\nControllers REST · /api/v1/** · /fhir/R4/**"]
+            APP["application\nUC-01..UC-04 · motor heurístico"]
+            DOM["domain\nEntidades · repos interfaces"]
+            INFRA["infrastructure\nJPA · Redis · notificaciones"]
+        end
+
+        PG[("PostgreSQL 16 · :5432\nfhir_resources · tablas · Flyway")]
+        REDIS[("Redis 8 · :6379\nRBAC · JWT blocklist · scores")]
+    end
+
+    TG["☁️ Telegram Bot API"]
+    SMTP["☁️ SMTP"]
+
+    %% ── Runtime ──────────────────────────────────────────────────
+    USR --> SPA
+    SPA -->|"HTTPS · Bearer JWT + X-Tenant-ID"| NGINX
+    NGINX -->|"estáticos"| FE
+    NGINX -->|"proxy HTTP :8080"| API
+
+    %% ── Regla de dependencia Clean Architecture ──────────────────
+    API -.->|"invoca casos de uso"| APP
+    APP -.->|"usa entidades e interfaces"| DOM
+    INFRA -.->|"implementa interfaces"| DOM
+
+    %% ── Infraestructura externa ──────────────────────────────────
+    INFRA -->|"JDBC · tenant_id en toda query"| PG
+    INFRA -->|"RESP"| REDIS
+    INFRA -->|"HTTPS Bot API"| TG
+    INFRA -->|"SMTP/TLS"| SMTP
+
+    %% Notas
+    NOTE_SEC["📝 Filtros Security:\nRateLimitFilter → JwtAuthFilter → TenantContextFilter\nJWT stateless · refresh rotation · ADR-006/014"]
+    NOTE_REDIS["📝 Redis no es almacenamiento primario:\ncae a PostgreSQL si no está disponible."]
+
+    BACKEND --- NOTE_SEC
+    REDIS --- NOTE_REDIS
+
+    style NOTE_SEC fill:#FFF8DC,stroke:#CCBB88,color:#333
+    style NOTE_REDIS fill:#FFF8DC,stroke:#CCBB88,color:#333
+```

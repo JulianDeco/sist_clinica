@@ -1,0 +1,74 @@
+# Secuencia CU-04
+
+CU-04: Sugerir y aplicar overbooking inteligente.
+
+```mermaid
+sequenceDiagram
+    %% Este CU EXTIENDE a CU-01: se dispara durante la reserva con el score ya calculado.
+    actor Secretario as Secretario/a
+    participant UI as Formulario de reserva (CU-01)
+    participant AgendaUI as Pantalla de agenda
+    participant PrediccionDeRiesgo as PrediccionDeRiesgo
+    participant PoliticaDeSobreturnos as PoliticaDeSobreturnos
+    participant Turno as Turno
+    participant FranjaHoraria as FranjaHoraria
+    participant Sobreturno as Sobreturno
+
+    Note over UI,PrediccionDeRiesgo: Paso 1 — durante CU-01, score ya calculado (ver 08-secuencia-cu01.mmd pasos 1–4)
+    UI->>PrediccionDeRiesgo: obtenerScore(turnoId): ScoreRiesgo
+    activate UI
+    activate PrediccionDeRiesgo
+    PrediccionDeRiesgo-->>UI: ScoreRiesgo(valor: 0–100)
+    deactivate PrediccionDeRiesgo
+    UI->>PoliticaDeSobreturnos: obtenerUmbral(profesionalId): UmbralOverbooking
+    activate PoliticaDeSobreturnos
+    PoliticaDeSobreturnos-->>UI: UmbralOverbooking(porcentaje: 70%)
+    deactivate PoliticaDeSobreturnos
+
+    Note over UI,FranjaHoraria: Paso 2 — Verificar política de sobreturnos
+    UI->>PoliticaDeSobreturnos: verificarPolitica(profesionalId, tipoTurno): ResultadoPolitica
+    activate PoliticaDeSobreturnos
+    PoliticaDeSobreturnos-->>UI: ResultadoPolitica(habilitado: Boolean, motivo: String)
+    deactivate PoliticaDeSobreturnos
+    UI->>Turno: contarSobreturnos(profesionalId, semana): ContadorSobreturnos
+    activate Turno
+    Turno-->>UI: ContadorSobreturnos(usados, tope)
+    deactivate Turno
+    UI->>FranjaHoraria: tieneSobreturno(franjaId): Boolean
+    activate FranjaHoraria
+    FranjaHoraria-->>UI: Boolean
+    deactivate FranjaHoraria
+
+    alt A2 / A4 / A5 — no corresponde sugerir
+        Note over UI: A2 — overbooking deshabilitado.\nA4 — la franja ya tiene sobreturno.\nA5 — tipo excluido (cirugía, procedimiento, primera consulta).\nEl turno continúa como turno normal en CU-01.
+    else A3 — tope semanal alcanzado
+        UI-->>Secretario: notificarTopeAlcanzado(ContadorSobreturnos)
+    end
+
+    Note over UI,Secretario: Paso 3 — Sugerir sobreturno
+    UI-->>Secretario: sugerirSobreturno(franjaId, ScoreRiesgo)
+
+    Note over Secretario,UI: Paso 4
+    Secretario->>UI: aceptarSugerencia()
+    Note over UI: A1 — el secretario ignora la sugerencia: el turno original\nse crea normalmente, sin sobreturno (CU-01, pasos 5–6).
+
+    Note over UI,FranjaHoraria: Paso 5 — Crear el sobreturno
+    UI->>Sobreturno: crear(pacienteId, profesionalId, franjaId): Sobreturno
+    activate Sobreturno
+    UI->>FranjaHoraria: asociarSobreturno(franjaId, sobreturnoId)
+    activate FranjaHoraria
+    deactivate FranjaHoraria
+    Sobreturno-->>UI: Sobreturno(id, estado: RESERVADO)
+    deactivate Sobreturno
+
+    Note over Sobreturno: Postcondición: contador semanal de sobreturnos del profesional incrementado.
+
+    Note over UI,AgendaUI: Paso 6
+    UI->>AgendaUI: refrescar(profesionalId, fecha)
+    activate AgendaUI
+    AgendaUI-->>Secretario: vistaAgenda(franjas con sobreturno diferenciado)
+    deactivate AgendaUI
+    deactivate UI
+
+    Note over AgendaUI: Cursos operativos posteriores:\nA6 — cancelación del primer turno: el sobreturno pasa a ser turno normal.\nA7 — ambos pacientes asisten: el profesional ve la doble reserva y decide.\nA8 — uno falta: el otro toma la franja y el ausente se marca «no asistió».
+```

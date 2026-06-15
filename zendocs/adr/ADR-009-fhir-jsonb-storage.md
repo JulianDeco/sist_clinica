@@ -1,0 +1,1 @@
+/home/julian/Documentos/Trabajo/sist_clinica/docs/adr/ADR-009-fhir-jsonb-storage.md

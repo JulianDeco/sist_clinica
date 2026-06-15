@@ -1,0 +1,1 @@
+/home/julian/Documentos/Trabajo/sist_clinica/seminario/iconix/04-patrones-de-diseno.md

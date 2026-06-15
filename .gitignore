@@ -38,3 +38,7 @@ infra/certbot/www/
 
 # Logs
 *.log
+
+# Zensical — build output y venv local
+site/
+.venv-zensical/

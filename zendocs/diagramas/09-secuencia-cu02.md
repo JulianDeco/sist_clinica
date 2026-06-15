@@ -1,0 +1,95 @@
+# Secuencia CU-02
+
+CU-02: Gestionar consulta médica (SOAP básico).
+
+```mermaid
+sequenceDiagram
+    actor Medico as Médico
+    participant UI as Pantalla de consulta
+    participant Turno as Turno
+    participant ConsultaMedica as ConsultaMedica
+    participant Paciente as Paciente
+    participant NotaSOAP as NotaSOAP
+    participant Observacion as Observacion
+    participant ClaudeAPI as Claude API
+
+    Note over Medico,ConsultaMedica: Paso 1
+    Medico->>UI: abrirConsulta(turnoId)
+    activate UI
+    UI->>Turno: verificarEstado(turnoId): EstadoTurno
+    activate Turno
+    Turno-->>UI: EstadoTurno(LLEGO | EN_CURSO)
+    deactivate Turno
+    UI->>ConsultaMedica: recuperarOIniciar(turnoId): ConsultaMedica
+    activate ConsultaMedica
+
+    alt A3 — paciente sin turno previo (walk-in)
+        UI->>Turno: crearTurnoRetroactivo(pacienteId, profesionalId, ahora): Turno
+        activate Turno
+        UI->>ConsultaMedica: crearConsultaWalkIn(turnoId): ConsultaMedica
+        deactivate Turno
+        Note over UI: Mantiene la integridad consulta–turno. El flujo continúa en el paso 2.
+    end
+
+    Note over UI,Paciente: Paso 2
+    UI->>Paciente: obtenerDatos(pacienteId): Paciente
+    activate Paciente
+    Paciente-->>UI: Paciente(nombre, obra social, historial)
+    deactivate Paciente
+    UI-->>Medico: presentarConsulta(Paciente, Turno)
+
+    Note over Medico,NotaSOAP: Pasos 3–4 — Notas SOAP
+    Medico->>UI: registrarSOAP(subjetivo, objetivo, analisis, plan: String)
+    UI->>NotaSOAP: crear(subjetivo, objetivo, analisis, plan): NotaSOAP
+    activate NotaSOAP
+    UI->>ConsultaMedica: asociarNota(consultaId, NotaSOAP)
+    ConsultaMedica-->>UI: NotaSOAP guardada
+    deactivate NotaSOAP
+
+    Note over Medico,Observacion: Pasos 5–6 — Signos vitales y mediciones
+    Medico->>UI: registrarSignosVitales(codigo: LOINC, valor: Decimal, unidad: UCUM)
+    UI->>Observacion: crear(codigo, valor, unidad): Observacion
+    activate Observacion
+    UI->>Observacion: validarRangos(Observacion): List~Advertencia~
+
+    alt A2 — valores fuera de rango
+        Observacion-->>UI: List~Advertencia~(descripcion, severidad)
+        UI-->>Medico: mostrarAdvertencias(List~Advertencia~)
+    end
+
+    UI->>ConsultaMedica: asociarObservacion(consultaId, Observacion)
+    ConsultaMedica-->>UI: Observacion guardada
+    deactivate Observacion
+
+    Note over Medico,ClaudeAPI: Paso 7 (opcional)
+    opt el médico registra diagnóstico provisorio
+        Medico->>UI: escribirDiagnostico(descripcionLibre: String)
+        UI->>ClaudeAPI: POST sugerirCIE10(texto: String): SugerenciaCIE10
+        activate ClaudeAPI
+        ClaudeAPI-->>UI: SugerenciaCIE10(codigo, descripcion, justificacion)
+        deactivate ClaudeAPI
+        UI-->>Medico: mostrarSugerencia(SugerenciaCIE10)
+        Medico->>UI: confirmarOEditarCIE10(codigoFinal: String)
+        UI->>ConsultaMedica: asociarDiagnostico(consultaId, codigoFinal)
+        Note over ClaudeAPI: ADR-012 / T-018. El médico conserva el criterio final.
+    end
+
+    Note over Medico,Turno: Pasos 8–9 — Cierre de consulta
+    Medico->>UI: cerrarConsulta()
+    UI->>ClaudeAPI: POST generarResumen(Encounter: FHIREncounter): ResumenClinico
+    activate ClaudeAPI
+    ClaudeAPI-->>UI: ResumenClinico(texto: String)
+    deactivate ClaudeAPI
+    UI-->>Medico: mostrarResumen(ResumenClinico)
+    Medico->>UI: validarResumen(aprobado: Boolean)
+    UI->>ConsultaMedica: finalizar(consultaId, resumenValidado): ConsultaMedica
+    UI->>Turno: marcarCumplido(turnoId)
+    activate Turno
+    deactivate Turno
+    ConsultaMedica-->>UI: ConsultaMedica(estado: FINALIZADA)
+    deactivate ConsultaMedica
+    UI-->>Medico: consultaCerrada(consultaId)
+    deactivate UI
+
+    Note over ConsultaMedica,Turno: Cierre atómico. Dos máquinas de estado separadas (ADR-016):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema\nnotifica al médico en su próxima sesión.
+```

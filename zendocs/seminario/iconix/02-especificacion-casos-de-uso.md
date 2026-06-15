@@ -1,0 +1,1 @@
+/home/julian/Documentos/Trabajo/sist_clinica/seminario/iconix/02-especificacion-casos-de-uso.md
