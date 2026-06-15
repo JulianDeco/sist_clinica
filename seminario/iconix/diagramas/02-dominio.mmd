@@ -1,0 +1,141 @@
+---
+title: "Modelo de Dominio ICONIX — ClinicaSaaS (Seminario UAI 2026)"
+---
+classDiagram
+    direction TB
+
+    %% ── Columna 1: Organización ──────────────────────────────────
+    class Clinica {
+        nombre
+        cuit
+        domicilio
+    }
+    class Usuario {
+        email
+        nombreCompleto
+    }
+    class Membresia {
+        activa
+    }
+    class Rol {
+        nombre
+    }
+
+    %% ── Columna 2: Personas clínicas ─────────────────────────────
+    class Paciente {
+        nombre
+        dni
+        telefono
+        email
+    }
+    class Profesional {
+        nombre
+        especialidad
+        matricula
+    }
+
+    %% ── Columna 3: Agenda ────────────────────────────────────────
+    class Agenda {
+        nombre
+    }
+    class FranjaHoraria {
+        inicio
+        fin
+        estado
+    }
+    class Turno {
+        estado
+        esSobreturno
+    }
+    class Sobreturno {
+        motivoOverbooking
+    }
+
+    %% ── Columna 4: Configuración ─────────────────────────────────
+    class PoliticaDeSobreturnos {
+        habilitado
+        umbralRiesgo
+        topeSemanal
+    }
+
+    %% ── Columna 5: Atención clínica ──────────────────────────────
+    class ConsultaMedica {
+        fechaHoraInicio
+        fechaHoraCierre
+        estado
+    }
+    class NotaSOAP {
+        subjetivo
+        objetivo
+        analisis
+        plan
+    }
+    class Observacion {
+        codigo
+        valor
+        unidad
+    }
+
+    %% ── Columna 6: Cobertura ─────────────────────────────────────
+    class ObraSocial {
+        nombre
+        codigoRNOS
+    }
+    class Cobertura {
+        vigenciaHasta
+        topeSemanal
+    }
+
+    %% ── Columna 7: Inteligencia y comunicación ───────────────────
+    class PrediccionDeRiesgo {
+        score
+        confianza
+        factores
+        versionModelo
+    }
+    class Recordatorio {
+        canal
+        estado
+        reintentos
+    }
+
+    %% ── Relaciones ───────────────────────────────────────────────
+    %% Identidad y pertenencia (ADR-014)
+    Usuario "1" --> "0..*" Membresia
+    Clinica "1" --> "0..*" Membresia
+    Membresia "0..*" --> "1" Rol
+    Usuario "0..1" --> "0..1" Profesional
+
+    %% Clínica y sus personas
+    Clinica "1" --> "0..*" Paciente
+    Clinica "1" --> "0..*" Profesional
+
+    %% Agenda
+    Profesional "1" --> "0..*" Agenda
+    Agenda "1" o-- "1..*" FranjaHoraria
+    FranjaHoraria "1" --> "0..*" Turno
+    Paciente "1" --> "0..*" Turno
+    Profesional "1" --> "0..*" Turno
+    Sobreturno --|> Turno
+
+    %% Configuración de sobreturnos (UC-04)
+    Profesional "1" --> "0..1" PoliticaDeSobreturnos
+
+    %% Atención clínica (UC-02)
+    Turno "1" --> "0..*" ConsultaMedica
+    ConsultaMedica "1" *-- "0..1" NotaSOAP
+    ConsultaMedica "1" --> "0..*" Observacion
+
+    %% Cobertura y obra social (UC-01)
+    Paciente "1" --> "0..*" Cobertura
+    ObraSocial "1" --> "0..*" Cobertura
+    Turno "0..*" --> "0..1" Cobertura
+
+    %% Predicción y recordatorios (UC-01, UC-03, UC-04)
+    Turno "1" --> "0..*" PrediccionDeRiesgo
+    Turno "1" --> "0..*" Recordatorio
+    Recordatorio "0..*" --> "1" Paciente
+
+    note for Sobreturno "Especialización (UC-04): Turno que comparte\nFranjaHoraria con otro turno de alto riesgo."
+    note for Membresia "ADR-014: un Usuario puede pertenecer a varias\nClinicas con Rol distinto en cada una."
+    note for FranjaHoraria "Solo admite un segundo Turno\nsi es Sobreturno (UC-04)."

@@ -1,0 +1,71 @@
+---
+title: "Robustez ICONIX — CU-02 Gestionar consulta médica (SOAP básico)"
+---
+sequenceDiagram
+    %% Trazabilidad:
+    %% Paso 1 → Medico -> UI ; UI -> ABR ; ABR -> TUR ; ABR -> CON
+    %% Paso 2 → ABR -> PAC ; ABR -> UI «presenta la consulta»
+    %% Pasos 3-4 → Medico -> UI «SOAP» ; UI -> NOT ; NOT -> NOTA
+    %% Pasos 5-6 → Medico -> UI «signos vitales» ; UI -> VOBS ; VOBS -> OBS
+    %% Paso 7 → (opt) Medico -> UI ; UI -> DIAG ; DIAG -> CON
+    %% Pasos 8-9 → Medico -> UI «cierra» ; UI -> CIE ; CIE -> CON ; CIE -> TUR
+    actor Medico as Médico
+    participant UI as Pantalla de consulta [boundary]
+    participant ABR as Abrir consulta [control]
+    participant WALK as Crear turno retroactivo walk-in [control]
+    participant NOT as Registrar notas SOAP [control]
+    participant VOBS as Validar y registrar observaciones [control]
+    participant DIAG as Registrar diagnóstico provisorio [control]
+    participant CIE as Cerrar consulta [control]
+    participant TUR as Turno [entity]
+    participant CON as ConsultaMedica [entity]
+    participant PAC as Paciente [entity]
+    participant NOTA as NotaSOAP [entity]
+    participant OBS as Observacion [entity]
+
+    Note over Medico,UI: Paso 1
+    Medico->>UI: abre la consulta vinculada al turno
+    UI->>ABR: abrir consulta
+    ABR->>TUR: verifica turno en estado «llegó» (o consulta «en curso» a retomar)
+    ABR->>CON: recupera o inicia la consulta
+
+    alt A3 — paciente sin turno previo (walk-in, CU-S09)
+        ABR->>WALK: atención sin turno previo
+        WALK->>TUR: crea el turno retroactivo
+        WALK->>CON: crea la consulta «walk-in»
+        Note over WALK: Mantiene la integridad consulta–turno. El flujo continúa en el paso 2.
+    end
+
+    Note over ABR,UI: Paso 2
+    ABR->>PAC: obtiene los datos del paciente
+    ABR->>UI: presenta la consulta con datos del paciente y del turno
+
+    Note over Medico,NOTA: Pasos 3–4
+    Medico->>UI: registra las notas SOAP (Subjetivo, Objetivo, Análisis, Plan)
+    UI->>NOT: guardar notas
+    NOT->>NOTA: persiste las notas asociadas a la consulta
+
+    Note over Medico,OBS: Pasos 5–6
+    Medico->>UI: registra signos vitales y mediciones (TA, FC, peso, talla, glucemia)
+    UI->>VOBS: validar y guardar mediciones
+    VOBS->>OBS: almacena las observaciones asociadas a la consulta
+
+    alt A2 — valores clínicos fuera de rango
+        VOBS->>UI: advierte rangos imposibles (no bloquea el registro)
+    end
+
+    Note over Medico,CON: Paso 7 (opcional)
+    opt el médico registra diagnóstico provisorio
+        Medico->>UI: escribe el diagnóstico como descripción libre
+        UI->>DIAG: guardar diagnóstico
+        DIAG->>CON: asocia la descripción libre a la consulta
+        Note over DIAG: La codificación CIE-10 automática queda en roadmap post-MVP.
+    end
+
+    Note over Medico,TUR: Pasos 8–9
+    Medico->>UI: cierra la consulta
+    UI->>CIE: cerrar consulta
+    CIE->>CON: finaliza la consulta
+    CIE->>TUR: marca el turno como «cumplido»
+
+    Note over CIE,TUR: Cierre atómico. Dos máquinas de estado separadas (decisión 2026-06-10):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema notifica al médico.

@@ -1,0 +1,60 @@
+---
+title: "Secuencia ICONIX — CU-03 Calcular y notificar predicción de ausentismo"
+---
+sequenceDiagram
+    actor Scheduler as Scheduler (job programado)
+    actor PacienteActor as Paciente
+    participant Turno as Turno
+    participant Paciente as Paciente
+    participant PrediccionDeRiesgo as PrediccionDeRiesgo
+    participant Recordatorio as Recordatorio
+    participant MensajeNotificacion as Mensaje de notificación
+    participant FranjaHoraria as FranjaHoraria
+
+    Note over Scheduler,Turno: Paso 1–2 — Selección de turnos
+    Scheduler->>Turno: obtener turnos próximos dentro de la ventana (48 h / 24 h)
+    Turno-->>Scheduler: lista de turnos próximos
+
+    loop por cada turno próximo
+
+        Note over Scheduler,PrediccionDeRiesgo: Paso 3 — Calcular riesgo de no-show
+        Scheduler->>PrediccionDeRiesgo: obtener score del turno (reutilizar si fresco o recalcular)
+
+        alt score disponible y fresco
+            PrediccionDeRiesgo-->>Scheduler: score vigente
+        else score expirado — recalcular
+            Scheduler->>Paciente: obtener historial de asistencia
+            Paciente-->>Scheduler: historial de turnos anteriores
+            Scheduler->>PrediccionDeRiesgo: calcular score con historial, anticipación, día y franja
+            PrediccionDeRiesgo-->>Scheduler: score recalculado (0–100)
+        end
+
+        Note over Scheduler: Paso 4 — Determinar estrategia de notificación según score:\n· alto (>70%): Telegram + email 48 h y 24 h antes\n· medio (30–70%): Telegram + email 24 h antes\n· bajo (<30%): solo email 24 h antes
+
+        Note over Scheduler,MensajeNotificacion: Paso 5 — Enviar notificación
+        alt paciente contactable por canales digitales
+            Scheduler->>Recordatorio: crear recordatorio del turno con canal elegido
+            Scheduler->>MensajeNotificacion: enviar mensaje al paciente por el canal elegido
+            MensajeNotificacion-->>Scheduler: resultado del envío
+            Note over MensajeNotificacion: A1 — fallo del canal: reintento con backoff y fallback a canal alternativo.
+        else A2 — paciente sin teléfono ni email
+            Scheduler->>MensajeNotificacion: notificar al staff para llamado telefónico manual
+        end
+
+    end
+
+    Note over PacienteActor,FranjaHoraria: Paso 6 — Registrar respuesta del paciente
+    PacienteActor->>MensajeNotificacion: confirma o cancela desde el mensaje recibido
+    MensajeNotificacion->>Recordatorio: registrar respuesta
+    MensajeNotificacion->>Turno: actualizar estado según respuesta
+
+    alt A3 — confirmación recibida
+        Turno-->>MensajeNotificacion: estado → CONFIRMADO
+    else A4 — cancelación recibida
+        Turno-->>MensajeNotificacion: estado → CANCELADO
+        MensajeNotificacion->>FranjaHoraria: liberar la franja horaria
+        MensajeNotificacion->>MensajeNotificacion: notificar al staff para reasignación manual
+        Note over MensajeNotificacion: Decisión 2026-06-10 (MVP mínimo): sin lista de espera\nni notificación automática a otros pacientes — roadmap post-MVP.
+    end
+
+    Note over MensajeNotificacion,Recordatorio: Paso 7 — Registrar métricas de envío y respuesta en el Recordatorio

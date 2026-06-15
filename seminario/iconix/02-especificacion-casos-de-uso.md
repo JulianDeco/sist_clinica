@@ -3,7 +3,7 @@
 **Proyecto**: ClinicaSaaS — SaaS multitenant FHIR R4 para clínicas pequeñas
 **Entrega**: Seminario de Trabajo Final UAI — T-020, entregable 2 (16/06/2026)
 **Fuentes**: `.claude/tasks/use-cases.md` (autoritativa) · `docs/adr/ADR-013-notification-channels.md` · `docs/adr/ADR-014-multi-tenant-membership.md`
-**Diagrama asociado**: `seminario/iconix/diagramas/01-casos-de-uso.puml`
+**Diagrama asociado**: `seminario/iconix/diagramas/01-casos-de-uso.mmd`
 
 > Convención ICONIX: el curso básico se narra alternando acciones del
 > actor y respuestas del sistema, en pasos numerados. Cada curso alterno
@@ -39,13 +39,13 @@
 1. El secretario selecciona paciente, profesional y franja horaria.
 2. El sistema valida la disponibilidad del slot (Schedule + Slot FHIR) y la ausencia de conflictos *(«Validar disponibilidad de slot», `<<include>>`)*.
 3. El sistema valida el tope semanal de la cobertura del paciente (Coverage): descuenta y verifica que no se supere el límite *(«Validar cobertura y tope semanal», `<<include>>`)*.
-4. El sistema calcula el riesgo de no-show con el motor heurístico — recibe historial del paciente, anticipación, día y franja — y muestra el score (0–100) junto con la lista de factores influyentes en lenguaje natural *(«Calcular riesgo de no-show», `<<include>>`)*.
+4. El sistema calcula el riesgo de ausentismo del paciente — a partir de su historial de asistencia, la anticipación de la reserva, el día y la franja — y muestra el score (0–100) junto con la lista de factores influyentes en lenguaje natural *(«Calcular riesgo de no-show», `<<include>>`)*.
 5. El secretario confirma la reserva.
 6. El sistema crea el `Appointment` FHIR, actualiza el Slot a `busy` y registra el score de riesgo asociado. Las tres modificaciones (Slot, Appointment, contador de cobertura) se aplican atómicamente.
 
 **Cursos alternos**:
 - **A1 — Slot ya ocupado** *(en paso 2)*: el sistema sugiere slots cercanos disponibles *(punto de extensión de «Sugerir slots alternativos»)*. Si el secretario elige uno, el flujo retoma en el paso 2 con el nuevo slot.
-- **A2 — Cobertura vencida o tope superado** *(en paso 3)*: el sistema bloquea la imputación a la cobertura y muestra una advertencia a la secretaria; la decisión queda fuera del sistema. El turno puede crearse igualmente sin imputación a cobertura y sin clasificación especial — la asociación Turno—Cobertura queda vacía (multiplicidad 0..1) *(decisión 2026-06-10)*.
+- **A2 — Cobertura vencida o tope superado** *(en paso 3)*: el sistema bloquea la imputación a la cobertura y muestra una advertencia a la secretaria. El secretario decide si continuar creando el turno sin imputación a cobertura — la asociación Turno—Cobertura queda vacía (multiplicidad 0..1) — o abortar la reserva *(decisión 2026-06-10)*.
 - **A3 — Paciente sin historial** *(en paso 4)*: el sistema calcula el score con factores parciales y lo marca como "baja confianza". El flujo continúa en el paso 5.
 - **A4 — Falla del motor heurístico** *(en paso 4)*: degradación elegante — el turno se crea sin score y queda registrado para reintento posterior. El flujo continúa en el paso 5.
 - **A5 — Riesgo alto con overbooking habilitado** *(tras paso 4)*: si el score supera el 70% y el profesional tiene overbooking habilitado, se dispara CU-04 *(punto de extensión de «CU-04 Sugerir overbooking inteligente»)*.
@@ -137,7 +137,7 @@
 **Curso básico**:
 1. El Scheduler dispara el job programado cada N horas.
 2. El sistema selecciona los turnos próximos dentro de la ventana configurable.
-3. Para cada turno, el sistema obtiene el score de riesgo desde el motor heurístico — cache si está fresco, cálculo en vivo si expiró *(«Calcular riesgo de no-show», `<<include>>`)*.
+3. Para cada turno, el sistema obtiene o recalcula el score de riesgo de no-show *(«Calcular riesgo de no-show», `<<include>>`)*.
 4. El sistema elige la estrategia de notificación según el rango del score — el canal por riesgo se cursa vía Telegram/email (canales MVP según ADR-013):
    - Riesgo alto (>70%): Telegram con texto personalizado + recordatorio email 48 h y 24 h antes.
    - Riesgo medio (30–70%): Telegram + email 24 h antes.
@@ -166,7 +166,7 @@
 | I3 | `<<include>>` | Determinar estrategia de notificación por riesgo | — siempre |
 | I4 | `<<include>>` | Enviar notificación al paciente | — siempre |
 | I5 | `<<include>>` | Registrar métricas de envío y respuesta | — siempre |
-| E1 | `<<extend>>` | Usar score en caché (Redis) | Score en caché Redis todavía fresco |
+| E1 | `<<extend>>` | Usar score calculado previamente | Score del turno todavía vigente (no requiere recálculo) |
 | E2 | `<<extend>>` | Reintentar notificación con backoff + fallback | Falla del provider de notificaciones |
 | E3 | `<<extend>>` | Notificar staff para llamado manual | Paciente sin teléfono ni email |
 | E4 | `<<extend>>` | Marcar Appointment como `confirmed` | Respuesta del paciente es confirmación |
@@ -366,7 +366,7 @@ que no forman parte de los 4 CU core.
 | I3 | `<<include>>` | Determinar estrategia de notificación por riesgo | — |
 | I4 | `<<include>>` | Enviar notificación al paciente | — |
 | I5 | `<<include>>` | Registrar métricas de envío y respuesta | — |
-| E1 | `<<extend>>` | Usar score en caché (Redis) | Score fresco en caché |
+| E1 | `<<extend>>` | Usar score calculado previamente | Score del turno todavía vigente (no requiere recálculo) |
 | E2 | `<<extend>>` | Reintentar con backoff + fallback | Falla del provider |
 | E3 | `<<extend>>` | Notificar staff para llamado manual | Paciente incontactable |
 | E4 | `<<extend>>` | Marcar Appointment como `confirmed` | Respuesta = confirmación |

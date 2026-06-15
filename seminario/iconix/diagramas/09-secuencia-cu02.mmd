@@ -1,0 +1,63 @@
+---
+title: "Secuencia ICONIX — CU-02 Gestionar consulta médica (SOAP básico)"
+---
+sequenceDiagram
+    actor Medico as Médico
+    participant UI as Pantalla de consulta
+    participant Turno as Turno
+    participant ConsultaMedica as ConsultaMedica
+    participant Paciente as Paciente
+    participant NotaSOAP as NotaSOAP
+    participant Observacion as Observacion
+
+    Note over Medico,ConsultaMedica: Paso 1
+    Medico->>UI: abre la consulta vinculada al turno
+    UI->>Turno: verificar que el turno está en estado «llegó» (o consulta en curso)
+    Turno-->>UI: turno válido
+    UI->>ConsultaMedica: recuperar o iniciar la consulta
+
+    alt A3 — paciente sin turno previo (walk-in)
+        UI->>Turno: crear turno retroactivo
+        UI->>ConsultaMedica: crear consulta walk-in vinculada al turno
+        Note over UI: Mantiene la integridad consulta–turno. El flujo continúa en el paso 2.
+    end
+
+    Note over UI,Paciente: Paso 2
+    UI->>Paciente: obtener datos del paciente
+    Paciente-->>UI: datos del paciente
+    UI-->>Medico: presenta la consulta con datos del paciente y del turno
+
+    Note over Medico,NotaSOAP: Pasos 3–4 — Notas SOAP
+    Medico->>UI: registra notas SOAP (Subjetivo, Objetivo, Análisis, Plan)
+    UI->>NotaSOAP: crear nota con los cuatro campos
+    UI->>ConsultaMedica: asociar nota SOAP a la consulta
+    ConsultaMedica-->>UI: nota guardada
+
+    Note over Medico,Observacion: Pasos 5–6 — Signos vitales y mediciones
+    Medico->>UI: registra signos vitales (TA, FC, peso, talla, glucemia)
+    UI->>Observacion: crear observación con código, valor y unidad
+    UI->>Observacion: validar rangos clínicos
+
+    alt A2 — valores fuera de rango
+        Observacion-->>UI: advertencia de rango imposible (no bloquea el registro)
+        UI-->>Medico: muestra advertencia
+    end
+
+    UI->>ConsultaMedica: asociar observación a la consulta
+    ConsultaMedica-->>UI: observación guardada
+
+    Note over Medico,ConsultaMedica: Paso 7 (opcional)
+    opt el médico registra diagnóstico provisorio
+        Medico->>UI: escribe el diagnóstico como descripción libre
+        UI->>ConsultaMedica: asociar diagnóstico a la consulta
+        Note over ConsultaMedica: La codificación CIE-10 automática queda en roadmap post-MVP.
+    end
+
+    Note over Medico,Turno: Pasos 8–9 — Cierre de consulta
+    Medico->>UI: cierra la consulta
+    UI->>ConsultaMedica: finalizar la consulta (estado → FINALIZADA)
+    UI->>Turno: marcar turno como cumplido (estado → CUMPLIDO)
+    ConsultaMedica-->>UI: consulta cerrada
+    UI-->>Medico: consulta cerrada
+
+    Note over ConsultaMedica,Turno: Cierre atómico. Dos máquinas de estado separadas (decisión 2026-06-10):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema\nnotifica al médico en su próxima sesión.

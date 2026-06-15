@@ -1,7 +1,7 @@
 # Glosario del Dominio — ClinicaSaaS (ICONIX)
 
 **Entrega**: T-020 — deliverable 3 · Seminario de Trabajo Final UAI 2026 · 16/06/2026
-**Diagrama asociado**: `seminario/iconix/diagramas/02-dominio.puml` (correspondencia 1:1)
+**Diagrama asociado**: `seminario/iconix/diagramas/02-dominio.mmd` (correspondencia 1:1)
 
 > En ICONIX, el modelo de dominio **es** el glosario del proyecto: cada
 > entidad del diagrama tiene aquí su definición en lenguaje del problema

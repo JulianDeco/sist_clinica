@@ -1,0 +1,77 @@
+---
+title: "Robustez ICONIX — CU-03 Calcular y notificar predicción de ausentismo"
+---
+sequenceDiagram
+    %% Trazabilidad:
+    %% Paso 1 → Scheduler -> TRIG ; TRIG -> SEL
+    %% Paso 2 → SEL -> TUR «selecciona turnos dentro de la ventana»
+    %% Paso 3 → SEL -> RIESGO ; RIESGO -> PRED ; RIESGO -> PAC    (CU-S05)
+    %% Paso 4 → RIESGO -> ESTR (+ nota con la estrategia por rango)
+    %% Paso 5 → ESTR -> ENV ; ENV -> REC ; ENV -> MSG              (CU-S06)
+    %% Paso 6 → Paciente -> MSG ; MSG -> RESP ; RESP -> REC ; RESP -> TUR (CU-S07)
+    %% Paso 7 → RESP -> MET ; MET -> REC «métricas de envío y respuesta»
+    %% Canales MVP (ADR-013): Telegram + email; WhatsApp/SMS post-piloto.
+    actor Scheduler as Scheduler (job programado)
+    actor PacienteActor as Paciente (externo)
+    participant TRIG as Disparador del proceso periódico [control]
+    participant MSG as Mensaje de recordatorio (Telegram / email) [boundary]
+    participant STAFF as Aviso al staff de la clínica [boundary]
+    participant SEL as Seleccionar turnos próximos [control]
+    participant RIESGO as Calcular riesgo de no-show [control]
+    participant ESTR as Elegir estrategia de notificación [control]
+    participant ENV as Enviar notificación [control]
+    participant NSTAFF as Notificar staff para llamado manual [control]
+    participant RESP as Registrar respuesta [control]
+    participant REAS as Reasignar slot liberado [control]
+    participant MET as Registrar métricas [control]
+    participant TUR as Turno [entity]
+    participant PAC as PacienteRegistro [entity]
+    participant PRED as PrediccionDeRiesgo [entity]
+    participant REC as Recordatorio [entity]
+    participant FRA as FranjaHoraria [entity]
+
+    Note over Scheduler,SEL: Paso 1
+    Scheduler->>TRIG: dispara el job cada N horas
+    TRIG->>SEL: ejecutar proceso de recordatorios
+
+    Note over SEL,TUR: Paso 2
+    SEL->>TUR: selecciona turnos dentro de la ventana configurada (48 h / 24 h)
+
+    Note over SEL,PAC: Paso 3 — CU-S05 (por cada turno)
+    SEL->>RIESGO: evaluar cada turno
+    RIESGO->>PRED: reutiliza score fresco o recalcula si expiró
+    RIESGO->>PAC: obtiene historial de asistencia (si recalcula)
+
+    Note over ESTR: Estrategia por riesgo - alto (>70%): Telegram + email 48h y 24h / medio (30-70%): Telegram + email 24h / bajo (<30%): solo email 24h
+    RIESGO->>ESTR: score (0–100) disponible
+
+    Note over ESTR,MSG: Paso 5 — CU-S06
+    ESTR->>ENV: canal y anticipación elegidos
+    ENV->>REC: crea el recordatorio del turno
+    ENV->>MSG: envía por el provider del canal elegido
+
+    Note over ENV: A1 — fallo del provider: reintento con backoff y fallback a canal alternativo.
+
+    alt A2 — paciente sin teléfono ni email (CU-S10)
+        ENV->>NSTAFF: paciente incontactable por canales digitales
+        NSTAFF->>STAFF: solicita llamado telefónico manual
+    end
+
+    Note over PacienteActor,REC: Paso 6 — CU-S07
+    PacienteActor->>MSG: confirma o cancela desde el mensaje
+    MSG->>RESP: respuesta recibida
+    RESP->>REC: registra la respuesta al recordatorio
+
+    alt A3 — confirmación recibida
+        RESP->>TUR: marca el turno como «confirmado»
+    else A4 — cancelación recibida (CU-S11)
+        RESP->>TUR: marca el turno como «cancelado»
+        RESP->>REAS: disparar reasignación
+        REAS->>FRA: libera la franja horaria
+        REAS->>STAFF: notifica al staff para reasignación manual del slot
+        Note over REAS: MVP: se notifica staff para reasignacion manual. Sin lista de espera ni notificacion automatica (roadmap post-MVP).
+    end
+
+    Note over RESP,REC: Paso 7
+    RESP->>MET: actualizar métricas
+    MET->>REC: persiste métricas de envío y respuesta para análisis

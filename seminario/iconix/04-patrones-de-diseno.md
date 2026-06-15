@@ -1,7 +1,7 @@
 # Patrones de Diseño Aplicados — ClinicaSaaS
 
 **Entrega T-020 — deliverable 9 — Seminario de Trabajo Final UAI 2026**
-**Diagrama de arquitectura asociado**: `seminario/iconix/diagramas/07-arquitectura.puml`
+**Diagrama de arquitectura asociado**: `seminario/iconix/diagramas/07-arquitectura.mmd`
 
 Este documento describe **tres patrones de diseño** aplicados en ClinicaSaaS
 (el mínimo solicitado es dos; se documenta uno adicional como margen).
@@ -64,35 +64,39 @@ La capa de aplicación (`application/auth/AuthUseCaseImpl.java`) depende
 solo de las interfaces de dominio; Spring inyecta la implementación JPA
 en runtime (inversión de dependencias).
 
-```plantuml
-@startuml repository-pattern
-skinparam shadowing false
-package "domain.auth" <<Frame>> {
-  interface UserRepository {
-    +findByEmail(email): Optional<User>
-    +save(user): User
-  }
-  interface RefreshTokenRepository {
-    +findByTokenHash(hash): Optional<RefreshToken>
-    +revokeFamily(familyId): void
-  }
-  class User <<Entity>>
-  class RefreshToken <<Entity>>
-}
-package "application.auth" <<Frame>> {
-  class AuthUseCaseImpl
-}
-package "infrastructure.auth" <<Frame>> {
-  class JpaUserRepository
-  class JpaRefreshTokenRepository
-}
-AuthUseCaseImpl --> UserRepository : depende de la\nabstracción
-AuthUseCaseImpl --> RefreshTokenRepository
-JpaUserRepository ..|> UserRepository : implementa
-JpaRefreshTokenRepository ..|> RefreshTokenRepository : implementa
-UserRepository ..> User
-RefreshTokenRepository ..> RefreshToken
-@enduml
+```mermaid
+classDiagram
+    namespace domain_auth {
+        class UserRepository {
+            <<interface>>
+            +findByEmail(email) Optional~User~
+            +save(user) User
+        }
+        class RefreshTokenRepository {
+            <<interface>>
+            +findByTokenHash(hash) Optional~RefreshToken~
+            +revokeFamily(familyId) void
+        }
+        class User {
+            <<Entity>>
+        }
+        class RefreshToken {
+            <<Entity>>
+        }
+    }
+    namespace application_auth {
+        class AuthUseCaseImpl
+    }
+    namespace infrastructure_auth {
+        class JpaUserRepository
+        class JpaRefreshTokenRepository
+    }
+    AuthUseCaseImpl --> UserRepository : depende de la abstracción
+    AuthUseCaseImpl --> RefreshTokenRepository
+    JpaUserRepository ..|> UserRepository : implementa
+    JpaRefreshTokenRepository ..|> RefreshTokenRepository : implementa
+    UserRepository ..> User
+    RefreshTokenRepository ..> RefreshToken
 ```
 
 ### Consecuencias / trade-offs
@@ -162,29 +166,36 @@ La **regla de selección de canal por score de riesgo** queda en el
 Application Service de UC-03 (decisión de negocio), no en los adaptadores
 (decisión técnica de entrega).
 
-```plantuml
-@startuml strategy-notificaciones
-skinparam shadowing false
-package "application.notifications" <<Frame>> {
-  interface NotificationPort {
-    +send(request: NotificationRequest): NotificationResult
-  }
-  class "ReminderApplicationService\n(UC-03)" as UC03
-  class NotificationDispatcher
-}
-package "infrastructure.notifications" <<Frame>> {
-  class TelegramNotificationAdapter <<MVP>>
-  class EmailNotificationAdapter <<MVP>>
-  class WhatsAppNotificationAdapter <<post-piloto>>
-  class SmsNotificationAdapter <<post-piloto>>
-}
-UC03 --> NotificationDispatcher : canal según\nscore de riesgo
-NotificationDispatcher --> NotificationPort
-TelegramNotificationAdapter ..|> NotificationPort
-EmailNotificationAdapter ..|> NotificationPort
-WhatsAppNotificationAdapter ..|> NotificationPort
-SmsNotificationAdapter ..|> NotificationPort
-@enduml
+```mermaid
+classDiagram
+    namespace application_notifications {
+        class NotificationPort {
+            <<interface>>
+            +send(request : NotificationRequest) NotificationResult
+        }
+        class ReminderApplicationService_UC03 ["ReminderApplicationService (UC-03)"]
+        class NotificationDispatcher
+    }
+    namespace infrastructure_notifications {
+        class TelegramNotificationAdapter {
+            <<MVP>>
+        }
+        class EmailNotificationAdapter {
+            <<MVP>>
+        }
+        class WhatsAppNotificationAdapter {
+            <<post-piloto>>
+        }
+        class SmsNotificationAdapter {
+            <<post-piloto>>
+        }
+    }
+    ReminderApplicationService_UC03 --> NotificationDispatcher : canal según score de riesgo
+    NotificationDispatcher --> NotificationPort
+    TelegramNotificationAdapter ..|> NotificationPort
+    EmailNotificationAdapter ..|> NotificationPort
+    WhatsAppNotificationAdapter ..|> NotificationPort
+    SmsNotificationAdapter ..|> NotificationPort
 ```
 
 ### Consecuencias / trade-offs
@@ -265,21 +276,19 @@ Los guards consumen el estado, no los tokens:
 - `select-tenant.guard.ts` exige `identity_confirmed` (la ruta
   `/select-tenant` es inaccesible en cualquier otro estado).
 
-```plantuml
-@startuml state-auth
-skinparam shadowing false
-[*] --> unauthenticated
-unauthenticated --> identity_confirmed : login() OK\n(identityToken 5 min + lista de clínicas)
-identity_confirmed --> ready : selectTenant(tenantId)\n(accessToken 30 min)
-identity_confirmed --> ready : auto-selección si\nel usuario tiene 1 sola clínica
-identity_confirmed --> unauthenticated : identityToken expira (5 min)\no usuario cancela
-ready --> ready : switchTenant(tenantId)\n(token anterior revocado vía JTI)
-ready --> unauthenticated : logout() / 401 no recuperable
-note right of identity_confirmed
-  AuthGuard bloquea rutas protegidas;
-  solo /select-tenant es accesible.
-end note
-@enduml
+```mermaid
+stateDiagram-v2
+    [*] --> unauthenticated
+    unauthenticated --> identity_confirmed : login() OK\n(identityToken 5 min + lista de clínicas)
+    identity_confirmed --> ready : selectTenant(tenantId)\n(accessToken 30 min)
+    identity_confirmed --> ready : auto-selección si\nel usuario tiene 1 sola clínica
+    identity_confirmed --> unauthenticated : identityToken expira (5 min)\no usuario cancela
+    ready --> ready : switchTenant(tenantId)\n(token anterior revocado vía JTI)
+    ready --> unauthenticated : logout() / 401 no recuperable
+
+    note right of identity_confirmed
+        AuthGuard bloquea rutas protegidas;\nsolo /select-tenant es accesible.
+    end note
 ```
 
 **Segunda aplicación del mismo patrón — `DISEÑADO`**: los ciclos de vida

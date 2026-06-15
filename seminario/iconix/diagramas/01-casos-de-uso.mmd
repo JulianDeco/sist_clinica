@@ -1,0 +1,155 @@
+---
+title: "ClinicaSaaS — Diagrama de casos de uso (ICONIX) — T-020 entregable 1"
+---
+flowchart LR
+    %% Convenciones:
+    %% include : flecha punteada DESDE el caso base HACIA el incluido (comportamiento obligatorio).
+    %% extend  : flecha punteada DESDE la extensión HACIA el caso base (comportamiento opcional).
+    %% ── Actores ──────────────────────────────────────────────────
+    SEC(["👤 Secretario/a"])
+    MED(["👤 Médico"])
+    ADM(["👤 Administrador\nde clínica"])
+    PAC(["👤 Paciente"])
+    SCH(["⚙️ Scheduler\njob programado"])
+
+    subgraph SYS["ClinicaSaaS"]
+        direction TB
+
+        %% ── Autenticación ────────────────────────────────────────
+        UC_LOGIN(["Iniciar sesión"])
+        UC_TENANT(["Seleccionar tenant"])
+        UC_SWITCH(["Cambiar de\nclínica activa"])
+
+        %% ── CU-01: Reservar turno ────────────────────────────────
+        UC01(["CU-01\nReservar turno con\nvalidación integral"])
+        UC_DISP(["Validar disponibilidad\nde slot"])
+        UC_COB(["Validar cobertura y\ntope semanal"])
+        UC_RIESGO(["Calcular riesgo\nde no-show"])
+        UC_APPT(["Crear Appointment FHIR\ny actualizar Slot"])
+        UC_SCORE(["Registrar score de\nriesgo en turno"])
+
+        UC_ALT(["Sugerir slots\nalternativos"])
+        UC_ADV_COB(["Advertir cobertura\nvencida o tope superado"])
+        UC_SIN_COB(["Crear turno sin\nimputación a cobertura"])
+        UC_BAJA_CONF(["Calcular score con\nbaja confianza"])
+        UC_RETRY(["Registrar turno sin\nscore para reintento"])
+        UC04(["CU-04\nSugerir overbooking\ninteligente"])
+
+        %% ── CU-02: Consulta médica ───────────────────────────────
+        UC02(["CU-02\nGestionar consulta\nmédica SOAP"])
+        UC_OPEN(["Abrir / reanudar\nEncounter vinculado"])
+        UC_SOAP(["Registrar notas\nSOAP estructuradas"])
+        UC_OBS(["Registrar signos vitales\ncomo Observations FHIR"])
+        UC_CLOSE(["Cerrar Encounter y\nactualizar Appointment"])
+        UC_RANG(["Validar rangos\nclínicos"])
+
+        UC_CIE10(["Sugerir código\nCIE-10 LLM"])
+        UC_LLM(["Generar resumen\nencuentro LLM"])
+        UC_WALKIN(["Crear turno\nretroactivo walk-in"])
+        UC_INCOMP(["Notificar consulta\nincompleta al médico"])
+        UC_WARN(["Mostrar advertencia\nde rango imposible"])
+
+        %% ── CU-03: Predicción de ausentismo ─────────────────────
+        UC03(["CU-03\nNotificar predicción\nde ausentismo"])
+        UC_SEL(["Seleccionar turnos\npróximos ventana"])
+        UC_STRAT(["Determinar estrategia\nde notificación por riesgo"])
+        UC_NOTIF(["Enviar notificación\nal paciente"])
+        UC_RESP(["Registrar respuesta\ndel paciente"])
+        UC_METR(["Registrar métricas\nde envío y respuesta"])
+
+        UC_CACHE(["Usar score\nen caché Redis"])
+        UC_RETRY3(["Reintentar notificación\ncon backoff + fallback"])
+        UC_STAFF(["Notificar staff para\nllamado manual"])
+        UC_CONFIRM(["Marcar Appointment\ncomo confirmed"])
+        UC_REASIG(["Liberar slot y notificar\nstaff para reasignación"])
+
+        %% ── CU-04: Overbooking ───────────────────────────────────
+        UC_OVB_HAB(["Verificar overbooking\nhabilitado"])
+        UC_OVB_TOP(["Verificar tope semanal\nno alcanzado"])
+        UC_OVB_DUP(["Verificar slot sin\noverbooking previo"])
+        UC_OVB_APPT(["Crear Appointment\ncomo overbooked"])
+        UC_OVB_UI(["Mostrar indicador\nvisual en agenda"])
+
+        UC_CFG_OVB2(["Configurar política\nde sobreturnos"])
+        UC_OVB_DIS(["Omitir sugerencia\noverbooking deshabilitado"])
+        UC_OVB_MAX(["Omitir y notificar staff\ntope semanal alcanzado"])
+        UC_OVB_PROM(["Promover a turno\nnormal cancelación"])
+        UC_OVB_ALERT(["Alertar doble\nasistencia"])
+        UC_OVB_EXCL(["Excluir tipo de turno\nde la sugerencia"])
+    end
+
+    %% ── Asociaciones actor – caso de uso ─────────────────────────
+    SEC --- UC_LOGIN
+    MED --- UC_LOGIN
+    ADM --- UC_LOGIN
+    SEC --- UC_SWITCH
+    MED --- UC_SWITCH
+    ADM --- UC_SWITCH
+    SEC --- UC01
+    SEC --- UC04
+    MED --- UC02
+    MED --- UC_CFG_OVB2
+    ADM --- UC03
+    SCH --- UC03
+    PAC --- UC_NOTIF
+    PAC --- UC_RESP
+
+    %% ── include CU-01 (5) ────────────────────────────────────────
+    UC01 -.->|«include»| UC_DISP
+    UC01 -.->|«include»| UC_COB
+    UC01 -.->|«include»| UC_RIESGO
+    UC01 -.->|«include»| UC_APPT
+    UC01 -.->|«include»| UC_SCORE
+
+    %% ── extend CU-01 (6) ─────────────────────────────────────────
+    UC_ALT      -.->|"«extend»\nslot ya ocupado"| UC01
+    UC_ADV_COB  -.->|"«extend»\ncobertura vencida o tope superado"| UC01
+    UC_SIN_COB  -.->|"«extend»\nusuario confirma sin imputación"| UC01
+    UC_BAJA_CONF-.->|"«extend»\npaciente sin historial previo"| UC01
+    UC_RETRY    -.->|"«extend»\nfalla del motor heurístico"| UC01
+    UC04        -.->|"«extend»\nscore>70% y overbooking habilitado"| UC01
+
+    %% ── include CU-02 (5) ────────────────────────────────────────
+    UC02 -.->|«include»| UC_OPEN
+    UC02 -.->|«include»| UC_SOAP
+    UC02 -.->|«include»| UC_OBS
+    UC02 -.->|«include»| UC_CLOSE
+    UC02 -.->|«include»| UC_RANG
+
+    %% ── extend CU-02 (5) ─────────────────────────────────────────
+    UC_CIE10  -.->|"«extend»\nmédico ingresa diagnóstico libre"| UC02
+    UC_LLM    -.->|"«extend»\nEncounter cerrado exitosamente"| UC02
+    UC_WALKIN -.->|"«extend»\npaciente sin Appointment walk-in"| UC02
+    UC_INCOMP -.->|"«extend»\nmédico abandona sin cerrar"| UC02
+    UC_WARN   -.->|"«extend»\nsigno vital fuera de rango"| UC02
+
+    %% ── include CU-03 (5) ────────────────────────────────────────
+    UC03 -.->|«include»| UC_SEL
+    UC03 -.->|«include»| UC_RIESGO
+    UC03 -.->|«include»| UC_STRAT
+    UC03 -.->|«include»| UC_NOTIF
+    UC03 -.->|«include»| UC_METR
+
+    %% ── extend CU-03 (5) ─────────────────────────────────────────
+    UC_CACHE  -.->|"«extend»\nscore Redis todavía fresco"| UC03
+    UC_RETRY3 -.->|"«extend»\nfalla del provider de notificaciones"| UC03
+    UC_STAFF  -.->|"«extend»\npaciente sin teléfono ni email"| UC03
+    UC_CONFIRM-.->|"«extend»\nrespuesta es confirmación"| UC_RESP
+    UC_REASIG -.->|"«extend»\nrespuesta es cancelación"| UC_RESP
+
+    %% ── include CU-04 (5) ────────────────────────────────────────
+    UC04 -.->|«include»| UC_OVB_HAB
+    UC04 -.->|«include»| UC_OVB_TOP
+    UC04 -.->|«include»| UC_OVB_DUP
+    UC04 -.->|«include»| UC_OVB_APPT
+    UC04 -.->|«include»| UC_OVB_UI
+
+    %% ── extend CU-04 (5) ─────────────────────────────────────────
+    UC_OVB_DIS  -.->|"«extend»\nprofesional deshabilitó overbooking"| UC04
+    UC_OVB_MAX  -.->|"«extend»\ntope semanal de overbookings alcanzado"| UC04
+    UC_OVB_PROM -.->|"«extend»\nprimer turno del slot cancelado"| UC04
+    UC_OVB_ALERT-.->|"«extend»\nambos pacientes asisten al mismo slot"| UC04
+    UC_OVB_EXCL -.->|"«extend»\ntipo excluido: cirugía/procedimiento/1ª consulta"| UC04
+
+    %% ── include Auth ─────────────────────────────────────────────
+    UC_LOGIN -.->|«include»| UC_TENANT
