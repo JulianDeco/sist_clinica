@@ -100,21 +100,27 @@ sist_clinica/
 
 ## Workflow obligatorio por feature
 
-**Metodología**: SDD · TDD · Clean Architecture · DDD · ADR
+**Metodología**: SDD · TDD explícito · Clean Architecture · DDD · ADR
 **NUNCA empezar a codificar sin un spec aprobado. NUNCA adivinar reglas de negocio.**
 
 ```
 1. Specification      → docs/specifications/{Feature}.spec.md  ← APPROVED antes de continuar
 2. ADR impact         → ¿decisión arquitectónica nueva? → escribir ADR antes del dominio
 3. Domain design      → DDD: entidades, value objects, agregados, eventos
-4. Test design        → TC-XX derivados de AC-XX del spec
-5. Test implementation→ escribir tests fallando (Red) — mvn test confirma que fallan
-6. Production code    → mínimo para pasar tests (Green) → refactor → dominio→app→infra→API
-7. Documentation      → spec IMPLEMENTED, JavaDoc, module doc, ADR si aplica
-8. Review             → PR → develop, DoD checklist, aprobación @julian
+4. Test design        → TC-XX derivados de AC-XX del spec; stubs @Disabled creados
+5. TDD Red            → escribir tests con aserción real — clase de producción NO existe aún
+                         mvn test / ng test → DEBE fallar (compile error o failure)
+6. TDD Green          → código mínimo para que los tests pasen — nada más
+                         mvn test / ng test → DEBE pasar
+7. TDD Refactor       → limpiar sin cambiar comportamiento → tests siguen en GREEN → commit
+8. Documentation      → spec IMPLEMENTED, JavaDoc, module doc, ADR si aplica
+9. Review             → PR → develop, DoD checklist, aprobación @julian
 ```
 
-**Definition of Ready** (antes de Step 6): spec aprobado · AC definidos · edge cases listados · ADR evaluado
+**TDD: la clase de producción NO existe cuando se escribe el test.**
+Si el test pasa en la fase Red, está mal — corregirlo antes de continuar.
+
+**Definition of Ready** (antes de Step 5): spec aprobado · AC definidos · edge cases listados · ADR evaluado
 **Definition of Done** (antes de merge): tests passing · coverage ok · JavaDoc · spec IMPLEMENTED · tasks.json hecho
 
 ## Gestión de tareas

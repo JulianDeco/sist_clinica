@@ -5,16 +5,41 @@ Stack: JUnit 5 · Mockito · Spring Boot Test · Testcontainers · AssertJ
 
 ---
 
-## 1. Testing Philosophy
+## 1. Testing Philosophy — TDD Explicit Cycle
 
-Every feature follows **Test-Driven Development (TDD)**:
+Every feature follows **Test-Driven Development (TDD)**. This is not optional
+and it is not "write tests after" — the test must exist and fail before the
+first line of production code is written.
 
 ```
-Write failing test → Implement minimum code → Refactor → Commit
+RED     Write a test that references a class or method that does not exist yet.
+        Run mvn test / ng test. Required outcome: compilation error or failure.
+        If it passes → the test is wrong or already covered. Fix it.
+
+GREEN   Write the minimum production code to make the test pass.
+        Nothing more. No "while I'm here" additions.
+        Run mvn test / ng test. Required outcome: all tests pass.
+
+REFACTOR  Clean structure without changing behavior.
+          Extract, rename, simplify. Run tests after every change.
+          Required outcome: still GREEN.
+
+COMMIT  Only after the full Red → Green → Refactor cycle is complete.
 ```
+
+**Non-negotiable rules:**
+
+| Rule | Detail |
+|---|---|
+| Test before class | The production class must not exist when you write the test |
+| Red phase is mandatory | Run the suite and see it fail. Do not skip this. |
+| Minimum code in Green | If no test demands it, do not implement it |
+| Testcontainers only | No H2, no in-memory mocks for database or Redis |
+| Tenant isolation test | Required for every new repository method, without exception |
+| Test names are requirements | `method_givenCondition_expectedBehavior` — readable as a spec |
 
 No code is committed without a corresponding test. Tests document behavior,
-not implementation details. Test names read as requirements.
+not implementation details.
 
 ---
 

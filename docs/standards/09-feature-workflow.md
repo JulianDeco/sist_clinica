@@ -6,17 +6,67 @@
 
 ---
 
+## TDD Cycle — Explicit Rules
+
+Every unit of implementation (domain entity, use case, controller endpoint,
+Angular component) follows this cycle without exception:
+
+```
+RED   → Write a failing test that expresses the requirement.
+         Run mvn test / ng test → confirm it FAILS.
+         If it passes immediately, the test is wrong or redundant.
+
+GREEN → Write the minimum production code to make the test pass.
+         No extra logic, no "while I'm here" cleanup.
+         Run mvn test / ng test → confirm it PASSES.
+
+REFACTOR → Clean up without changing behavior.
+            Rename, extract, simplify. Run tests again → still GREEN.
+            Only then commit.
+```
+
+**Hard blockers for TDD:**
+
+| Situation | Required action |
+|---|---|
+| Writing production code with no failing test | STOP — write the test first |
+| Test passes on first run before any impl | DELETE it — it tests nothing |
+| Skipping Red phase ("I know it will fail") | NOT acceptable — run it, see it fail |
+| Committing Green code before Refactor | Only allowed if refactor is a separate commit |
+| Mocking the database in integration tests | FORBIDDEN — use Testcontainers |
+
+**Scope of TDD per layer (backend):**
+
+| Layer | Test type | Tooling |
+|---|---|---|
+| Domain entity / value object | Unit | JUnit 5 + AssertJ |
+| Application service / use case | Unit | JUnit 5 + Mockito |
+| Controller (HTTP round-trip) | Integration | `@SpringBootTest` + MockMvc + Testcontainers |
+| Repository (SQL + tenant isolation) | Integration | `@DataJpaTest` + Testcontainers |
+
+**Scope of TDD per layer (frontend):**
+
+| Layer | Test type | Tooling |
+|---|---|---|
+| Store (Signals state) | Unit | Jasmine + Karma |
+| API client service | Unit | `HttpClientTestingModule` |
+| Guard / interceptor | Unit | TestBed |
+| Container component | Component | Angular Testing Library |
+
+---
+
 ## Mandatory Development Order
 
 ```
 1. Specification        ← no code before this is APPROVED
 2. ADR impact analysis  ← architectural decisions before domain design
 3. Domain design        ← DDD: entities, value objects, aggregates, events
-4. Test design          ← derive test cases from spec acceptance criteria
-5. Test implementation  ← write failing tests (Red)
-6. Production code      ← implement minimum to pass tests (Green → Refactor)
-7. Documentation        ← spec IMPLEMENTED, JavaDoc, module doc, ADR
-8. Review               ← PR against develop, checklist, approval
+4. Test design          ← TC-XX derived from AC-XX in spec; test stubs created
+5. TDD — Red phase      ← write failing tests; mvn test / ng test confirms FAIL
+6. TDD — Green phase    ← minimum production code to pass tests; confirm PASS
+7. TDD — Refactor       ← clean up; tests still GREEN; commit
+8. Documentation        ← spec IMPLEMENTED, JavaDoc, module doc, ADR
+9. Review               ← PR against develop, checklist, approval
 ```
 
 ---
@@ -127,54 +177,65 @@ Actions:
 - Define tenant isolation test (mandatory for every new repository method)
 - Document TC-XX list in the spec file under `## Test Cases`
 
-Deliverable: TC-XX list in spec; test class stubs created (empty test methods).
+Deliverable: TC-XX list in spec; test class stubs created (empty `@Test` methods
+annotated with `@Disabled("TDD: not yet implemented")` so the build stays green
+until Step 5 removes the annotation and implements the assertion).
 
 ---
 
-## Step 5 — Test Implementation (TDD — Red phase)
+## Step 5 — TDD Red Phase (failing tests first)
 
-**Goal**: Write failing tests before any production code.
-
-```
-Red → Green → Refactor
-```
+**Goal**: Every production class is preceded by a failing test. No exceptions.
 
 Order:
-1. Write unit tests for domain entities (state transitions, invariants)
-2. Write unit tests for application service / use case
-3. Write integration tests for controller (full HTTP round-trip)
-4. Write repository integration test with tenant isolation assertion
-5. Run all tests → confirm they **fail** (Red)
+1. Create test class for domain entity — write assertions for state transitions
+   and invariants. The domain class does **not exist yet** — the test file will
+   not compile. That is expected and correct.
+2. Create test class for application use case — mock all collaborators with
+   Mockito. The use case class does **not exist yet**.
+3. Create integration test class for controller — set up MockMvc, Testcontainers.
+4. Create repository integration test — include tenant isolation assertion.
+5. Run `mvn test` (backend) or `ng test` (frontend).
+   **Required outcome**: compilation errors or test failures. If everything
+   passes, the test is wrong — fix it before proceeding.
 
-**Rule**: never write production code before the failing test exists.
+**Rule**: the Red phase ends only when `mvn test` shows failing tests (not
+passing, not compilation warnings — actual failures or errors).
+
 Test names follow: `method_givenCondition_expectedBehavior`
 
 ---
 
-## Step 6 — Production Implementation (TDD — Green → Refactor)
+## Step 6 — TDD Green Phase (minimum code to pass)
 
-**Goal**: Write minimum code to make tests pass, then refactor.
+**Goal**: Make the failing tests pass with the least code necessary.
 
-Backend order (inside → outside — Clean Architecture):
-1. Domain entity / value object
-2. Repository interface (in `domain/`)
-3. Application service / use case (`application/`)
-4. Infrastructure adapter — JPA repository impl (`infrastructure/persistence/`)
-5. Redis adapter if caching needed (`infrastructure/cache/`)
-6. Controller + DTOs (`api/v1/`)
-7. Exception classes if new error cases introduced
-8. Flyway migration (if DB changes — commit separately)
+Order (backend — inside → outside, Clean Architecture):
+1. Domain entity / value object → makes domain unit tests compile and pass
+2. Repository interface (in `domain/`) → needed by use case
+3. Application use case → makes use case unit tests pass
+4. Infrastructure JPA repository impl → makes repository integration tests pass
+5. Redis adapter if caching needed
+6. Controller + DTOs → makes controller integration tests pass
+7. Exception classes for new error cases
 
-Frontend order:
-1. TypeScript model (`features/{x}/models/`)
-2. API client method (`core/api/`)
-3. Store update (Signals)
-4. Container component
-5. Presentational components
-6. Route wiring
+Run `mvn test` after each class. Stay in Green phase until all tests pass.
 
-**After each class**: run `mvn test` (backend) or `ng test` (frontend).
-**JavaDoc**: write it at creation time, not after.
+**Rule**: never add logic beyond what the failing test demands. If no test
+requires it, it does not get implemented.
+
+---
+
+## Step 6b — TDD Refactor Phase
+
+**Goal**: Improve structure without changing behavior.
+
+Actions:
+- Rename for clarity, extract private methods, eliminate duplication
+- Run `mvn test` after every change → must stay GREEN
+- If a refactor breaks a test, revert — the test is correct, the refactor is wrong
+
+Deliverable: clean code with all tests still passing. Commit here.
 
 ---
 
