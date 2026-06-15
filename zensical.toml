@@ -19,11 +19,16 @@ nav = [
   { "Diagramas ICONIX" = [
       { "Índice"            = "diagramas/index.md" },
       { "General" = [
-          { "Casos de Uso"      = "diagramas/01-casos-de-uso.md" },
           { "Modelo de Dominio" = "diagramas/02-dominio.md" },
           { "Arquitectura"      = "diagramas/07-arquitectura.md" },
           { "Clases de Dominio" = "diagramas/12-clases.md" },
           { "DER Físico"        = "diagramas/13-der.md" },
+      ]},
+      { "Casos de Uso" = [
+          { "CU-01 Reservar turno"     = "diagramas/01a-casos-de-uso-cu01.md" },
+          { "CU-02 Consulta médica"    = "diagramas/01b-casos-de-uso-cu02.md" },
+          { "CU-03 Predicción ausent." = "diagramas/01c-casos-de-uso-cu03.md" },
+          { "CU-04 Overbooking"        = "diagramas/01d-casos-de-uso-cu04.md" },
       ]},
       { "Robustez" = [
           { "CU-01 Reservar turno"     = "diagramas/03-robustez-cu01.md" },
@@ -130,3 +135,7 @@ combine_header_slug = true
 [project.markdown_extensions.pymdownx.tasklist]
 custom_checkbox = true
 [project.markdown_extensions.pymdownx.tilde]
+
+[project.markdown_extensions.zensical.extensions.glightbox]
+auto         = true
+auto_caption = false

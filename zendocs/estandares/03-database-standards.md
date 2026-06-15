@@ -1,1 +1,193 @@
-/home/julian/Documentos/Trabajo/sist_clinica/docs/standards/03-database-standards.md
+# Database Standards — PostgreSQL 16
+
+---
+
+## 1. Naming Conventions
+
+| Object | Convention | Example |
+|---|---|---|
+| Tables | `snake_case`, plural | `appointments`, `fhir_resources` |
+| Columns | `snake_case` | `tenant_id`, `created_at` |
+| Primary keys | `id` (UUID) | `id UUID PRIMARY KEY` |
+| Foreign keys | `{referenced_table_singular}_id` | `patient_id`, `practitioner_id` |
+| Indexes | `idx_{table}_{columns}` | `idx_appointments_tenant_date` |
+| Unique constraints | `uq_{table}_{columns}` | `uq_users_tenant_email` |
+| Check constraints | `ck_{table}_{rule}` | `ck_appointments_dates` |
+| Sequences | `{table}_{column}_seq` | (avoid — use UUID PKs) |
+| Enum types | `snake_case` | `appointment_status` |
+
+---
+
+## 2. Standard Columns (every tenant-scoped table)
+
+```sql
+-- Every table that holds tenant data MUST have these columns
+id          UUID        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+tenant_id   UUID        NOT NULL REFERENCES tenants(id),
+created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+created_by  UUID        REFERENCES users(id),
+updated_by  UUID        REFERENCES users(id)
+```
+
+`updated_at` is maintained by a reusable trigger (do not rely on application code):
+
+```sql
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply to every table
+CREATE TRIGGER trg_{table}_updated_at
+BEFORE UPDATE ON {table}
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
+
+---
+
+## 3. Soft Delete Policy
+
+All business entities implement soft delete. **Never use physical DELETE** on
+business records.
+
+```sql
+-- Soft delete columns
+deleted_at  TIMESTAMPTZ,    -- NULL means active; non-null means deleted
+deleted_by  UUID REFERENCES users(id)
+```
+
+Rules:
+- All application queries add `WHERE deleted_at IS NULL` (enforced by JPA `@Where`)
+- Reporting queries may read deleted records explicitly
+- Physical deletes are only allowed on audit tables, logs, and expired tokens
+- Background job purges records deleted > 90 days ago (configurable per tenant)
+
+Spring Data JPA annotation on entity:
+```java
+@Entity
+@Where(clause = "deleted_at IS NULL")
+public class Appointment { ... }
+```
+
+---
+
+## 4. Migration Strategy (Flyway)
+
+- **Flyway** is the only mechanism for schema changes — never `create-all`, never manual SQL
+- Migrations live in `src/main/resources/db/migration/`
+- Naming: `V{version}__{description}.sql` — e.g. `V001__create_tenants.sql`
+- Version numbers are sequential integers: V001, V002, V003 ...
+- Each migration must be **idempotent** where possible (use `IF NOT EXISTS`)
+- **Never modify a committed migration** — add a new one instead
+- Migrations run automatically on application startup (before requests are served)
+- Every PR that adds a migration must include a rollback note in the PR description
+  (Flyway Community does not support automatic rollback)
+
+Migration file structure:
+```
+src/main/resources/db/migration/
+├── V001__create_tenants.sql
+├── V002__create_users_and_roles.sql
+├── V003__create_fhir_resources.sql
+├── V004__create_appointments.sql
+└── V005__create_coverage.sql
+```
+
+---
+
+## 5. Index Strategy
+
+Default indexes (auto-created by constraints):
+- Primary keys
+- Unique constraints
+
+Required explicit indexes for ClinicaSaaS:
+
+```sql
+-- Tenant filter — on EVERY table with tenant_id
+CREATE INDEX idx_{table}_tenant ON {table}(tenant_id);
+
+-- FHIR resource lookups
+CREATE INDEX idx_fhir_resources_type_tenant ON fhir_resources(resource_type, tenant_id);
+CREATE INDEX idx_fhir_resources_fhir_id ON fhir_resources(fhir_id);
+
+-- Appointments — primary access pattern
+CREATE INDEX idx_appointments_tenant_date ON appointments(tenant_id, appointment_date);
+CREATE INDEX idx_appointments_patient ON appointments(tenant_id, patient_id);
+CREATE INDEX idx_appointments_practitioner ON appointments(tenant_id, practitioner_id);
+CREATE INDEX idx_appointments_status ON appointments(tenant_id, status) WHERE deleted_at IS NULL;
+
+-- JSONB search — GIN index on fhir_resources.resource_data
+CREATE INDEX idx_fhir_resources_data_gin ON fhir_resources USING gin(resource_data);
+```
+
+Index rules:
+- Add an index when a query filters by that column and the table has > 10k rows expected
+- Partial indexes (`WHERE deleted_at IS NULL`) reduce index size for soft-delete tables
+- Do not create composite indexes with more than 3 columns
+- Review `EXPLAIN ANALYZE` before adding speculative indexes
+
+---
+
+## 6. Foreign Key Rules
+
+- All FK columns are `NOT NULL` unless the relationship is genuinely optional
+- `ON DELETE CASCADE` only for ownership relationships (e.g. `refresh_tokens → users`)
+- `ON DELETE RESTRICT` (default) for reference relationships
+- Never use `ON DELETE SET NULL` — prefer explicit null handling in application
+- FK indexes are created manually (PostgreSQL does not auto-index FK columns)
+
+---
+
+## 7. UUID Strategy
+
+- All primary keys are `UUID` generated by `gen_random_uuid()` (PostgreSQL built-in)
+- UUID v4 — random, no ordering guarantees
+- Do not expose sequential integer IDs in APIs (security: enumeration attacks)
+- Store as native `uuid` type in PostgreSQL, `UUID` in Java
+
+---
+
+## 8. FHIR Storage Pattern
+
+```sql
+-- Generic FHIR resource store
+CREATE TABLE fhir_resources (
+    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id       UUID        NOT NULL REFERENCES tenants(id),
+    fhir_id         VARCHAR(64) NOT NULL,     -- FHIR resource logical ID
+    resource_type   VARCHAR(50) NOT NULL,     -- Patient, Appointment, Encounter, etc.
+    version_id      INTEGER     NOT NULL DEFAULT 1,
+    resource_data   JSONB       NOT NULL,     -- Full FHIR JSON
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(tenant_id, resource_type, fhir_id)
+);
+
+-- Queryable search parameters extracted from JSONB
+CREATE TABLE fhir_search_params (
+    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id       UUID        NOT NULL,
+    fhir_resource_id UUID       NOT NULL REFERENCES fhir_resources(id) ON DELETE CASCADE,
+    param_name      VARCHAR(100) NOT NULL,    -- e.g. "family", "birthdate"
+    param_value     TEXT        NOT NULL,
+    param_type      VARCHAR(20) NOT NULL      -- string, token, date, reference
+);
+```
+
+---
+
+## 9. Prohibited Patterns
+
+| Anti-pattern | Why prohibited |
+|---|---|
+| `schema-per-tenant` | Too many schemas for VPS; Flyway complexity |
+| `Base.create_all` equivalent (`spring.jpa.hibernate.ddl-auto=create`) | Flyway is sole schema authority |
+| Storing passwords in plain text | Always BCrypt |
+| `SELECT *` in custom queries | Select only needed columns |
+| Timestamps as `TIMESTAMP` (no timezone) | Always use `TIMESTAMPTZ` |
+| Numeric IDs as PKs on business tables | Use UUID to prevent enumeration |
