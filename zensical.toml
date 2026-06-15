@@ -73,15 +73,9 @@ nav = [
       { "T-002 Frontend scaffold" = "specs/T-002-scaffold-frontend.spec.md" },
       { "T-003 Auth JWT"          = "specs/T-003-auth-jwt.spec.md" },
   ]},
-  { "Seminario UAI" = [
-      { "Plan de trabajo"   = "seminario/plan-de-trabajo.md" },
-      { "Plan de negocios"  = "seminario/plan-de-negocios.md" },
-      { "BMC"               = "seminario/bmc.md" },
-      { "Entrega 2"         = "seminario/entrega-2.md" },
-      { "ICONIX — Especificación CU" = "seminario/iconix/02-especificacion-casos-de-uso.md" },
-      { "ICONIX — Glosario dominio"  = "seminario/iconix/03-glosario-dominio.md" },
-      { "ICONIX — Patrones diseño"   = "seminario/iconix/04-patrones-de-diseno.md" },
-      { "ICONIX — Prototipo"         = "seminario/iconix/05-prototipo.md" },
+  { "Proyecto" = [
+      { "Propuesta de valor"  = "seminario/propuesta-de-valor.md" },
+      { "Roadmap"             = "seminario/roadmap.md" },
   ]},
 ]
 

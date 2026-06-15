@@ -1,28 +1,50 @@
-# ClinicaSaaS — Documentación
+# ClinicaSaaS
 
-SaaS multitenant FHIR R4 para clínicas pequeñas (1–5 profesionales) en Argentina.
-Proyecto de tesis del Seminario de Trabajo Final UAI 2026.
+Plataforma de gestión clínica por suscripción para consultorios y clínicas médicas privadas de 1 a 5 profesionales en Argentina, con foco inicial en Rosario.
 
-## Stack
+Los datos clínicos se almacenan sobre el estándar internacional **HL7 FHIR R4**, garantizando portabilidad e interoperabilidad con obras sociales, laboratorios y otros sistemas de salud presentes y futuros.
 
-Java 21 · Spring Boot 3 · Spring Security · Spring Data JPA ·
-PostgreSQL 16 · Redis 8 · Angular 18 · Angular Material · Docker / Compose.
+## El problema
+
+El ausentismo de pacientes afecta entre el **23 % y el 30 % de los turnos** en Argentina — un costo operativo crónico sin solución tecnológica adoptada en el segmento de clínicas pequeñas. Las herramientas disponibles cubren gestión básica de agenda pero no predicen ni mitigan el problema.
+
+## Qué resuelve el MVP
+
+| Capacidad | Descripción |
+|---|---|
+| **Predicción explicable de ausentismo** | Estima la probabilidad de no-show por paciente y explica los factores (historial, anticipación, franja horaria). Heurística en MVP, diseñada para evolucionar a ML por tenant. |
+| **Recordatorios inteligentes** | Priorización de notificaciones según riesgo calculado — reduce costo y aumenta tasa de respuesta efectiva. |
+| **Overbooking inteligente** | Sugiere sobreturnos en slots de alto riesgo con tope parametrizable por el profesional. |
+| **Resumen clínico con IA** | Genera resumen del encuentro SOAP en lenguaje natural a partir de datos FHIR. El profesional revisa antes de guardar. |
+| **Sugerencia CIE-10** | Sugiere código de diagnóstico desde texto libre. El profesional conserva el criterio final. |
+| **Obra social con tope semanal** | Validación de cobertura y tope por paciente integrada al flujo de reserva. |
+| **Agenda interactiva FHIR** | Ficha de paciente, historia clínica SOAP e interoperabilidad FHIR R4 nativa. |
+
+## Stack técnico
+
+| Capa | Tecnología |
+|---|---|
+| Backend | Java 21 · Spring Boot 3 · Spring Security · Spring Data JPA |
+| Base de datos | PostgreSQL 16 (FHIR como JSONB + tablas relacionales) |
+| Caché / sesiones | Redis 8 |
+| Frontend | Angular 18 · Angular Material |
+| Infraestructura | Docker · Compose · Nginx |
+| IA generativa | Claude API (Anthropic) |
 
 ## Casos de uso core (ICONIX)
 
 | CU | Descripción |
 |---|---|
-| CU-01 | Reservar turno con validación integral |
-| CU-02 | Gestionar consulta médica (SOAP básico) |
+| CU-01 | Reservar turno con validación integral (slot, obra social, riesgo, overbooking) |
+| CU-02 | Gestionar consulta médica — registro SOAP, Encounter FHIR, cierre |
 | CU-03 | Calcular y notificar predicción de ausentismo |
 | CU-04 | Sugerir y aplicar overbooking inteligente |
 
-## Secciones
+## Documentación
 
-- **[Arquitectura](arquitectura/01-high-level-architecture.md)** — Descripción de alto nivel y capas
-- **[Estándares](estandares/01-backend-standards.md)** — Backend, frontend, DB, seguridad, API, Git
-- **[ADRs](adr/decisions-log.md)** — Architecture Decision Records
-- **[Testing](testing/01-testing-standards.md)** — Estrategia TDD + SDD
-- **[Specs](specs/T-003-auth-jwt.spec.md)** — Especificaciones de features
-- **[Diagramas ICONIX](diagramas/index.md)** — Todos los diagramas Mermaid
-- **[Seminario](seminario/plan-de-trabajo.md)** — Plan de trabajo, negocios, entregas UAI
+- [Arquitectura](arquitectura/01-high-level-architecture.md) — Capas, despliegue, seguridad
+- [Diagramas ICONIX](diagramas/index.md) — Casos de uso, dominio, robustez, secuencia, clases, DER
+- [Estándares de ingeniería](estandares/01-backend-standards.md) — Backend, frontend, DB, seguridad, API, Git
+- [ADRs](adr/decisions-log.md) — 16 decisiones arquitectónicas registradas
+- [Propuesta de valor](seminario/propuesta-de-valor.md) — Contexto de mercado y modelo de negocio
+- [Roadmap](seminario/roadmap.md) — Cronograma mayo–diciembre 2026
