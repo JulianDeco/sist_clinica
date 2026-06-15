@@ -42,9 +42,9 @@ El ausentismo de pacientes afecta entre el **23 % y el 30 % de los turnos** en A
 
 ## Documentación
 
-- [Arquitectura](arquitectura/01-high-level-architecture.md) — Capas, despliegue, seguridad
-- [Diagramas ICONIX](diagramas/index.md) — Casos de uso, dominio, robustez, secuencia, clases, DER
-- [Estándares de ingeniería](estandares/01-backend-standards.md) — Backend, frontend, DB, seguridad, API, Git
-- [ADRs](adr/decisions-log.md) — 16 decisiones arquitectónicas registradas
-- [Propuesta de valor](seminario/propuesta-de-valor.md) — Contexto de mercado y modelo de negocio
-- [Roadmap](seminario/roadmap.md) — Cronograma mayo–diciembre 2026
+- [Arquitectura](arquitectura/01-high-level-architecture/) — Capas, despliegue, seguridad
+- [Diagramas ICONIX](diagramas/) — Casos de uso, dominio, robustez, secuencia, clases, DER
+- [Estándares de ingeniería](estandares/01-backend-standards/) — Backend, frontend, DB, seguridad, API, Git
+- [ADRs](adr/decisions-log/) — 16 decisiones arquitectónicas registradas
+- [Propuesta de valor](seminario/propuesta-de-valor/) — Contexto de mercado y modelo de negocio
+- [Roadmap](seminario/roadmap/) — Cronograma mayo–diciembre 2026
