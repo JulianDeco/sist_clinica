@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <defs>
+    <style>
+      .brand-icon { fill: #1A6CFF; }
+      .brand-text { fill: #0D1117; font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; letter-spacing: -0.5px; }
+      .brand-dot  { fill: #1A6CFF; }
+    </style>
+  </defs>
+
+  <!-- Icon: two rounded rectangles forming a stylized "P" / pulse mark -->
+  <!-- Outer rounded square -->
+  <rect x="0" y="8" width="64" height="64" rx="14" ry="14" class="brand-icon"/>
+
+  <!-- Inner white negative space — cross / plus sign suggesting medical + data -->
+  <rect x="14" y="29" width="36" height="10" rx="3" ry="3" fill="white"/>
+  <rect x="27" y="16" width="10" height="36" rx="3" ry="3" fill="white"/>
+
+  <!-- Small accent dot at bottom-right of icon (signals "smart / connected") -->
+  <circle cx="55" cy="58" r="5" fill="white" opacity="0.9"/>
+  <circle cx="55" cy="58" r="3" class="brand-dot"/>
+
+  <!-- Wordmark -->
+  <text x="82" y="53" class="brand-text" font-size="38">praxi</text>
+
+  <!-- Tagline -->
+  <text x="83" y="68" fill="#6B7280" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" letter-spacing="1.8px">CLINICAL PLATFORM</text>
+</svg>

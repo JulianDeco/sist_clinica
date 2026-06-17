@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: PostgreSQL 16 + SQLAlchemy 2.0 async + Alembic + asyncpg
 # Multitenancy: tenant_id en TODAS las tablas — nunca omitir en queries ni índices
 # Migraciones: SIEMPRE alembic revision --autogenerate + alembic upgrade head

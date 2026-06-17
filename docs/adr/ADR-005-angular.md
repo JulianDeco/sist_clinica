@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS requiere un frontend con: gestión compleja de formularios (reserva de
+Kuris requiere un frontend con: gestión compleja de formularios (reserva de
 turnos con validación en múltiples pasos), control de vistas basado en roles (los
 médicos ven vistas distintas a las secretarias), una vista de agenda basada en
 calendario, e integración con una API REST de Spring Boot protegida por JWT.

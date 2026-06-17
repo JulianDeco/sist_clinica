@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Documentación técnica: backend/docs/ por módulo, .claude/context/ por área
 # Diagramas ICONIX: PlantUML o Mermaid — coordinar con software-architect, entregar el 16/6
 # Secciones académicas: guía Vilaboa 2025 — todo en USD, ≤1 carilla resumen ejecutivo (19/5)
@@ -69,7 +69,7 @@ How to run tests. How to submit a PR.
 ```yaml
 openapi: 3.0.3
 info:
-  title: ClinicaSaaS FHIR API
+  title: Kuris FHIR API
   description: FHIR R4 API with SMART on FHIR authorization
   version: 1.0.0
 

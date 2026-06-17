@@ -5,7 +5,7 @@
 ## 1. Estructura de Paquetes
 
 ```
-com.clinicasaas
+com.kuris
 ├── config/                         # @Configuration, definiciones de @Bean
 │   ├── SecurityConfig.java
 │   ├── RedisConfig.java
@@ -219,23 +219,23 @@ Definir una jerarquía en `api/exception/`:
 
 ```java
 // Base — todas las excepciones de negocio extienden esta
-public abstract class ClinicaSaasException extends RuntimeException {
+public abstract class KurisException extends RuntimeException {
     public abstract HttpStatus httpStatus();
     public abstract String errorCode();   // por ejemplo "SLOT_ALREADY_BOOKED"
 }
 
 // Excepciones concretas
-public class SlotAlreadyBookedException extends ClinicaSaasException {
+public class SlotAlreadyBookedException extends KurisException {
     @Override public HttpStatus httpStatus() { return HttpStatus.CONFLICT; }
     @Override public String errorCode() { return "SLOT_ALREADY_BOOKED"; }
 }
 
-public class ResourceNotFoundException extends ClinicaSaasException {
+public class ResourceNotFoundException extends KurisException {
     @Override public HttpStatus httpStatus() { return HttpStatus.NOT_FOUND; }
     @Override public String errorCode() { return "RESOURCE_NOT_FOUND"; }
 }
 
-public class TenantAccessDeniedException extends ClinicaSaasException {
+public class TenantAccessDeniedException extends KurisException {
     @Override public HttpStatus httpStatus() { return HttpStatus.FORBIDDEN; }
     @Override public String errorCode() { return "TENANT_ACCESS_DENIED"; }
 }
@@ -247,8 +247,8 @@ public class TenantAccessDeniedException extends ClinicaSaasException {
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ClinicaSaasException.class)
-    public ResponseEntity<ErrorResponse> handle(ClinicaSaasException ex) {
+    @ExceptionHandler(KurisException.class)
+    public ResponseEntity<ErrorResponse> handle(KurisException ex) {
         return ResponseEntity.status(ex.httpStatus())
                 .body(ErrorResponse.of(ex.errorCode(), ex.getMessage()));
     }

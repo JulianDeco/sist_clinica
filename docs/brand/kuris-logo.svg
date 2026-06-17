@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">
+  <defs>
+    <style>
+      .wordmark {
+        font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+        font-weight: 700;
+        font-size: 40px;
+        letter-spacing: -1px;
+        fill: #0F172A;
+      }
+      .tagline {
+        font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 2.4px;
+        fill: #64748B;
+      }
+    </style>
+  </defs>
+
+  <!-- Icon: rounded square with a stylized K formed by negative space -->
+  <!-- Base square -->
+  <rect x="0" y="6" width="62" height="62" rx="13" fill="#1D7AFF"/>
+
+  <!-- K left vertical bar (white negative) -->
+  <rect x="16" y="18" width="9" height="38" rx="2.5" fill="white"/>
+
+  <!-- K upper diagonal arm -->
+  <!-- From center-right going top-right -->
+  <polygon points="25,37 42,18 51,18 33,37" fill="white"/>
+
+  <!-- K lower diagonal arm -->
+  <polygon points="25,40 42,56 51,56 33,40" fill="white"/>
+
+  <!-- Accent dot: bottom-right corner of icon — signals "smart / live" -->
+  <circle cx="52" cy="54" r="0" fill="white"/>
+
+  <!-- Wordmark -->
+  <text x="78" y="52" class="wordmark">kuris</text>
+
+  <!-- Tagline -->
+  <text x="79" y="68" class="tagline">CLINICAL PLATFORM</text>
+</svg>

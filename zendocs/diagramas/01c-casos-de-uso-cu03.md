@@ -6,7 +6,7 @@ flowchart LR
     SCH(["⚙️ Scheduler\njob programado"])
     PAC(["👤 Paciente"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
         UC03(["CU-03\nNotificar predicción\nde ausentismo"])
         UC_SEL(["Seleccionar turnos\npróximos ventana"])

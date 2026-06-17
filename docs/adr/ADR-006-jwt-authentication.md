@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS es una API REST stateless. La autenticación debe ser: escalable
+Kuris es una API REST stateless. La autenticación debe ser: escalable
 (sin almacén de sesiones del lado del servidor), segura (protección contra robo
 de tokens), y práctica (sin requerir re-login cada 30 minutos).
 

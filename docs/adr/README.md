@@ -1,4 +1,4 @@
-# Architecture Decision Records — ClinicaSaaS
+# Architecture Decision Records — Kuris
 
 ## ¿Qué es un ADR?
 

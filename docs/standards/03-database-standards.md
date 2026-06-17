@@ -110,7 +110,7 @@ src/main/resources/db/migration/
 - Claves primarias
 - Restricciones únicas
 
-Índices explícitos requeridos para ClinicaSaaS:
+Índices explícitos requeridos para Kuris:
 
 ```sql
 -- Filtro por tenant — en CADA tabla con tenant_id

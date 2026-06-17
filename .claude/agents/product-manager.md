@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Contexto académico: Seminario de Trabajo Final UAI — guía Vilaboa 2025
 # Fechas: 1ra entrega 19/5 (hasta punto 1.2 + resumen ejecutivo), 2da 16/6 (hasta punto 4), 3ra 30/6
 # Todo el proyecto en USD. VPS 4GB RAM como restricción de infraestructura.

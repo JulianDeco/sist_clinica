@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS es una plataforma SaaS multitenant. Cada tenant (clínica) debe estar
+Kuris es una plataforma SaaS multitenant. Cada tenant (clínica) debe estar
 completamente aislado: un tenant nunca debe ver los pacientes, turnos o registros
 clínicos de otro tenant.
 

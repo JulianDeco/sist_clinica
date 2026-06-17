@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS requiere un backend que maneje CRUD de FHIR R4, autenticación JWT,
+Kuris requiere un backend que maneje CRUD de FHIR R4, autenticación JWT,
 aislamiento de datos multitenant, trabajos programados (recordatorios de notificaciones)
 e integración con servicios externos (WhatsApp Business API, email SMTP).
 

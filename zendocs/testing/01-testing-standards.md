@@ -1,4 +1,4 @@
-# Testing Standards — ClinicaSaaS
+# Testing Standards — Kuris
 
 Stack: JUnit 5 · Mockito · Spring Boot Test · Testcontainers · AssertJ
        Jasmine · Karma · Angular Testing Library (frontend)

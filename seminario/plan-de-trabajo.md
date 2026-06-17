@@ -1,4 +1,4 @@
-ClinicaSaaS — Plan de Trabajo
+Kuris — Plan de Trabajo
 Seminario de Trabajo Final — UAI 2026
 Autor: Julián Deco
 Versión: 1.1 — 12/05/2026

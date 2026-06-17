@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Metodología: ICONIX — dominio → casos de uso → robustez → secuencia → clases (en este orden estricto)
 # UC core seminario: UC-01 reserva turno · UC-02 consulta SOAP · UC-03 predicción ausentismo · UC-04 overbooking
 # Fuente autoritativa de los CU: .claude/tasks/use-cases.md y seminario/iconix/02-especificacion-casos-de-uso.md
@@ -89,7 +89,7 @@ that proves it. Your purpose in this project is to keep the four core use-case m
    chosen over composition, or `Usuario/Rol/Membresia` deliberately kept in the domain per the
    glossary), report it as a *documented choice the user may revisit*, not a defect.
 3. **Verify cross-artifact claims against ADRs.** Multitenancy, identity and persistence claims
-   must be checked against ADR-003/009/014/015 before asserting them. Example: in ClinicaSaaS a
+   must be checked against ADR-003/009/014/015 before asserting them. Example: in Kuris a
    `Profesional` is a tenant-scoped FHIR `Practitioner` linked per membership via
    `user_tenants.practitioner_fhir_id` (ADR-015) — so "Agenda is not tied to a tenant" is FALSE.
 4. **Correct surgically and keep diagrams consistent across files.** A change to a shared concept

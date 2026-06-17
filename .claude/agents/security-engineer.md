@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: Spring Boot 3 + Spring Security (JWT) + OAuth2 PKCE + SMART on FHIR + Redis RBAC cache
 # Compliance: Ley 25.326 (Argentina) + OWASP Top 10
 # RBAC: role_name en JWT + permisos en Redis TTL 5min — NUNCA permisos completos en JWT

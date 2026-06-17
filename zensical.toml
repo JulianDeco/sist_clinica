@@ -1,5 +1,5 @@
 [project]
-site_name        = "ClinicaSaaS — Docs"
+site_name        = "Kuris — Docs"
 site_description = "Documentación técnica y académica del SaaS multitenant FHIR R4 — Seminario UAI 2026"
 site_author      = "Julian Deco"
 site_url         = "https://juliandeco.github.io/sist_clinica/"

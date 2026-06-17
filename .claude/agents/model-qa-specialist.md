@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Motor MVP: heurística no-show explicable (UC-03) + reglas overbooking (UC-04) — ML por tenant en roadmap
 # UC core seminario: UC-01 reserva turno · UC-02 consulta SOAP · UC-03 predicción ausentismo · UC-04 overbooking — fuente: .claude/tasks/use-cases.md
 # Stack ML: scikit-learn, SHAP (TreeExplainer), pandas, pytest

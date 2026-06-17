@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: Java 21 + Spring Boot 3 + PostgreSQL 16 + Redis 8 + Angular 18 + Docker
 # FHIR: R4 completo — endpoints /fhir/R4/*, SMART on FHIR, recursos JSONB en PostgreSQL
 # Multitenancy: tenant_id en todas las tablas — nunca omitir en queries

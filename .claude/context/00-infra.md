@@ -47,7 +47,7 @@ Spring Boot corre Flyway automáticamente al arrancar (antes de servir requests)
 ```yaml
 # docker-compose.yml
 backend:
-  image: clinicasaas-backend:latest
+  image: kuris-backend:latest
   mem_limit: 800m
   environment:
     SPRING_PROFILES_ACTIVE: prod

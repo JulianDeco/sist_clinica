@@ -5,7 +5,7 @@ flowchart LR
     SEC(["👤 Secretario/a"])
     MED(["👤 Médico"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
         UC04(["CU-04\nSugerir overbooking\ninteligente"])
         UC_OVB_HAB(["Verificar overbooking\nhabilitado"])

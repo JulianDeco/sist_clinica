@@ -14,7 +14,7 @@ flowchart LR
     PAC(["👤 Paciente"])
     SCH(["⚙️ Scheduler\njob programado"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
 
         %% ── Autenticación ────────────────────────────────────────

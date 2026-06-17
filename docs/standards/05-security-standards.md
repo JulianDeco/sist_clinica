@@ -34,7 +34,7 @@ Flujo:
 | `sub` | `{userId}` | String UUID |
 | `tenant_id` | `{tenantId}` | String UUID — REQUERIDO en cada token |
 | `role` | `DOCTOR` / `SECRETARY` / `ADMIN` | Rol único por sesión |
-| `iss` | `clinicasaas` | Constante de emisor |
+| `iss` | `kuris` | Constante de emisor |
 | `iat` | Timestamp Unix | Emitido en |
 | `exp` | `iat + 1800` | 30 minutos |
 | `jti` | UUID | ID del JWT — usado para revocación |

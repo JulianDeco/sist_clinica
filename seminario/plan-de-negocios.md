@@ -1,4 +1,4 @@
-ClinicaSaaS — Plan de Negocios
+Kuris — Plan de Negocios
 Seminario de Trabajo Final — UAI 2026
 Autor: Julián Decoppet
 Legajo: B00114457-T — Sede Rosario
@@ -51,7 +51,7 @@ los capítulos 1 a 5 de este documento.
 RESUMEN EJECUTIVO
 ================================================================
 
-ClinicaSaaS es una plataforma de software de gestión clínica por
+Kuris es una plataforma de software de gestión clínica por
 suscripción, dirigida a consultorios y clínicas médicas privadas de uno a
 cinco profesionales en Argentina, con foco inicial en Rosario y zona de
 influencia. La plataforma centraliza la administración de pacientes,
@@ -60,7 +60,7 @@ interoperable basada en el estándar internacional HL7 FHIR R4, lo que
 garantiza que los datos clínicos sean portables, seguros y compatibles
 con cualquier sistema de salud presente o futuro.
 
-Sobre esa base de gestión integral, ClinicaSaaS incorpora un conjunto de
+Sobre esa base de gestión integral, Kuris incorpora un conjunto de
 capacidades de inteligencia operacional diseñadas para resolver problemas
 concretos del segmento.
 
@@ -136,7 +136,7 @@ volumen; en el centro, incumbentes locales con base instalada
 TecnoMedicus, ConsultSmart, Zindec) cubren la gestión administrativa sin
 diferenciación tecnológica; y en la capa de SaaS modernos genéricos
 (AgendaPro, Gendu, Turnito, Nubimed) algunos comenzaron en 2026 a
-incorporar IA para tareas administrativas. ClinicaSaaS se posiciona en el
+incorporar IA para tareas administrativas. Kuris se posiciona en el
 hueco intermedio: modernidad técnica, especialización en clínicas pequeñas
 y diferenciación funcional concreta sobre todas las capas.
 
@@ -178,7 +178,7 @@ aplicado a salud.
 
 Idea de negocio
 
-ClinicaSaaS es una plataforma de software como servicio (SaaS) de gestión
+Kuris es una plataforma de software como servicio (SaaS) de gestión
 clínica integral, diseñada específicamente para clínicas médicas privadas de
 entre 1 y 5 profesionales en Argentina. El sistema centraliza la operación
 clínica — agenda de turnos, gestión de pacientes, historial clínico y
@@ -208,7 +208,7 @@ Expertos, 2024). Los sistemas de gestión clínica disponibles en el mercado loc
 cobran entre USD 10 y USD 25 mensuales (Medesk, 2024; DriCloud, 2024), pero
 ninguno incorpora capacidades de predicción de ausentismo ni sugerencia de
 cobertura basada en inteligencia artificial para clínicas de este tamaño.
-El posicionamiento de precio de ClinicaSaaS por encima de ese rango
+El posicionamiento de precio de Kuris por encima de ese rango
 (USD 35–50) se sustenta en el retorno medible: la recuperación de una
 fracción de los turnos perdidos por ausentismo supera el costo mensual de
 la suscripción para una clínica tipo, y el reporte mensual de ausentismo
@@ -216,7 +216,7 @@ hace ese retorno verificable.
 
 Tipo de E-Business
 
-ClinicaSaaS es un negocio de tipo B2B (Business-to-Business): el cliente directo
+Kuris es un negocio de tipo B2B (Business-to-Business): el cliente directo
 es la clínica o consultorio médico, no el paciente individual. El modelo de
 distribución es exclusivamente digital, sin presencia física, lo que lo clasifica
 como un pure player dentro del e-business.
@@ -239,7 +239,7 @@ digital, sin contrato de permanencia mínima. El acceso al sistema se realiza
 1.2 Situación actual del negocio
 ----------------------------------------------------------------
 
-ClinicaSaaS se encuentra en etapa de desarrollo inicial (pre-revenue). Al
+Kuris se encuentra en etapa de desarrollo inicial (pre-revenue). Al
 momento de la presente entrega, el proyecto no cuenta con clientes activos ni
 ingresos. El emprendimiento nació como proyecto de tesis de la carrera de
 Ingeniería en Sistemas de la Universidad Abierta Interamericana (UAI), con la
@@ -350,14 +350,14 @@ Algunos competidores (Nubimed, SFS) comenzaron a incorporar IA para tareas
 administrativas en 2026. En el relevamiento realizado no se identificó ningún
 competidor del segmento que combine implementación nativa del estándar HL7 FHIR
 R4 con predicción explicable de ausentismo integrada al flujo operativo.
-ClinicaSaaS identifica esta brecha como su ventaja competitiva principal. El
+Kuris identifica esta brecha como su ventaja competitiva principal. El
 detalle completo del mapa competitivo se desarrolla en la sección 2.2.
 
 
 1.3 ¿Qué hace único a su negocio?
 ----------------------------------------------------------------
 
-La ventaja competitiva de ClinicaSaaS no reside en una funcionalidad aislada,
+La ventaja competitiva de Kuris no reside en una funcionalidad aislada,
 sino en la combinación —no replicada por la oferta relevada en el segmento de
 clínicas pequeñas— de tres pilares integrados al mismo flujo operativo:
 
@@ -391,7 +391,7 @@ clínicas pequeñas— de tres pilares integrados al mismo flujo operativo:
 
 - Asistencia clínica mediante IA generativa. A diferencia de los competidores que
   incorporaron IA para tareas exclusivamente administrativas (transcripción de
-  llamados, asistentes telefónicos), ClinicaSaaS integra IA generativa en el
+  llamados, asistentes telefónicos), Kuris integra IA generativa en el
   flujo clínico: resumen automático de la historia clínica al cierre de cada
   consulta y sugerencia de clasificación CIE-10 a partir del texto libre del
   motivo de consulta. Ambas capacidades están implementadas mediante la API de
@@ -522,7 +522,7 @@ distintivas y difíciles de imitar sobre las que se construye la ventaja— son:
 1.8 Propuesta de valor para el cliente
 ----------------------------------------------------------------
 
-Para una clínica o consultorio pequeño, ClinicaSaaS ofrece:
+Para una clínica o consultorio pequeño, Kuris ofrece:
 
 - Orden operativo integral: agenda de turnos, gestión de pacientes, historia
   clínica electrónica y administración de profesionales en una única plataforma
@@ -619,7 +619,7 @@ propuesta de valor diferenciada dirigida a un segmento acotado, la clínica
 pequeña, con necesidades que la oferta generalista no resuelve.
 
 Estrategia frente a la competencia (Kotler et al., 2017): retador / especialista
-de nicho. Como entrante sin base instalada, ClinicaSaaS no disputa frontalmente
+de nicho. Como entrante sin base instalada, Kuris no disputa frontalmente
 la cuota de los líderes consolidados; se inserta como especialista de nicho que
 atiende mejor que nadie un segmento específico, construyendo posición desde la
 especialización antes de ampliar el alcance geográfico (Santa Fe, interior) y
@@ -660,7 +660,7 @@ hacia otras ciudades del interior.
 
 El contexto macroeconómico argentino presenta históricamente alta inflación,
 volatilidad del tipo de cambio y restricciones cambiarias, lo que afecta la
-previsibilidad de costos e ingresos de cualquier emprendimiento. ClinicaSaaS
+previsibilidad de costos e ingresos de cualquier emprendimiento. Kuris
 mitiga parte de esta exposición fijando la suscripción en dólares
 estadounidenses, lo que estabiliza el ingreso frente a la depreciación de la
 moneda local; al mismo tiempo, el precio en dólares puede percibirse como elevado
@@ -696,7 +696,7 @@ paciente) distinto al que la competencia ha tomado.
 El escenario-meta es un mercado de clínicas pequeñas en Rosario y Santa Fe que,
 en un horizonte de mediano plazo, reconoce la interoperabilidad estándar y la
 inteligencia operacional explicable como atributos esperables —no
-excepcionales— de un sistema de gestión clínica. En ese escenario, ClinicaSaaS
+excepcionales— de un sistema de gestión clínica. En ese escenario, Kuris
 opera con una base de clientes que supera el punto de equilibrio, casos de
 referencia con impacto medible sobre el ausentismo y un canal de crecimiento
 orgánico por referidos profesionales.
@@ -768,7 +768,7 @@ operacional accionable (recordatorios diferenciados + overbooking).
 
 2.2.2 Análisis de cadena de valor
 
-  Eslabón                  Cómo lo resuelve ClinicaSaaS             Aporte de valor
+  Eslabón                  Cómo lo resuelve Kuris             Aporte de valor
   ──────────────────────────────────────────────────────────────────────────────────
   Desarrollo de producto   Ejecución técnica integral del fundador   Iteración rápida con
                            (backend, frontend, infra, modelos)       costo estructural mínimo
@@ -1002,7 +1002,7 @@ primarias se realizará durante el piloto previsto en el cronograma del proyecto
 5.1 Programas generales de acción
 ----------------------------------------------------------------
 
-El plan de acción de ClinicaSaaS se estructura en tres programas generales que
+El plan de acción de Kuris se estructura en tres programas generales que
 cubren el horizonte mayo–diciembre 2026 (etapa de construcción y validación del
 MVP) y la proyección inmediata posterior (primer semestre 2027, etapa de
 crecimiento inicial).
@@ -1059,7 +1059,7 @@ cada nueva clínica no consuma tiempo desproporcionado del fundador.
 El contexto regulatorio argentino opera como habilitador: la Estrategia Nacional
 de Salud Digital 2025–2030 consolidó en junio de 2026 la adopción de HL7 FHIR
 como estándar de interoperabilidad federal (Organización Panamericana de la
-Salud, 2026; Argentina.gob.ar, 2026). La arquitectura de ClinicaSaaS está
+Salud, 2026; Argentina.gob.ar, 2026). La arquitectura de Kuris está
 alineada con esa hoja de ruta desde su diseño, lo que convierte el cumplimiento
 normativo en ventaja competitiva adicional.
 

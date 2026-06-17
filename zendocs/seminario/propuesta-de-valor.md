@@ -16,17 +16,17 @@ El ausentismo de pacientes afecta entre el **23 % y el 30 % de los turnos** en A
 
 ## Propuesta diferencial
 
-ClinicaSaaS combina gestión clínica integral con inteligencia operacional sobre una base de interoperabilidad estándar (**HL7 FHIR R4**). Ningún competidor del segmento combina estos tres ejes simultáneamente.
+Kuris combina gestión clínica integral con inteligencia operacional sobre una base de interoperabilidad estándar (**HL7 FHIR R4**). Ningún competidor del segmento combina estos tres ejes simultáneamente.
 
 ## Mapa competitivo
 
-| Capa | Actores | Limitación frente a ClinicaSaaS |
+| Capa | Actores | Limitación frente a Kuris |
 |---|---|---|
 | Soluciones masivas | Grupo Cormos (DrApp, Docturno, iTurnos, Wiri Salud, Receto — +20M turnos/año) | Orientadas a volumen, no al segmento pequeño |
 | Incumbentes locales | Macena/Geclisa (Rosario, +30 años), TecnoMedicus, ConsultSmart, Zindec | Sin diferenciación tecnológica, sin FHIR, sin predicción |
 | SaaS modernos genéricos | AgendaPro, Gendu, Turnito, Nubimed | IA administrativa incipiente, sin FHIR nativo ni predicción clínica integrada |
 
-ClinicaSaaS se posiciona en el hueco intermedio: modernidad técnica, especialización en clínicas pequeñas y diferenciación funcional concreta.
+Kuris se posiciona en el hueco intermedio: modernidad técnica, especialización en clínicas pequeñas y diferenciación funcional concreta.
 
 ## Modelo de negocio
 

@@ -1,4 +1,4 @@
-# ClinicaSaaS — Documentación de ingeniería
+# Kuris — Documentación de ingeniería
 
 Esta carpeta contiene toda la documentación técnica del proyecto. Su propósito es que
 cualquier colaborador (o agente) pueda entender las decisiones de diseño y las

@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: Spring Boot 3 + JUnit 5 + Spring Boot Test — PostgreSQL test DB (nunca H2/SQLite)
 # Multitenancy: todo test debe verificar aislamiento de tenant_id
 # FHIR: endpoints /fhir/R4/* deben retornar application/fhir+json y validar recursos FHIR R4

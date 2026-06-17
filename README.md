@@ -1,4 +1,4 @@
-# ClinicaSaaS
+# Kuris
 
 Plataforma SaaS multitenant de gestión clínica con interoperabilidad FHIR R4
 e inteligencia operacional para clínicas pequeñas (1–5 profesionales) en Argentina.
@@ -9,7 +9,7 @@ Proyecto de Tesis — Seminario de Trabajo Final UAI 2026 — Julián Decoppet
 
 ## ¿Qué es este sistema?
 
-ClinicaSaaS permite a clínicas pequeñas gestionar turnos, consultas médicas e historias
+Kuris permite a clínicas pequeñas gestionar turnos, consultas médicas e historias
 clínicas desde un único sistema, con soporte para múltiples obras sociales, predicción
 heurística de ausentismo de pacientes y overbooking inteligente.
 
@@ -116,7 +116,7 @@ detalle en `.claude/tasks/` y referencia la spec correspondiente en `docs/specif
 sist_clinica/
 ├── src/
 │   ├── backend/      Spring Boot 3 / Java 21 — Clean Architecture
-│   │   └── src/main/java/com/clinicasaas/
+│   │   └── src/main/java/com/kuris/
 │   │       ├── api/            Controllers, DTOs, exception handlers
 │   │       ├── application/    Casos de uso (UC-01..04), lógica de negocio
 │   │       ├── domain/         Entidades JPA, repositorios (interfaces)

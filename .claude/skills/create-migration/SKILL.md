@@ -1,12 +1,12 @@
 ---
 name: create-migration
-description: Scaffold a new Flyway migration for ClinicaSaaS with the correct V{N} number, naming convention, and a tenant-aware template. User-invoked via /create-migration.
+description: Scaffold a new Flyway migration for Kuris with the correct V{N} number, naming convention, and a tenant-aware template. User-invoked via /create-migration.
 disable-model-invocation: true
 ---
 
 # create-migration
 
-Scaffolds a new Flyway migration following ClinicaSaaS database standards
+Scaffolds a new Flyway migration following Kuris database standards
 (`docs/standards/03-database-standards.md`). Flyway is the **only** sanctioned
 schema-change mechanism — never `ddl-auto=create/update`, never manual SQL.
 

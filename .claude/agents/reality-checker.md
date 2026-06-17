@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Contexto académico: Seminario de Trabajo Final UAI — guía Vilaboa 2025
 # Fechas: 19/5 (hasta punto 1.2 + resumen ejecutivo), 16/6 (hasta punto 4), 30/6 (completo)
 # Metodología: ICONIX (dominio, robustez, secuencia, clases) para los 4 UC core

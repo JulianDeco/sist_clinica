@@ -1,6 +1,6 @@
 # Especificación de casos de uso — ICONIX
 
-**Proyecto**: ClinicaSaaS — SaaS multitenant FHIR R4 para clínicas pequeñas
+**Proyecto**: Kuris — SaaS multitenant FHIR R4 para clínicas pequeñas
 **Entrega**: Seminario de Trabajo Final UAI — T-020, entregable 2 (16/06/2026)
 **Fuentes**: `.claude/tasks/use-cases.md` (autoritativa) · `docs/adr/ADR-013-notification-channels.md` · `docs/adr/ADR-014-multi-tenant-membership.md`
 **Diagrama asociado**: `seminario/iconix/diagramas/01-casos-de-uso.mmd`

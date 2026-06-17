@@ -13,7 +13,7 @@ import { MatCardModule } from '@angular/material/card';
   template: `
     <!-- Header -->
     <mat-toolbar color="primary" class="landing-header">
-      <span class="brand">ClinicaSaaS</span>
+      <span class="brand">Kuris</span>
       <span class="spacer"></span>
       <a mat-stroked-button routerLink="/login" class="login-btn">Iniciar sesión</a>
     </mat-toolbar>
@@ -51,7 +51,7 @@ import { MatCardModule } from '@angular/material/card';
 
     <!-- Footer -->
     <footer class="landing-footer">
-      <p>© 2026 ClinicaSaaS — Gestión clínica inteligente</p>
+      <p>© 2026 Kuris — Gestión clínica inteligente</p>
     </footer>
   `,
   styles: [

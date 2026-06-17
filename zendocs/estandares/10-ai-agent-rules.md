@@ -1,4 +1,4 @@
-# AI Agent Rules — ClinicaSaaS
+# AI Agent Rules — Kuris
 
 Rules for AI-assisted development in this project. These apply to every
 code generation session, regardless of the feature being built.
@@ -33,7 +33,7 @@ find src/main/java -name "*Service*.java" | head -20
 find src/main/java -path "*/agenda/dto*" -name "*.java"
 
 # Search for similar exception handling
-grep -r "ClinicaSaasException" src/main/java/
+grep -r "KurisException" src/main/java/
 ```
 
 Reuse existing patterns. Do not create a second abstraction for something

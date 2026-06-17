@@ -9,7 +9,7 @@
 
 ## Context
 
-ClinicaSaaS needs a database that supports: JSONB for FHIR resources,
+Kuris needs a database that supports: JSONB for FHIR resources,
 UUID primary keys, row-level multitenancy (tenant_id filtering), full
 ACID transactions, GIN indexes for JSONB search, and compliance with
 Argentine health data privacy law (Ley 25.326).

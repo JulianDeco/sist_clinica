@@ -4,7 +4,7 @@
 flowchart LR
     SEC(["👤 Secretario/a"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
         UC01(["CU-01\nReservar turno con\nvalidación integral"])
         UC_DISP(["Validar disponibilidad\nde slot"])

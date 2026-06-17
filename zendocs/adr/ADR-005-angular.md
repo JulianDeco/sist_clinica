@@ -9,7 +9,7 @@
 
 ## Context
 
-ClinicaSaaS requires a frontend with: complex form management (appointment
+Kuris requires a frontend with: complex form management (appointment
 booking with multi-step validation), role-based view control (doctors see
 different views than secretaries), a calendar-based agenda view, and
 integration with a Spring Boot REST API protected by JWT.

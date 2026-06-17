@@ -192,7 +192,7 @@ Soporta múltiples tenants por usuario y switch de tenant sin re-login.
 ### Paquetes
 
 ```
-src/backend/src/main/java/com/clinicasaas/
+src/backend/src/main/java/com/kuris/
 ├── domain/
 │   └── auth/
 │       ├── User.java                     @Entity — tabla users

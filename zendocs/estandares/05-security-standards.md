@@ -34,7 +34,7 @@ Flow:
 | `sub` | `{userId}` | UUID string |
 | `tenant_id` | `{tenantId}` | UUID string — REQUIRED in every token |
 | `role` | `DOCTOR` / `SECRETARY` / `ADMIN` | Single role per session |
-| `iss` | `clinicasaas` | Issuer constant |
+| `iss` | `kuris` | Issuer constant |
 | `iat` | Unix timestamp | Issued at |
 | `exp` | `iat + 1800` | 30 minutes |
 | `jti` | UUID | JWT ID — used for revocation |

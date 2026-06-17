@@ -1,4 +1,4 @@
-ClinicaSaaS — Business Model Canvas
+Kuris — Business Model Canvas
 Seminario de Trabajo Final — UAI 2026
 Autor: Julián Decoppet
 ================================================================
@@ -36,7 +36,7 @@ validar la propuesta en un mercado más amplio antes de especializar.
 
 PROPUESTA DE VALOR
 
-ClinicaSaaS es una plataforma de gestión clínica integral que resuelve la
+Kuris es una plataforma de gestión clínica integral que resuelve la
 operación diaria de consultorios pequeños — agenda de turnos, gestión de
 pacientes, historia clínica electrónica y administración de profesionales
 — sobre una arquitectura interoperable basada en el estándar internacional
@@ -44,7 +44,7 @@ HL7 FHIR R4, que garantiza que los datos clínicos sean portables y
 compatibles con sistemas externos (obras sociales, laboratorios,
 prestadores) tanto hoy como a futuro.
 
-Como diferencial sobre la oferta existente, el MVP de ClinicaSaaS
+Como diferencial sobre la oferta existente, el MVP de Kuris
 incorpora:
 
   - Predicción explicable de ausentismo: estima la probabilidad de que

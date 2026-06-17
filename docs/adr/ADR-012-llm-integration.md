@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS necesita incorporar capacidades de IA real en el MVP del seminario.
+Kuris necesita incorporar capacidades de IA real en el MVP del seminario.
 Dos tareas administrativas en el flujo clínico diario son candidatas naturales:
 (1) redactar el resumen de una consulta a partir de datos FHIR estructurados,
 (2) sugerir el código CIE-10 a partir de texto libre del motivo de consulta.

@@ -1,4 +1,4 @@
-# Specification: Database Schema — ClinicaSaaS MVP
+# Specification: Database Schema — Kuris MVP
 
 **Status**: APPROVED — v5
 **Author**: Julián Deco

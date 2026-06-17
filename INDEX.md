@@ -1,4 +1,4 @@
-# ClinicaSaaS — Índice del proyecto
+# Kuris — Índice del proyecto
 
 > La portada del repositorio está en [README.md](README.md).
 > Este archivo mantiene referencias rápidas para navegación interna.

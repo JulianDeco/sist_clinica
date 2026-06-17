@@ -1,8 +1,8 @@
-# CLAUDE.md — ClinicaSaaS (Sistema Médico FHIR)
+# CLAUDE.md — Kuris (Sistema Médico FHIR)
 
 ## Contexto del proyecto
 
-ClinicaSaaS es un SaaS multitenant FHIR R4 para clínicas pequeñas
+Kuris es un SaaS multitenant FHIR R4 para clínicas pequeñas
 (1–5 profesionales) en Argentina, con foco inicial en Rosario.
 Proyecto de tesis del Seminario de Trabajo Final UAI 2026.
 
@@ -56,7 +56,7 @@ Multitenant y FHIR core nunca se recortan.
 sist_clinica/
 ├── src/
 │   ├── backend/      Spring Boot 3 / Java 21 — Clean Architecture
-│   │   └── src/main/java/com/clinicasaas/
+│   │   └── src/main/java/com/kuris/
 │   │       ├── config/       Spring @Configuration classes
 │   │       ├── domain/       Entities, value objects, repository interfaces
 │   │       ├── application/  Use cases (UC-01..04)

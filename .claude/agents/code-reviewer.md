@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: Java 21 + Spring Boot 3 + PostgreSQL 16 + Angular 18 + TypeScript
 # Git flow: feature/T-XXX → develop (squash merge); main solo con aprobación de @julian
 # Convenciones: PascalCase.java, kebab-case.component.ts, Conventional Commits, archivos ≤200 líneas

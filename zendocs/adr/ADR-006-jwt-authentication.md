@@ -9,7 +9,7 @@
 
 ## Context
 
-ClinicaSaaS is a stateless REST API. Authentication must be: scalable
+Kuris is a stateless REST API. Authentication must be: scalable
 (no server-side session store), secure (protect against token theft),
 and practical (no re-login every 30 minutes).
 

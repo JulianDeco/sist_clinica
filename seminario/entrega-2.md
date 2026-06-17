@@ -7,7 +7,7 @@ Facultad de Tecnología Informática
 ```
 SEMINARIO DE TRABAJO FINAL
 ```
-# ClinicaSaaS
+# Kuris
 
 _Plataforma SaaS de gestión clínica interoperable con inteligencia operacional_
 
@@ -70,7 +70,7 @@ Ingeniería en Sistemas Informáticos
 
 ### 1.3 ¿Qué hace único a su negocio?
 
-La ventaja competitiva de ClinicaSaaS no reside en una funcionalidad
+La ventaja competitiva de Kuris no reside en una funcionalidad
 aislada, sino en la combinación —no replicada por la oferta relevada en
 el segmento de clínicas pequeñas— de tres pilares integrados al mismo
 flujo operativo:
@@ -219,7 +219,7 @@ la ventaja— son:
 
 ### 1.8 Propuesta de valor para el cliente
 
-Para una clínica o consultorio pequeño, ClinicaSaaS ofrece:
+Para una clínica o consultorio pequeño, Kuris ofrece:
 
 - **Orden operativo integral:** agenda de turnos, gestión de pacientes,
   historia clínica electrónica y administración de profesionales en una
@@ -297,7 +297,7 @@ por una propuesta de valor diferenciada dirigida a un segmento acotado, la
 clínica pequeña, con necesidades que la oferta generalista no resuelve.
 
 **Estrategia frente a la competencia (Kotler): retador / especialista de
-nicho.** Como entrante sin base instalada, ClinicaSaaS no disputa
+nicho.** Como entrante sin base instalada, Kuris no disputa
 frontalmente la cuota de los líderes consolidados; se inserta como
 especialista de nicho que atiende mejor que nadie un segmento específico,
 construyendo posición desde la especialización antes de ampliar el alcance
@@ -340,7 +340,7 @@ interior.
 El contexto macroeconómico argentino presenta históricamente alta
 inflación, volatilidad del tipo de cambio y restricciones cambiarias, lo
 que afecta la previsibilidad de costos e ingresos de cualquier
-emprendimiento. ClinicaSaaS mitiga parte de esta exposición fijando la
+emprendimiento. Kuris mitiga parte de esta exposición fijando la
 suscripción en dólares estadounidenses, lo que estabiliza el ingreso
 frente a la depreciación de la moneda local; al mismo tiempo, el precio en
 dólares puede percibirse como elevado por clínicas pequeñas con ingresos
@@ -379,7 +379,7 @@ El escenario-meta es un mercado de clínicas pequeñas en Rosario y Santa Fe
 que, en un horizonte de mediano plazo, reconoce la interoperabilidad
 estándar y la inteligencia operacional explicable como atributos
 esperables —no excepcionales— de un sistema de gestión clínica. En ese
-escenario, ClinicaSaaS opera con una base de clientes que supera el punto
+escenario, Kuris opera con una base de clientes que supera el punto
 de equilibrio, casos de referencia con impacto medible sobre el ausentismo
 y un canal de crecimiento orgánico por referidos profesionales.
 
@@ -449,7 +449,7 @@ overbooking).
 
 #### 2.2.2 Análisis de cadena de valor
 
-| Eslabón | Cómo lo resuelve ClinicaSaaS | Aporte de valor |
+| Eslabón | Cómo lo resuelve Kuris | Aporte de valor |
 |---|---|---|
 | Desarrollo de producto | Ejecución técnica integral del fundador (backend, frontend, infra, modelos) | Iteración rápida con costo estructural mínimo |
 | Infraestructura | VPS propio + Docker/PostgreSQL/Redis ya desplegado | Costo marginal por cliente bajo; escalabilidad sin inversión proporcional |

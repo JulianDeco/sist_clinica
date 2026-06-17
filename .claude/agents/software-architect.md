@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Metodología: ICONIX — dominio → casos de uso → robustez → secuencia → clases (en este orden)
 # UC core seminario: UC-01 reserva turno · UC-02 consulta SOAP · UC-03 predicción ausentismo · UC-04 overbooking — fuente: .claude/tasks/use-cases.md
 # Diagramas: PlantUML o Mermaid — coordinar con technical-writer para la entrega del 16/6

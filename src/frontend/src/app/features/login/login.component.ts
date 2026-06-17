@@ -21,7 +21,7 @@ import { AuthService } from '../../core/auth/auth.service';
     <div class="login-wrapper">
       <mat-card class="login-card">
         <mat-card-header>
-          <mat-card-title>ClinicaSaaS</mat-card-title>
+          <mat-card-title>Kuris</mat-card-title>
           <mat-card-subtitle>Ingresá a tu cuenta</mat-card-subtitle>
         </mat-card-header>
 

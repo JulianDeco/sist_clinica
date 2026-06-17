@@ -1,6 +1,6 @@
 # Metodología de desarrollo con IA
 
-ClinicaSaaS utiliza un agente de IA (Claude, de Anthropic) como asistente de desarrollo dentro de un proceso de ingeniería estructurado. Esta página describe cómo se controla ese proceso y qué garantías ofrece sobre la calidad del producto.
+Kuris utiliza un agente de IA (Claude, de Anthropic) como asistente de desarrollo dentro de un proceso de ingeniería estructurado. Esta página describe cómo se controla ese proceso y qué garantías ofrece sobre la calidad del producto.
 
 ## El agente no decide — asiste
 

@@ -9,7 +9,7 @@
 
 ## Contexto
 
-ClinicaSaaS es un proyecto académico con requisitos estrictos de documentación,
+Kuris es un proyecto académico con requisitos estrictos de documentación,
 trazabilidad y justificación de decisiones de implementación (Seminario de Trabajo
 Final UAI 2026). El desarrollo asistido por IA introduce el riesgo de generar código
 que no coincida con los requisitos previstos o que introduzca comportamientos no documentados.

@@ -1,4 +1,4 @@
-# ClinicaSaaS
+# Kuris
 
 Plataforma de gestión clínica por suscripción para consultorios y clínicas médicas privadas de 1 a 5 profesionales en Argentina, con foco inicial en Rosario.
 

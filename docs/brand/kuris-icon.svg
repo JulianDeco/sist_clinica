@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- App icon — works at 16px to 512px -->
+  <rect width="64" height="64" rx="13" fill="#1D7AFF"/>
+  <!-- K: left vertical -->
+  <rect x="15" y="12" width="9" height="40" rx="2.5" fill="white"/>
+  <!-- K: upper arm -->
+  <polygon points="24,31 40,12 50,12 33,31" fill="white"/>
+  <!-- K: lower arm -->
+  <polygon points="24,34 40,52 50,52 33,34" fill="white"/>
+</svg>

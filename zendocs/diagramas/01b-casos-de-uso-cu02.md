@@ -4,7 +4,7 @@
 flowchart LR
     MED(["👤 Médico"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
         UC02(["CU-02\nGestionar consulta\nmédica SOAP"])
         UC_OPEN(["Abrir / reanudar\nEncounter vinculado"])

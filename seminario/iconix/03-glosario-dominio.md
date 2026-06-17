@@ -1,4 +1,4 @@
-# Glosario del Dominio — ClinicaSaaS (ICONIX)
+# Glosario del Dominio — Kuris (ICONIX)
 
 **Entrega**: T-020 — deliverable 3 · Seminario de Trabajo Final UAI 2026 · 16/06/2026
 **Diagrama asociado**: `seminario/iconix/diagramas/02-dominio.mmd` (correspondencia 1:1)

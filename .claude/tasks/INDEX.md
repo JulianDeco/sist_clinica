@@ -1,4 +1,4 @@
-# Task Index — ClinicaSaaS
+# Task Index — Kuris
 
 > **Protocolo para agentes**: la fuente de verdad del estado es
 > `.claude/tasks/tasks.json` — leerlo PRIMERO en cada sesión y actualizarlo allí.

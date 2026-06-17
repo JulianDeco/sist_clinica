@@ -1,6 +1,6 @@
 spring:
   application:
-    name: clinicasaas-backend
+    name: kuris-backend
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
@@ -78,7 +78,7 @@ spring:
 
 logging:
   level:
-    com.clinicasaas: DEBUG
+    com.kuris: DEBUG
     org.springframework.security: DEBUG
     org.flywaydb: INFO
 
@@ -97,5 +97,5 @@ spring:
 
 logging:
   level:
-    com.clinicasaas: INFO
+    com.kuris: INFO
     root: WARN

@@ -105,7 +105,7 @@ Default indexes (auto-created by constraints):
 - Primary keys
 - Unique constraints
 
-Required explicit indexes for ClinicaSaaS:
+Required explicit indexes for Kuris:
 
 ```sql
 -- Tenant filter — on EVERY table with tenant_id

@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Stack: Angular 18 + TypeScript + Angular Material + Signals (state)
 # Reglas: standalone components, features lazy-loaded, Signals para estado
 # Componentes: máximo 150 líneas — extraer subcomponentes si supera

@@ -57,7 +57,7 @@ planned → arrived → in-progress → finished
 ## Patrones Clave (MVP)
 
 - Un Encounter por consulta; múltiples Observations por Encounter.
-- Encounter siempre vinculado a un Appointment (restricción ClinicaSaaS).
+- Encounter siempre vinculado a un Appointment (restricción Kuris).
 - Validación de rangos clínicos en Observations → advertencia, no
   bloqueo.
 

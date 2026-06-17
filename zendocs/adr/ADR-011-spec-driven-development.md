@@ -9,7 +9,7 @@
 
 ## Context
 
-ClinicaSaaS is an academic project with strict requirements for
+Kuris is an academic project with strict requirements for
 documentation, traceability, and justification of implementation decisions
 (Seminario de Trabajo Final UAI 2026). AI-assisted development introduces
 the risk of generating code that does not match the intended requirements or

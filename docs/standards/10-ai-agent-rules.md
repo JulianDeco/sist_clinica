@@ -1,4 +1,4 @@
-# Reglas para el Agente de IA — ClinicaSaaS
+# Reglas para el Agente de IA — Kuris
 
 Reglas para el desarrollo asistido por IA en este proyecto. Aplican a cada
 sesión de generación de código, independientemente de la feature que se esté construyendo.
@@ -33,7 +33,7 @@ find src/main/java -name "*Service*.java" | head -20
 find src/main/java -path "*/agenda/dto*" -name "*.java"
 
 # Buscar manejo de excepciones similar
-grep -r "ClinicaSaasException" src/main/java/
+grep -r "KurisException" src/main/java/
 ```
 
 Reutilizar patrones existentes. No crear una segunda abstracción para algo

@@ -1,4 +1,4 @@
-# Casos de uso ICONIX — ClinicaSaaS
+# Casos de uso ICONIX — Kuris
 
 > Los 4 casos de uso definidos en este archivo son la unidad académica
 > central del Seminario de Trabajo Final (mayo–diciembre 2026).

@@ -1,4 +1,4 @@
-# High-Level Architecture — ClinicaSaaS
+# High-Level Architecture — Kuris
 
 > Stack: Java 21 · Spring Boot 3.x · Spring Security · Spring Data JPA ·
 > PostgreSQL 16 · Redis 8 · Angular 18 · Docker / Docker Compose
@@ -7,7 +7,7 @@
 
 ## 1. System Overview
 
-ClinicaSaaS is a multitenant SaaS platform implementing FHIR R4 for small
+Kuris is a multitenant SaaS platform implementing FHIR R4 for small
 clinics (1–5 professionals). Each tenant is a clinic; data isolation is
 enforced via `tenant_id` column-level filtering (row-level multitenancy).
 
@@ -81,12 +81,12 @@ src/
 ## 3. Backend Architecture (Spring Boot 3)
 
 > **Estructura objetivo (diseño)** — the current backend contains only the
-> scaffold (`ClinicaSaasApplication` + `SecurityConfig`). The packages below
+> scaffold (`KurisApplication` + `SecurityConfig`). The packages below
 > are created incrementally as tasks T-003+ are implemented; they are a design
 > target, not an inventory of existing code.
 
 ```
-com.clinicasaas/
+com.kuris/
 ├── config/                    # Spring configuration classes
 │   ├── SecurityConfig.java
 │   ├── RedisConfig.java

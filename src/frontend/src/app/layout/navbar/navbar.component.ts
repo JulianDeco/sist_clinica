@@ -14,7 +14,7 @@ import { TenantService } from '../../core/tenant/tenant.service';
   imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule],
   template: `
     <mat-toolbar color="primary" class="navbar">
-      <span class="brand">ClinicaSaaS</span>
+      <span class="brand">Kuris</span>
       @if (tenant.tenantName()) {
         <span class="tenant-name">— {{ tenant.tenantName() }}</span>
       }

@@ -1,9 +1,9 @@
-# Patrones de Diseño Aplicados — ClinicaSaaS
+# Patrones de Diseño Aplicados — Kuris
 
 **Entrega T-020 — deliverable 9 — Seminario de Trabajo Final UAI 2026**
 **Diagrama de arquitectura asociado**: `seminario/iconix/diagramas/07-arquitectura.mmd`
 
-Este documento describe **tres patrones de diseño** aplicados en ClinicaSaaS
+Este documento describe **tres patrones de diseño** aplicados en Kuris
 (el mínimo solicitado es dos; se documenta uno adicional como margen).
 Cada patrón se justifica contra un problema concreto del sistema, no de
 forma genérica.
@@ -16,7 +16,7 @@ forma genérica.
 | `DISEÑADO` | Definido en spec/ADR aprobado o en borrador; la implementación está planificada en el cronograma del MVP pero aún no existe código. |
 
 A la fecha, el backend Spring Boot contiene únicamente el scaffold
-(`ClinicaSaasApplication.java` y `config/SecurityConfig.java`); el frontend
+(`KurisApplication.java` y `config/SecurityConfig.java`); el frontend
 Angular tiene implementado el flujo de autenticación two-step (T-002).
 Esta distinción se mantiene explícita en cada patrón.
 
@@ -29,10 +29,10 @@ Esta distinción se mantiene explícita en cada patrón.
 **Repository** — patrón arquitectural de acceso a datos. No pertenece al
 catálogo GoF; proviene de *Patterns of Enterprise Application Architecture*
 (Fowler, 2002) y es un bloque constructivo táctico de *Domain-Driven Design*
-(Evans, 2003). En ClinicaSaaS se aplica como parte de la regla de
+(Evans, 2003). En Kuris se aplica como parte de la regla de
 dependencia de Clean Architecture (ADR-010).
 
-### Problema que resuelve en ClinicaSaaS
+### Problema que resuelve en Kuris
 
 Los casos de uso del núcleo (UC-01 reservar turno, UC-02 consulta médica,
 y el flujo de autenticación T-003) contienen reglas de negocio que deben
@@ -130,13 +130,13 @@ classDiagram
 
 **Strategy** — patrón de comportamiento del catálogo GoF (Gamma et al.,
 1994): familia de algoritmos intercambiables encapsulados tras una interfaz
-común. En ClinicaSaaS se materializa con la forma arquitectural de
+común. En Kuris se materializa con la forma arquitectural de
 **Puertos y Adaptadores** (arquitectura hexagonal, Cockburn 2005): el
 puerto se declara hacia el dominio y los adaptadores concretos viven en
 infraestructura. Ambas lecturas son válidas y complementarias; la
 intención dominante es Strategy (elegir el canal en runtime).
 
-### Problema que resuelve en ClinicaSaaS
+### Problema que resuelve en Kuris
 
 UC-03 (predicción de ausentismo) exige enviar recordatorios a pacientes
 por **canales distintos según el score de riesgo**. El canal óptimo para
@@ -229,7 +229,7 @@ classDiagram
 
 **State** — patrón de comportamiento del catálogo GoF: el comportamiento
 de un objeto cambia según su estado interno, y las transiciones válidas
-están definidas de forma explícita. En ClinicaSaaS se aplica en su
+están definidas de forma explícita. En Kuris se aplica en su
 **variante ligera** idiomática de Angular moderno: el estado se modela
 como unión discriminada (`type AuthState`) dentro de un Signal reactivo,
 en lugar de una clase por estado como en la formulación GoF clásica.
@@ -237,7 +237,7 @@ Esta variante se elige deliberadamente: tres estados con transiciones
 simples no justifican el costo de un objeto por estado (regla del
 proyecto: ninguna abstracción sin justificar su complejidad).
 
-### Problema que resuelve en ClinicaSaaS
+### Problema que resuelve en Kuris
 
 ADR-014 separa identidad de membresía: una persona (ej. un médico con dos
 consultorios, una secretaria compartida) tiene **una cuenta y varias

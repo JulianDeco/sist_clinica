@@ -1,4 +1,4 @@
-# Diagramas ICONIX — ClinicaSaaS
+# Diagramas ICONIX — Kuris
 
 Todos los diagramas del proceso ICONIX para el Seminario UAI 2026.
 

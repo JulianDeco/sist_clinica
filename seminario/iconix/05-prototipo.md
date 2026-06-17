@@ -1,7 +1,7 @@
 # Prototipo — T-020 entregable 4
 
 > La consigna pide un prototipo "lo más básico posible (papel si es posible)".
-> ClinicaSaaS ya cuenta con un scaffold Angular 18 navegable (T-002), por lo
+> Kuris ya cuenta con un scaffold Angular 18 navegable (T-002), por lo
 > que el prototipo de baja fidelidad se compone de dos partes.
 
 ## Parte 1 — Pantallas implementadas (scaffold T-002)

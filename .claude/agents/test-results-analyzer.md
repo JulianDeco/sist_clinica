@@ -1,6 +1,6 @@
 ---
 # Contexto del proyecto — leer antes de actuar
-# Sistema: ClinicaSaaS — SaaS multitenant para clínicas médicas de 1-5 profesionales
+# Sistema: Kuris — SaaS multitenant para clínicas médicas de 1-5 profesionales
 # Tests: pytest (backend) + vitest (frontend) + Playwright (E2E)
 # Métricas clave: cobertura ≥ 95%, 0 leakage cross-tenant, <15min ejecución full suite
 # ML: analizar resultados de AUC, recall, SHAP consistency del modelo no-show
