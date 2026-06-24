@@ -1,0 +1,19 @@
+title: "Kuris — Plan de Negocios"
+subtitle: "Seminario de Trabajo Final — UAI 2026"
+author:
+  - "Julián Decoppet"
+date: "2026"
+lang: es
+
+bibliography: referencias.bib
+csl: apa.csl
+link-citations: true
+
+toc: true
+toc-title: "Índice"
+numbersections: false
+
+documentclass: article
+papersize: a4
+fontsize: 12pt
+geometry: margin=2.5cm

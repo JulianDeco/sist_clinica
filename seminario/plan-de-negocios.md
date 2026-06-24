@@ -1,55 +1,32 @@
-Kuris — Plan de Negocios
-Seminario de Trabajo Final — UAI 2026
-Autor: Julián Decoppet
+---
+title: "Kuris — Plan de Negocios"
+subtitle: "Seminario de Trabajo Final — UAI 2026"
+author: "Julián Decoppet"
+---
+
 Legajo: B00114457-T — Sede Rosario
 Profesores: Ing. Sartorio Alejandro Roberto e Ing. Banega Matias Pablo
-================================================================
 
-Ficha de Seguimiento y Revisión
+#### Ficha de Seguimiento y Revisión
 
-  Fecha        Autor               Versión   Referencia de los cambios
-  19/05/2026   Julián Decoppet     1.0       Versión inicial: Resumen Ejecutivo
-                                             y punto 1 (1.1 y 1.2).
-  12/05/2026   Julián Decoppet     1.1       Reescritura del resumen ejecutivo,
-                                             BMC, Contexto Competitivo y fuentes.
-  16/06/2026   Julián Decoppet     2.0       Segunda entrega: completado punto 1
-                                             (1.3 a 1.12), punto 2, punto 3,
-                                             punto 4 y punto 5 (5.1 y 5.2).
-                                             BMC movido a bmc.md (anexo).
-  08/06/2026   Julián Decoppet     2.1       Consolidación del documento único:
-                                             integración de entrega-2.md, capítulo
-                                             5 nuevo, referencias APA 7 completas.
-  08/06/2026   Julián Decoppet     2.2       Incorporación de capacidades de IA
-                                             generativa al MVP: resumen automático
-                                             de historia clínica y sugerencia de
-                                             CIE-10 mediante LLM (Claude API).
-                                             Migración de stack a Java 21 +
-                                             Spring Boot 3 + Angular 18.
-                                             Actualización de costos operativos
-                                             (ítem API LLM) y hoja de ruta.
-  10/06/2026   Julián Decoppet     2.3       Corrección de consistencia: avance
-                                             técnico actualizado al estado real
-                                             post-migración (auth two-step en
-                                             diseño, 15 ADRs, frontend Angular,
-                                             docs ICONIX), canales de
-                                             notificación unificados según
-                                             ADR-013 (Telegram/email en MVP),
-                                             justificación del posicionamiento
-                                             de precio, correcciones menores
-                                             (Nubimed en capa SaaS, hitos de
-                                             recordatorio 48/24 h).
+| Fecha | Autor | Versión | Referencia de los cambios |
+|---|---|---|---|
+| 19/05/2026 | Julián Decoppet | 1.0 | Versión inicial: Resumen Ejecutivo y punto 1 (1.1 y 1.2). |
+| 12/05/2026 | Julián Decoppet | 1.1 | Reescritura del resumen ejecutivo, BMC, Contexto Competitivo y fuentes. |
+| 16/06/2026 | Julián Decoppet | 2.0 | Segunda entrega: completado punto 1 (1.3 a 1.12), punto 2, punto 3, punto 4 y punto 5 (5.1 y 5.2). BMC movido a bmc.md (anexo). |
+| 08/06/2026 | Julián Decoppet | 2.1 | Consolidación del documento único: integración de entrega-2.md, capítulo 5 nuevo, referencias APA 7 completas. |
+| 08/06/2026 | Julián Decoppet | 2.2 | Incorporación de capacidades de IA generativa al MVP: resumen automático de historia clínica y sugerencia de CIE-10 mediante LLM (Claude API). Migración de stack a Java 21 + Spring Boot 3 + Angular 18. Actualización de costos operativos (ítem API LLM) y hoja de ruta. |
+| 10/06/2026 | Julián Decoppet | 2.3 | Corrección de consistencia: avance técnico actualizado al estado real post-migración (auth two-step en diseño, 15 ADRs, frontend Angular, docs ICONIX), canales de notificación unificados según ADR-013 (Telegram/email en MVP), justificación del posicionamiento de precio, correcciones menores (Nubimed en capa SaaS, hitos de recordatorio 48/24 h). |
+| 17/06/2026 | Julián Decoppet | 2.4–2.8 | Ronda de revisión previa a la entrega: cobertura completa de guía UAI (propuesta asociativa, ROI, comparación por eslabón, perfil sociodemográfico), rigor analítico (costos desglosados, punto de equilibrio, competidores internacionales, riesgos de dependencia externa, validación de mercado), corrección de redacción académica (afirmaciones absolutas reformuladas como hallazgos de relevamiento, repeticiones reducidas, tabla de estado de validación) y adaptación a APA 7 (citas migradas a formato `[@clave]` con `referencias.bib`). |
 
 Nota: El Business Model Canvas se presenta como documento independiente
 (bmc.md) para facilitar su visualización y actualización separada.
 Los nueve bloques del canvas sintetizan los conceptos desarrollados en
 los capítulos 1 a 5 de este documento.
 
-================================================================
+\newpage
 
-
-================================================================
-RESUMEN EJECUTIVO
-================================================================
+# Resumen ejecutivo
 
 Kuris es una plataforma de software de gestión clínica por
 suscripción, dirigida a consultorios y clínicas médicas privadas de uno a
@@ -57,8 +34,8 @@ cinco profesionales en Argentina, con foco inicial en Rosario y zona de
 influencia. La plataforma centraliza la administración de pacientes,
 turnos, historia clínica y profesionales sobre una arquitectura
 interoperable basada en el estándar internacional HL7 FHIR R4, lo que
-garantiza que los datos clínicos sean portables, seguros y compatibles
-con cualquier sistema de salud presente o futuro.
+favorece la portabilidad, la seguridad y la compatibilidad de los datos
+clínicos con otros sistemas de salud que adopten el mismo estándar.
 
 Sobre esa base de gestión integral, Kuris incorpora un conjunto de
 capacidades de inteligencia operacional diseñadas para resolver problemas
@@ -111,42 +88,49 @@ seminario):
   - Integraciones específicas con obras sociales y prestadores vía FHIR.
   - Marketplace B2C de turnos para pacientes finales.
 
-El ausentismo de pacientes afecta entre el 23 % y el 30 % de los turnos
-en Argentina, un problema operativo de alto costo sin solución tecnológica
-adoptada en el segmento de clínicas pequeñas (Geblix, 2024). En el
-relevamiento realizado no se identificó ningún competidor del segmento que
-combine implementación nativa del estándar HL7 FHIR R4, predicción
-explicable de ausentismo por paciente y optimización automatizada de
-cobertura integrada al flujo operativo.
+El ausentismo de pacientes afecta a aproximadamente 1 de cada 3 turnos
+médicos en América Latina (30 %, sobre un análisis de 1,5 millones de
+turnos en Argentina, Uruguay, Chile, Perú y México), un problema operativo
+de alto costo para el cual el segmento de clínicas pequeñas en Argentina
+no dispone de una solución ampliamente adoptada [@geblix2024]. En el
+relevamiento realizado se identificaron soluciones internacionales y
+herramientas de infraestructura abierta con implementación nativa de HL7
+FHIR R4 (Medplum, Elation Health, HAPI FHIR), así como competidores
+regionales con predicción de ausentismo por machine learning ya en
+producción comercial [@geblix2024]. En el relevamiento realizado sobre el
+segmento de clínicas de 1 a 5 profesionales en Argentina no se encontraron
+evidencias públicas de un competidor que combine el estándar HL7 FHIR R4,
+predicción explicable de ausentismo por paciente y optimización
+automatizada de cobertura integrada al flujo operativo, en el rango de
+precio propuesto (desarrollo del relevamiento en la sección 2.2.1).
 
 El contexto de mercado es favorable: el sector de salud digital en América
 Latina supera los USD 5.755 millones y crece al 9,5 % anual (Informes de
 Expertos, 2024), con el software representando el 52,1 % del valor total.
 El segmento de pequeñas clínicas privadas — aproximadamente 5.000
-establecimientos solo en Argentina (REFES, 2023) — permanece desatendido
+establecimientos solo en Argentina [@refes2023] — permanece desatendido
 por soluciones que combinen interoperabilidad estándar e inteligencia
 operacional accesible.
 
-El mapa competitivo argentino se estructura en tres capas: en la cima,
-Grupo Cormos (que en 2024 adquirió Meducar y consolidó un portfolio con
-DrApp, Docturno, iTurnos, Wiri Salud y Receto, gestionando más de 20
-millones de turnos anuales) ofrece soluciones masivas orientadas a
-volumen; en el centro, incumbentes locales con base instalada
-(Macena/Geclisa en Rosario con más de 30 años de trayectoria,
-TecnoMedicus, ConsultSmart, Zindec) cubren la gestión administrativa sin
-diferenciación tecnológica; y en la capa de SaaS modernos genéricos
-(AgendaPro, Gendu, Turnito, Nubimed) algunos comenzaron en 2026 a
-incorporar IA para tareas administrativas. Kuris se posiciona en el
-hueco intermedio: modernidad técnica, especialización en clínicas pequeñas
-y diferenciación funcional concreta sobre todas las capas.
+El mapa competitivo argentino se estructura en cuatro capas, desde
+consolidadores masivos orientados a volumen (Grupo Cormos) e incumbentes
+locales sin diferenciación tecnológica, hasta SaaS modernos genéricos que
+recién incorporan IA administrativa y Geblix, el competidor regional más
+cercano en inteligencia operacional —con predicción de ausentismo por
+machine learning ya en producción comercial, pero sin FHIR R4 ni foco en
+clínicas de 1 a 5 profesionales en Argentina (desarrollo completo en la
+sección 2.2.1)—. Kuris se posiciona en ese hueco intermedio: modernidad
+técnica, especialización en clínicas pequeñas argentinas y diferenciación
+funcional concreta sobre todas las capas.
 
 El modelo de ingresos es suscripción mensual en dólares (rango tentativo
 de USD 35 a USD 50 por clínica/mes en plan base, planes superiores para
 clínicas con más de tres profesionales), sin contrato de permanencia, con
 acceso íntegramente web. El punto de equilibrio operativo estimado se
-alcanza entre 12 y 18 clínicas suscriptas, asumiendo costos fijos
-consolidados en torno a USD 50 mensuales. Este umbral es alcanzable en la
-fase inicial sin necesidad de financiamiento externo.
+alcanza entre 12 y 18 clínicas suscriptas, sobre la base de costos fijos
+operativos proyectados entre USD 85 y USD 145 mensuales (detalle en
+sección 5.2 y tabla de costos operativos). Este umbral es alcanzable en
+la fase inicial sin necesidad de financiamiento externo.
 
 La empresa es unipersonal: Julián Decoppet, estudiante avanzado de
 Ingeniería en Sistemas en UAI Rosario, es el único desarrollador y
@@ -155,6 +139,33 @@ funcionamiento, esquema de base de datos multitenant versionado, frontend
 de autenticación multiclínica navegable y documentación de ingeniería
 completa (15 ADRs, especificaciones SDD y casos de uso ICONIX), con el
 producto en desarrollo activo bajo metodología ICONIX.
+
+La rentabilidad proyectada se sustenta en un modelo de costos fijos
+controlados y margen bruto alto, característico del modelo SaaS [@bessemer2024]. Los costos operativos fijos proyectados en la
+etapa inicial (escenario base) ascienden a entre USD 85 y USD 145
+mensuales, discriminados en: infraestructura VPS (USD 20–30), API de
+Claude/Anthropic para módulos LLM (USD 15–40 según volumen de consultas),
+servicio de correo transaccional (USD 10–15), dominio y certificados
+(USD 2 prorrateado), y reserva de contingencia operativa (USD 38–60).
+A partir de 18 clínicas suscriptas en plan base (USD 35–50/mes), el
+ingreso mensual oscila entre USD 630 y USD 900, lo que genera un margen
+bruto sobre costos operativos de entre el 77 % y el 84 %. Este rango es
+consistente con los benchmarks del sector SaaS B2B de salud, donde el
+margen bruto maduro oscila entre el 70 % y el 85 % [@bessemer2024]. La
+reinversión de los primeros ingresos se orientará al
+desarrollo de funcionalidades del roadmap post-MVP y a la reducción del
+costo de onboarding por cliente.
+
+Propuesta asociativa: en la etapa actual, el proyecto no cuenta con
+socios ni inversores formales. La estrategia asociativa contempla, en
+orden de prioridad, (a) alianzas de difusión con colegios médicos y
+asociaciones profesionales de Rosario como canal de validación sectorial,
+(b) eventuales acuerdos de co-distribución con proveedores de software
+complementario (laboratorios, farmacias) una vez superada la fase piloto,
+y (c) apertura a inversión ángel o aceleración a partir de la
+demostración del product-market fit con datos reales de impacto sobre el
+ausentismo. Todos estos vínculos son hipótesis a desarrollar en la fase
+comercial; ninguno constituye un acuerdo vigente.
 
 El principal riesgo es la lentitud en la adopción inicial frente a una
 base instalada significativa de incumbentes locales, mitigable mediante
@@ -168,15 +179,14 @@ especializado en interoperabilidad sanitaria y aprendizaje automático
 aplicado a salud.
 
 
-================================================================
-1. DESCRIPCIÓN GENERAL
-================================================================
+\newpage
+
+# 1. Descripción general
 
 
-1.1 Descripción básica del negocio
-----------------------------------------------------------------
+## 1.1 Descripción básica del negocio
 
-Idea de negocio
+#### Idea de negocio
 
 Kuris es una plataforma de software como servicio (SaaS) de gestión
 clínica integral, diseñada específicamente para clínicas médicas privadas de
@@ -188,33 +198,49 @@ pacientes mediante reglas heurísticas diseñadas para evolucionar a Machine
 Learning, con una hoja de ruta que incluye la sugerencia automática de
 cobertura de profesionales por franja horaria (post-MVP).
 
-Justificación
+#### Justificación
 
 El sector salud privado en Argentina presenta una oportunidad estructural
 desatendida: existen aproximadamente 5.000 establecimientos de salud privados
-registrados (REFES, 2023), mayoritariamente consultorios y centros médicos de
+registrados [@refes2023], mayoritariamente consultorios y centros médicos de
 pequeña escala, que operan con herramientas de gestión inadecuadas — planillas
 Excel, agendas en papel o sistemas legacy que no se integran entre sí. La tasa
-de ausentismo en turnos médicos en Argentina ronda el 23 %–30 % (análisis sobre
-1,5 millones de turnos, Geblix, 2024), lo que representa pérdidas directas de
-ingresos para los profesionales y un problema operativo crónico sin solución
-tecnológica accesible para el segmento de clínicas pequeñas.
+de ausentismo en turnos médicos ronda el 30 % en un análisis regional sobre 1,5
+millones de turnos de Argentina, Uruguay, Chile, Perú y México [@geblix2024];
+no se dispone de una desagregación pública específica para Argentina, por lo
+que esta cifra se toma como referencia regional, no como dato nacional exacto.
+El problema representa pérdidas directas de ingresos para los profesionales y
+es crónico en el segmento de clínicas pequeñas, que no cuenta con una solución
+tecnológica accesible ampliamente adoptada.
 
 El mercado de software médico en Latinoamérica se encuentra en plena expansión:
 el sector de salud digital regional está valuado en USD 5.755 millones en 2024 y
 crece a una tasa compuesta anual (CAGR) de 9,5 % proyectada hasta 2034, con el
 segmento de software representando el 52,1 % del valor total (Informes de
-Expertos, 2024). Los sistemas de gestión clínica disponibles en el mercado local
-cobran entre USD 10 y USD 25 mensuales (Medesk, 2024; DriCloud, 2024), pero
-ninguno incorpora capacidades de predicción de ausentismo ni sugerencia de
-cobertura basada en inteligencia artificial para clínicas de este tamaño.
+Expertos, 2024); esta cifra proviene de un informe de mercado comercial sin
+metodología pública auditable y se presenta como referencia de tendencia
+sectorial, no como dato verificado de manera independiente. Los sistemas de
+gestión clínica disponibles en el mercado local cobran entre USD 10 y USD 25
+mensuales [@medesk2024; @dricloud2024]; de los competidores relevados en este
+rango de precio, ninguno combina predicción de ausentismo accionable por
+paciente con FHIR R4 para clínicas de este tamaño en Argentina —aunque
+@geblix2024, con presencia regional, ya ofrece predicción de ausentismo por
+machine learning sin FHIR ni foco específico en el segmento argentino de 1 a 5
+profesionales.
 El posicionamiento de precio de Kuris por encima de ese rango
-(USD 35–50) se sustenta en el retorno medible: la recuperación de una
-fracción de los turnos perdidos por ausentismo supera el costo mensual de
-la suscripción para una clínica tipo, y el reporte mensual de ausentismo
-hace ese retorno verificable.
+(USD 35–50) se sustenta en el retorno económico medible para el cliente.
+Considerando una clínica tipo con 100 turnos mensuales, una tasa de
+ausentismo del 25 % [@geblix2024] y un honorario promedio de consulta de
+$15.000 pesos argentinos (aproximadamente USD 12 al tipo de cambio de
+junio 2026), los turnos perdidos representan una pérdida mensual de
+$375.000 pesos (≈ USD 300). Una reducción del ausentismo de tan solo el
+10 % — umbral conservador para sistemas de recordatorios activos según
+@gomes2022 — recupera $37.500 pesos (≈ USD 30) mensuales
+adicionales: un retorno que supera el costo de la suscripción en plan
+base. El reporte mensual de ausentismo incluido en el producto hace ese
+retorno verificable por la clínica mes a mes.
 
-Tipo de E-Business
+#### Tipo de e-business
 
 Kuris es un negocio de tipo B2B (Business-to-Business): el cliente directo
 es la clínica o consultorio médico, no el paciente individual. El modelo de
@@ -227,7 +253,7 @@ los pacientes podrán buscar profesionales disponibles, ver slots en tiempo real
 reservar sin intervención de la secretaría, configurando un modelo mixto B2B +
 B2C bajo una misma plataforma.
 
-Modalidad de E-Commerce
+#### Modalidad de e-commerce
 
 La modalidad de comercialización es SaaS por suscripción mensual en dólares
 estadounidenses (USD), con planes escalonados según la cantidad de profesionales
@@ -236,8 +262,7 @@ digital, sin contrato de permanencia mínima. El acceso al sistema se realiza
 íntegramente vía navegador web, sin instalación local requerida.
 
 
-1.2 Situación actual del negocio
-----------------------------------------------------------------
+## 1.2 Situación actual del negocio
 
 Kuris se encuentra en etapa de desarrollo inicial (pre-revenue). Al
 momento de la presente entrega, el proyecto no cuenta con clientes activos ni
@@ -328,7 +353,7 @@ Funcionalidades fuera del alcance del seminario (roadmap post-MVP):
   - Marketplace B2C de turnos para pacientes finales.
   - Importador masivo desde Excel (en MVP solo carga manual).
 
-Recursos actuales
+#### Recursos actuales
 
 El proyecto es desarrollado en su totalidad por el autor, contando con el
 asesoramiento de los docentes del Seminario de Trabajo Final. La infraestructura
@@ -340,22 +365,65 @@ técnica) es parte explícita de la metodología, no un atajo: las decisiones
 arquitectónicas, los modelos de dominio y la validación funcional permanecen bajo
 criterio del autor.
 
-Posición competitiva inicial
+#### Validación preliminar de mercado
+
+El avance técnico es condición necesaria pero no suficiente para la viabilidad
+del negocio. En la etapa actual, la validación con clientes reales es incipiente
+y no constituye todavía un proceso de prospección formal: existen conversaciones
+exploratorias con conocidos del fundador en el ecosistema médico de Rosario,
+sin compromiso ni fecha acordada, que podrían eventualmente convertirse en
+candidatos a piloto. El onboarding de un primer piloto en agosto de 2026 (ver
+sección 5.2) es un objetivo del cronograma, no un hecho en curso ni un acuerdo
+vigente; si no se concreta en ese plazo, el plan de contingencia del seminario
+contempla una validación simulada como alternativa (ver Definition of Ready del
+proyecto). La principal fuente de validación de reglas de negocio del dominio
+clínico (semántica de SOAP, criterios de codificación CIE-10, lógica de tope
+semanal de obra social) es, a la fecha, una persona cercana al fundador
+próxima a recibirse de médica — una consulta de dominio experto, no un piloto
+comercial ni una validación de mercado. Las hipótesis centrales del modelo —
+que el ausentismo es un dolor suficientemente costoso como para motivar el
+cambio de herramientas y que el rango de precio USD 35–50 es absorbible dentro
+de los costos operativos del consultorio — permanecen sin validar con datos
+primarios y solo podrán contrastarse si se concreta un piloto real. El cálculo
+de retorno económico presentado en la sección 1.1 es, por ahora, una proyección
+basada exclusivamente en fuentes secundarias [@geblix2024; @gomes2022].
+
+Estado de validación por componente:
+
+| Componente | Estado |
+|---|---|
+| MVP técnico (backend FHIR, frontend, motor de predicción) | En desarrollo |
+| Validación de dominio clínico (SOAP, CIE-10, tope semanal) | Parcial — consulta a una persona próxima a recibirse de médica, no piloto |
+| Validación comercial (adopción, disposición a pagar) | Pendiente — sin clínica piloto comprometida |
+| Validación económica (ROI, punto de equilibrio) | Simulada — proyección sobre fuentes secundarias, sin datos primarios |
+
+Esta tabla resume el estado real del proyecto a la fecha y debe leerse junto con
+cualquier cifra de impacto o retorno presentada en este documento: ninguna de
+ellas constituye, todavía, evidencia validada con datos primarios.
+
+#### Posición competitiva inicial
 
 Los sistemas de gestión clínica disponibles en Argentina para el segmento — desde
 Grupo Cormos (DrApp, Meducar, Docturno) en la capa masiva, hasta incumbentes
 locales como Macena/Geclisa, TecnoMedicus, ConsultSmart y Zindec en Rosario —
 ofrecen funcionalidades de agenda, historia clínica y recordatorios automáticos.
 Algunos competidores (Nubimed, SFS) comenzaron a incorporar IA para tareas
-administrativas en 2026. En el relevamiento realizado no se identificó ningún
-competidor del segmento que combine implementación nativa del estándar HL7 FHIR
-R4 con predicción explicable de ausentismo integrada al flujo operativo.
-Kuris identifica esta brecha como su ventaja competitiva principal. El
-detalle completo del mapa competitivo se desarrolla en la sección 2.2.
+administrativas en 2026, y Geblix —con presencia en Argentina y la región—
+ya ofrece predicción de ausentismo por machine learning como producto
+comercial, aunque sin FHIR R4 ni foco específico en clínicas de 1 a 5
+profesionales en Argentina. A nivel de infraestructura abierta e
+internacional, existen además implementaciones FHIR R4 nativas y
+documentadas (Medplum, Elation Health, HAPI FHIR), desarrolladas en la
+sección 2.2. En el relevamiento realizado sobre el mercado argentino del
+segmento de clínicas pequeñas no se identificó, sin embargo, ningún
+competidor que combine el estándar HL7 FHIR R4 con predicción explicable de
+ausentismo integrada al flujo operativo, en el rango de precio propuesto.
+Kuris identifica esa brecha específica como su principal hipótesis de
+diferenciación competitiva en la fase inicial, a confirmar con el avance
+de la adopción.
 
 
-1.3 ¿Qué hace único a su negocio?
-----------------------------------------------------------------
+## 1.3 ¿Qué hace único a su negocio?
 
 La ventaja competitiva de Kuris no reside en una funcionalidad aislada,
 sino en la combinación —no replicada por la oferta relevada en el segmento de
@@ -364,15 +432,14 @@ clínicas pequeñas— de tres pilares integrados al mismo flujo operativo:
 - Interoperabilidad nativa sobre HL7 FHIR R4. El sistema no almacena los datos
   clínicos en un esquema propietario al que luego se le agrega una capa de
   exportación, sino que adopta el estándar internacional FHIR R4 como modelo de
-  dominio desde la base de la arquitectura. Esto garantiza que la información de
+  dominio desde la base de la arquitectura. Esto favorece que la información de
   pacientes, turnos, encuentros y cobertura sea portable y compatible con sistemas
   externos —obras sociales, laboratorios, prestadores— tanto en el presente como
   a futuro. La complejidad de implementar correctamente el estándar constituye,
   además, una barrera de entrada frente a competidores que partieron de esquemas
   cerrados. El propio Estado argentino avanza en esta dirección: la Estrategia
   Nacional de Salud Digital 2025–2030, impulsada con apoyo de la OPS y el BID,
-  consolidó HL7 FHIR como estándar de interoperabilidad federal (Organización
-  Panamericana de la Salud, 2026).
+  consolidó HL7 FHIR como estándar de interoperabilidad federal [@ops2026].
 
 - Predicción explicable del ausentismo por paciente. El sistema estima la
   probabilidad de que un paciente no se presente a su turno y expone, en lenguaje
@@ -401,24 +468,32 @@ clínicas pequeñas— de tres pilares integrados al mismo flujo operativo:
   reduciendo la carga administrativa del médico en cada acto clínico.
 
 En el relevamiento competitivo realizado (mayo de 2026) no se identificó ningún
-proveedor del segmento de clínicas pequeñas que combine estos cuatro pilares de
-manera nativa e integrada. Los incumbentes locales ofrecen gestión administrativa
-sólida sin interoperabilidad estándar ni capacidades predictivas; los SaaS
-modernos genéricos incorporaron recientemente IA para tareas administrativas
-(transcripción, asistentes telefónicos) pero no predicción de ausentismo
-accionable por paciente ni asistencia en el flujo clínico; y las soluciones de
-consolidación masiva priorizan el volumen y la estandarización por sobre la
-personalización del flujo por clínica.
+proveedor del segmento de clínicas pequeñas en Argentina que combine estos
+cuatro pilares de manera nativa e integrada. Tomados de manera aislada, ninguno
+de los cuatro pilares es exclusivo de Kuris: existe software con FHIR R4 nativo
+(Medplum, Elation Health, HAPI FHIR) y existe predicción de ausentismo por
+machine learning en producción comercial, incluso en la región [@geblix2024]. Los
+incumbentes locales ofrecen gestión administrativa sólida sin interoperabilidad
+estándar ni capacidades predictivas; los SaaS modernos genéricos incorporaron
+recientemente IA para tareas administrativas (transcripción, asistentes
+telefónicos) pero no predicción de ausentismo accionable por paciente ni
+asistencia en el flujo clínico; las soluciones de consolidación masiva
+priorizan el volumen y la estandarización por sobre la personalización del
+flujo por clínica; y Geblix, el competidor regional más cercano en
+inteligencia operacional, no implementa FHIR R4 ni se especializa en el marco
+regulatorio argentino. La combinación específica de los cuatro pilares en el
+nicho de clínicas pequeñas argentinas —no la existencia aislada de cada uno— es
+lo que constituye la diferenciación de Kuris.
 
 
-1.4 Factores principales que se considera harán exitoso al proyecto
-----------------------------------------------------------------
+## 1.4 Factores principales que se considera harán exitoso al proyecto
 
 - Diferenciación funcional concreta y medible. El producto ataca un dolor
-  cuantificado del segmento —el ausentismo, que afecta entre el 23 % y el 30 %
-  de los turnos médicos en Argentina (Geblix, 2024)— con una capacidad que la
-  competencia directa no ofrece, y cuyo impacto económico es demostrable mes a
-  mes mediante el reporte de ausentismo.
+  cuantificado del segmento —el ausentismo, que afecta a aproximadamente el
+  30 % de los turnos médicos a nivel regional [@geblix2024]— con una
+  capacidad que la competencia directa en el segmento argentino no ofrece, y
+  cuyo impacto económico es demostrable mes a mes mediante el reporte de
+  ausentismo.
 
 - Especialización en el segmento desatendido. El foco explícito en clínicas de
   uno a cinco profesionales evita competir de frente con las soluciones
@@ -427,8 +502,9 @@ personalización del flujo por clínica.
   baja cobertura tecnológica adecuada.
 
 - Estructura de costos liviana y bajo punto de equilibrio. Con costos fijos
-  consolidados en torno a USD 50 mensuales y un punto de equilibrio operativo
-  estimado entre 12 y 18 clínicas suscriptas, el proyecto es viable en su fase
+  operativos proyectados entre USD 85 y USD 145 mensuales y un punto de
+  equilibrio operativo estimado entre 12 y 18 clínicas suscriptas, el proyecto
+  es viable en su fase
   inicial sin financiamiento externo, lo que reduce el riesgo financiero y otorga
   tiempo para validar la adopción.
 
@@ -443,9 +519,18 @@ personalización del flujo por clínica.
   salud es poco frecuente y difícil de replicar en el corto plazo, lo que protege
   la diferenciación técnica del producto.
 
+- Calidad y experiencia de uso. La plataforma está diseñada para usuarios no
+  técnicos (médicos, personal de secretaría) con un frontend basado en Angular
+  Material que prioriza la claridad de la interfaz y la velocidad de operación en
+  la jornada diaria. La explicabilidad del riesgo de ausentismo —expuesto en
+  lenguaje comprensible, no como score opaco— es en sí misma un atributo de
+  calidad percibida que diferencia la experiencia de uso frente a competidores que
+  muestran indicadores sin contexto. El acceso web sin instalación local, el
+  onboarding asistido y el precio en el rango accesible (USD 35–50) completan una
+  propuesta donde la calidad del servicio no está reñida con la accesibilidad.
 
-1.5 Estrategia: Misión, Visión y Propósito Estratégico
-----------------------------------------------------------------
+
+## 1.5 Estrategia: Misión, Visión y Propósito Estratégico
 
 Misión. Brindar a las clínicas y consultorios médicos pequeños de Argentina una
 plataforma de gestión clínica accesible, interoperable e inteligente que ordene
@@ -466,37 +551,41 @@ accesible al segmento de clínicas pequeñas, elevando el estándar tecnológico
 un mercado estructuralmente desatendido.
 
 
-1.6 Identificación de la oportunidad de negocio
-----------------------------------------------------------------
+## 1.6 Identificación de la oportunidad de negocio
 
 La oportunidad surge de la convergencia de cuatro condiciones del contexto:
 
-1. Un problema operativo costoso y crónico: el ausentismo del 23 %–30 % de los
-   turnos, que se traduce en pérdidas directas de ingresos para los profesionales
-   y para el cual el segmento no dispone de una solución específica adoptada.
+1. Un problema operativo costoso y crónico: el ausentismo de aproximadamente el
+   30 % de los turnos a nivel regional [@geblix2024], que se traduce en
+   pérdidas directas de ingresos para los profesionales y para el cual el
+   segmento de clínicas pequeñas en Argentina no dispone de una solución
+   específica ampliamente adoptada.
 
 2. Un mercado en expansión sostenida: el sector de salud digital en América
    Latina, valuado en USD 5.755 millones en 2024 y con una tasa de crecimiento
    anual compuesta del 9,5 % proyectada hasta 2034, donde el software representa
-   el 52,1 % del valor total (Informes de Expertos, 2024).
+   el 52,1 % del valor total [@informesdeexpertos2024].
 
 3. Una base instalada amplia y mal servida: aproximadamente 5.000
-   establecimientos de salud privados registrados en Argentina (REFES, 2023),
+   establecimientos de salud privados registrados en Argentina [@refes2023],
    mayoritariamente de pequeña escala, que operan con planillas, agendas en papel
    o sistemas heredados sin integración.
 
-4. Una oferta existente sin diferenciación tecnológica en el segmento: ninguno
-   de los competidores relevados combina FHIR R4 nativo, predicción explicable de
-   ausentismo e inteligencia operacional integrada, en un rango de precio
-   accesible para clínicas pequeñas.
+4. Una oferta existente sin diferenciación tecnológica en el segmento
+   específico: si bien existen soluciones internacionales y de infraestructura
+   abierta con FHIR R4 nativo (Medplum, Elation Health, HAPI FHIR) y un
+   competidor regional con predicción de ausentismo por machine learning
+   [@geblix2024], ninguno de los competidores relevados combina FHIR R4,
+   predicción explicable de ausentismo e inteligencia operacional integrada, en
+   un rango de precio accesible, para el segmento de clínicas de 1 a 5
+   profesionales en Argentina.
 
 La conjunción de un dolor cuantificado, un mercado en crecimiento, una demanda
 latente amplia y una oferta sin diferenciación define un espacio de oportunidad
 concreto y defendible.
 
 
-1.7 Capacidades centrales
-----------------------------------------------------------------
+## 1.7 Capacidades centrales
 
 Las capacidades centrales del emprendimiento —entendidas como las competencias
 distintivas y difíciles de imitar sobre las que se construye la ventaja— son:
@@ -519,8 +608,7 @@ distintivas y difíciles de imitar sobre las que se construye la ventaja— son:
   producto con costo estructural mínimo en la fase inicial.
 
 
-1.8 Propuesta de valor para el cliente
-----------------------------------------------------------------
+## 1.8 Propuesta de valor para el cliente
 
 Para una clínica o consultorio pequeño, Kuris ofrece:
 
@@ -545,8 +633,7 @@ los ingresos que el ausentismo se lleva, sobre una base de datos clínicos segur
 portable e interoperable.
 
 
-1.9 Valores nucleares de la organización
-----------------------------------------------------------------
+## 1.9 Valores nucleares de la organización
 
 - Interoperabilidad por principio: adopción de estándares abiertos como base, no
   como agregado posterior.
@@ -560,8 +647,7 @@ portable e interoperable.
   producto, no como costo a minimizar.
 
 
-1.10 Enfoque e iniciativas estratégicas
-----------------------------------------------------------------
+## 1.10 Enfoque e iniciativas estratégicas
 
 El enfoque estratégico es de diferenciación focalizada (en términos de Porter,
 1980): atender un segmento específico —clínicas pequeñas— con una propuesta de
@@ -583,42 +669,28 @@ Las iniciativas estratégicas que materializan ese enfoque son:
    reescritura.
 
 
-1.11 Áreas clave de resultados
-----------------------------------------------------------------
+## 1.11 Áreas clave de resultados
 
 Las áreas clave de resultados (ACR) sobre las que se medirá el éxito del
 emprendimiento, con su justificación:
 
-  Área clave          Por qué es clave                           Indicador
-  ─────────────────────────────────────────────────────────────────────────
-  Adopción            Determina la viabilidad comercial y el     N.º de clínicas
-                      alcance del punto de equilibrio            suscriptas/activas
-  ─────────────────────────────────────────────────────────────────────────
-  Impacto en          Es el diferencial cuantificable del        Reducción de la
-  ausentismo          producto frente a la competencia           tasa de ausentismo
-                                                                 en clínicas usuarias
-  ─────────────────────────────────────────────────────────────────────────
-  Retención           En un SaaS sin permanencia, la             Tasa de renovación
-                      recurrencia sostiene los ingresos          mensual / churn
-  ─────────────────────────────────────────────────────────────────────────
-  Eficiencia          El costo variable de onboarding y          Costo de onboarding
-  operativa           soporte condiciona la escalabilidad        por cliente; tiempo
-                                                                 de soporte/cliente
-  ─────────────────────────────────────────────────────────────────────────
-  Solidez técnica     La interoperabilidad y la seguridad        Conformidad FHIR R4;
-                      son la base de la confianza en salud       aislamiento multitenant
-                                                                 verificado
+| Área clave | Por qué es clave | Indicador |
+|---|---|---|
+| Adopción | Determina la viabilidad comercial y el alcance del punto de equilibrio | N.º de clínicas suscriptas/activas |
+| Impacto en ausentismo | Es el diferencial cuantificable del producto frente a la competencia | Reducción de la tasa de ausentismo en clínicas usuarias |
+| Retención | En un SaaS sin permanencia, la recurrencia sostiene los ingresos | Tasa de renovación mensual / churn |
+| Eficiencia operativa | El costo variable de onboarding y soporte condiciona la escalabilidad | Costo de onboarding por cliente; tiempo de soporte/cliente |
+| Cumplimiento normativo y confianza | La interoperabilidad, la seguridad y la normativa son condición de habilitación comercial en salud; ningún cliente adoptará un sistema que no sea confiable y legal | Conformidad FHIR R4; cumplimiento Ley 27.706 y Ley 25.326; ausencia de incidentes de privacidad de datos |
 
 
-1.12 Ingreso al sector: estrategias de inserción
-----------------------------------------------------------------
+## 1.12 Ingreso al sector: estrategias de inserción
 
-Estrategia genérica (Porter, 1980): diferenciación enfocada. El proyecto no
+Estrategia genérica [@porter1980]: diferenciación enfocada. El proyecto no
 compite por costo —los incumbentes masivos tienen ventaja de escala— sino por una
 propuesta de valor diferenciada dirigida a un segmento acotado, la clínica
 pequeña, con necesidades que la oferta generalista no resuelve.
 
-Estrategia frente a la competencia (Kotler et al., 2017): retador / especialista
+Estrategia frente a la competencia [@kotler2017]: retador / especialista
 de nicho. Como entrante sin base instalada, Kuris no disputa frontalmente
 la cuota de los líderes consolidados; se inserta como especialista de nicho que
 atiende mejor que nadie un segmento específico, construyendo posición desde la
@@ -638,13 +710,12 @@ Mecanismos concretos de inserción:
   comercialmente, no acuerdos vigentes).
 
 
-================================================================
-2. ANÁLISIS ESTRATÉGICO
-================================================================
+\newpage
+
+# 2. Análisis estratégico
 
 
-2.1 Análisis de contexto
-----------------------------------------------------------------
+## 2.1 Análisis de contexto
 
 2.1.1 Descripción del escenario local
 
@@ -678,18 +749,51 @@ arquitectura interoperable y el aislamiento de datos por clínica posicionan
 favorablemente al producto frente a estos requisitos. La existencia de
 iniciativas públicas de información sanitaria (SISA, REFES) y la adopción
 creciente de estándares de interoperabilidad configuran un entorno institucional
-alineado con la propuesta (Argentina.gob.ar, 2026).
+alineado con la propuesta [@argentinagobar2026].
 
 2.1.4 Factores tecnológicos
 
 La maduración del estándar HL7 FHIR R4 y del ecosistema SMART on FHIR habilita
-técnicamente la propuesta de interoperabilidad. La disponibilidad de
-infraestructura cloud y de servidores virtuales de bajo costo permite operar con
-una estructura liviana. La incorporación reciente de inteligencia artificial por
-parte de algunos competidores —enfocada en tareas administrativas— confirma que
-el sector se mueve hacia la automatización inteligente, validando la dirección
-estratégica del proyecto, aunque sobre un eje (ausentismo accionable por
-paciente) distinto al que la competencia ha tomado.
+técnicamente la propuesta de interoperabilidad, y cuenta con respaldo
+institucional en Argentina: el Ministerio de Salud de la Nación publica guías
+de implementación y estándares de interoperabilidad —incluyendo HL7 FHIR y
+SNOMED CT— a través de su Red de Salud Digital [@argentinagobarsf]. Esto
+implica que el ecosistema técnico de FHIR en el país ya tiene infraestructura
+estatal activa, lo que reduce el riesgo de adopción del estándar pero también
+matiza la narrativa de que se trata de una tecnología no explorada en el
+mercado local. La disponibilidad de infraestructura cloud y de servidores
+virtuales de bajo costo permite operar con una estructura liviana. La
+incorporación reciente de inteligencia artificial por parte de algunos
+competidores —enfocada en tareas administrativas, y en el caso de Geblix ya
+orientada a predicción de ausentismo— confirma que el sector se mueve hacia la
+automatización inteligente, validando la dirección estratégica del proyecto;
+la diferenciación de Kuris sobre ese eje depende de la combinación con FHIR
+R4 nativo y el foco en el segmento de clínicas pequeñas argentinas, no de la
+novedad de la predicción de ausentismo en sí, que ya es una categoría de
+producto madura a nivel internacional (eClinicalWorks/healow, ClosedLoop,
+Arkangel AI).
+
+El proyecto presenta dependencias tecnológicas externas que configuran riesgos
+operativos a gestionar:
+
+- Dependencia de la API de Claude (Anthropic): los módulos de resumen de historia
+  clínica y sugerencia CIE-10 del MVP dependen de esta API. Un cambio de política
+  de precios, una restricción de acceso en Argentina o una interrupción del
+  servicio afectaría directamente estas funcionalidades. Mitigación: la
+  arquitectura separa el módulo LLM mediante una interfaz intercambiable (puerto
+  de salida en Clean Architecture), lo que permite sustituir el proveedor por
+  alternativas compatibles (OpenAI, Gemini, modelos open source vía Ollama) sin
+  reescribir la lógica de negocio.
+
+- Dependencia de Telegram Bot API: el canal de recordatorios del MVP opera sobre
+  Telegram, que es gratuito y no requiere aprobación. Un bloqueo regulatorio o
+  cambio de política de Telegram en Argentina eliminaría este canal. Mitigación:
+  la abstracción de canal de notificaciones (ADR-013) permite activar email (ya
+  implementado como canal secundario) o WhatsApp Business API sin modificar la
+  lógica de recordatorios.
+
+Ambas dependencias están gestionadas arquitectónicamente desde el diseño, lo que
+reduce el riesgo operativo aunque no lo elimina.
 
 2.1.5 Descripción del escenario: escenario-meta
 
@@ -713,12 +817,13 @@ Oportunidades:
 
 - Segmento amplio y desatendido (≈ 5.000 establecimientos privados,
   mayoritariamente pequeños).
-- Problema cuantificado y costoso (ausentismo 23 %–30 %) sin solución específica
-  adoptada.
+- Problema cuantificado y costoso (ausentismo ≈ 30 % a nivel regional, Geblix
+  2024) sin solución específica ampliamente adoptada en el segmento argentino
+  de clínicas pequeñas.
 - Mercado de salud digital regional en crecimiento sostenido (CAGR 9,5 %).
 - Tendencia sectorial hacia la interoperabilidad y la automatización inteligente.
 - Marco normativo y estrategia nacional de salud digital que favorecen la
-  adopción de FHIR (Organización Panamericana de la Salud, 2026).
+  adopción de FHIR [@ops2026].
 
 Amenazas:
 
@@ -733,18 +838,17 @@ Amenazas:
   heredadas.
 
 
-2.2 Análisis de la competencia
-----------------------------------------------------------------
+## 2.2 Análisis de la competencia
 
 2.2.1 Principales competidores directos
 
 El mercado argentino de software de gestión clínica para el segmento pequeño se
-estructura en tres capas:
+estructura en cuatro capas:
 
 - Capa de consolidación nacional. Grupo Cormos, que en 2024 adquirió Meducar y
   consolidó un portfolio (DrApp, Docturno, iTurnos, Wiri Salud, Receto) que
   gestiona más de 20 millones de turnos anuales y digitaliza aproximadamente
-  25.000 profesionales y 6.000 centros (Grupo Cormos, 2024). Orientado a volumen
+  25.000 profesionales y 6.000 centros [@grupocormos2024]. Orientado a volumen
   y estandarización, no a integraciones específicas ni a flujos personalizados
   por clínica.
 
@@ -760,39 +864,107 @@ estructura en tres capas:
   asistentes telefónicos en Nubimed; IA clínica supervisada orientada a
   hospitales en SFS).
 
-En el relevamiento sobre el segmento de clínicas pequeñas no se identificó
-ningún competidor que combine, de manera nativa e integrada al flujo operativo:
-(a) implementación del estándar HL7 FHIR R4, (b) predicción explicable del
+- Capa de inteligencia operacional especializada. Geblix (Argentina, con
+  expansión a Uruguay, Chile, Perú y México): producto comercial con seis
+  módulos integrados —agenda online, recordatorios por WhatsApp, historia
+  clínica digital, videoconsultas, gestión financiera y operaciones—, que
+  incluye predicción de ausentismo por machine learning con reducción
+  reportada de hasta el 40 % [@geblix2024]. Es el competidor regional más
+  cercano a la propuesta de inteligencia operacional de Kuris, aunque no
+  implementa FHIR R4 ni se especializa en el segmento argentino de 1 a 5
+  profesionales ni en el marco regulatorio de obras sociales locales.
+
+El análisis competitivo incluye también soluciones internacionales y de
+infraestructura abierta con presencia, accesibilidad o relevancia técnica para
+el mercado argentino:
+
+- Medesk (Reino Unido / España): plataforma SaaS de gestión clínica con
+  historia electrónica, agenda y recordatorios automáticos; presencia activa en
+  Argentina con precios en el rango USD 10–25/mes [@medesk2024]. No implementa
+  FHIR R4 de forma nativa ni predicción de ausentismo. Opera en español y es el
+  competidor internacional más accesible para el segmento.
+
+- Elation Health (Estados Unidos): plataforma EHR para práctica independiente
+  con API FHIR R4 certificada bajo el criterio ONC (g)(10) —incluyendo SMART on
+  FHIR, US Core Data v2 y Bulk Data Export 2.0— [@elationhealth2024]; es
+  decir, una implementación FHIR R4 más completa y certificada que la que Kuris
+  puede demostrar en su etapa actual. No está disponible comercialmente en
+  Argentina y sus precios (>USD 300/mes por profesional) la excluyen del
+  segmento objetivo de Kuris, pero su existencia refuta la idea de que no haya
+  EHRs con FHIR R4 nativo en el mercado internacional.
+
+- Kareo / Tebra (Estados Unidos): suite para clínicas pequeñas con módulos de
+  facturación, agenda y telemedicina; opera principalmente sobre una API SOAP
+  propia y se encuentra en transición hacia FHIR, sin que esta migración esté
+  completa a la fecha [@kareotebra2024]; sin predicción de ausentismo; no
+  disponible en Argentina.
+
+- Medplum (Estados Unidos, open source): plataforma de desarrollo de software
+  de salud FHIR-native, con servidor FHIR R4 sobre PostgreSQL, soporte
+  multitenant, control de acceso basado en roles y ACLs por registro, bajo
+  licencia Apache 2.0 [@medplum2025]. No es un producto terminado para
+  clínicas sino un framework de desarrollo; su existencia muestra que ya hay
+  infraestructura FHIR R4 nativa reutilizable y de bajo costo disponible para
+  construir EHRs, lo que reduce —aunque no elimina— la barrera de entrada
+  técnica que el documento atribuye en exclusiva al esfuerzo de Kuris.
+
+- HAPI FHIR (open source): servidor FHIR de referencia en Java, recomendado
+  explícitamente por el Banco Interamericano de Desarrollo (BID) como
+  herramienta para instituciones de salud en América Latina y el Caribe
+  [@iadbsf]. Confirma que existe ecosistema FHIR
+  abierto y de respaldo institucional en la región, no solo en mercados
+  desarrollados.
+
+En el relevamiento sobre el segmento específico de clínicas de 1 a 5
+profesionales en Argentina —considerando tanto el mercado local como las
+opciones internacionales y de infraestructura abierta relevadas— no se
+identificó ningún competidor que combine, de manera nativa e integrada al
+flujo operativo y en un rango de precio accesible para ese segmento: (a)
+implementación del estándar HL7 FHIR R4, (b) predicción explicable del
 ausentismo por paciente con factores interpretables, y (c) inteligencia
-operacional accionable (recordatorios diferenciados + overbooking).
+operacional accionable (recordatorios diferenciados + overbooking). Esta
+afirmación es más acotada que sostener una ausencia general de FHIR R4 o de
+predicción de ausentismo en el mercado: ambas existen como categorías de
+producto maduras a nivel internacional (Medplum, Elation Health, HAPI FHIR;
+healow/eClinicalWorks, ClosedLoop, Arkangel AI) y regional [@geblix2024]. La
+ventaja diferencial de Kuris reside en la combinación específica de los tres
+elementos para el nicho argentino, no en la novedad aislada de ninguno de
+ellos; frente a soluciones internacionales de mayor escala y frente a Geblix,
+la diferenciación adicional reside en la especialización en el contexto
+regulatorio argentino (Ley 27.706, obras sociales) y en el soporte
+personalizado del fundador.
 
 2.2.2 Análisis de cadena de valor
 
-  Eslabón                  Cómo lo resuelve Kuris             Aporte de valor
-  ──────────────────────────────────────────────────────────────────────────────────
-  Desarrollo de producto   Ejecución técnica integral del fundador   Iteración rápida con
-                           (backend, frontend, infra, modelos)       costo estructural mínimo
-  ──────────────────────────────────────────────────────────────────────────────────
-  Infraestructura          VPS propio + Docker/PostgreSQL/Redis       Costo marginal por cliente
-                           ya desplegado                             bajo; escalabilidad sin
-                                                                     inversión proporcional
-  ──────────────────────────────────────────────────────────────────────────────────
-  Adquisición de clientes  Venta directa + referidos en el           Canal orgánico de bajo
-                           ecosistema médico de Rosario              costo y alta credibilidad
-  ──────────────────────────────────────────────────────────────────────────────────
-  Onboarding               Migración guiada + capacitación +         Reduce fricción de
-                           soporte directo del fundador              adopción; diferencial
-                                                                     relacional
-  ──────────────────────────────────────────────────────────────────────────────────
-  Operación / soporte      Soporte personalizado en fase inicial     Retención; costo variable
-                                                                     a gestionar al escalar
-  ──────────────────────────────────────────────────────────────────────────────────
-  Demostración de valor    Reporte mensual de ausentismo y           Justifica la recurrencia
-                           eficiencia                                con impacto medible
+| Eslabón | Cómo lo resuelve Kuris | Aporte de valor |
+|---|---|---|
+| Desarrollo de producto | Ejecución técnica integral del fundador (backend, frontend, infra, modelos) | Iteración rápida con costo estructural mínimo |
+| Infraestructura | VPS propio + Docker/PostgreSQL/Redis ya desplegado | Costo marginal por cliente bajo; escalabilidad sin inversión proporcional |
+| Adquisición de clientes | Venta directa + referidos en el ecosistema médico de Rosario (hipótesis de canal, sin referidos activos en esta etapa) | Canal proyectado de bajo costo (hipótesis a validar con el piloto) |
+| Onboarding | Migración guiada + capacitación + soporte directo del fundador | Reduce fricción de adopción; diferencial relacional |
+| Operación / soporte | Soporte personalizado en fase inicial | Retención; costo variable a gestionar al escalar |
+| Demostración de valor | Reporte mensual de ausentismo y eficiencia | Justifica la recurrencia con impacto medible |
 
 Las actividades de soporte (infraestructura, conocimiento técnico, cumplimiento
 normativo) habilitan las actividades primarias y constituyen las barreras de
 imitación más relevantes del modelo.
+
+Comparación con la competencia por eslabón:
+
+| Eslabón | Incumbentes locales | SaaS modernos (AgendaPro, Nubimed) |
+|---|---|---|
+| Desarrollo de producto | Equipos consolidados con base instalada y deuda técnica | Equipos mayores, ciclos más lentos por generalismo de mercado |
+| Infraestructura | On-premise o cloud legacy; costos de migración altos | Cloud moderno; costos más altos por escala y funcionalidades ociosas |
+| Adquisición de clientes | Fuerza de ventas directa y red de referidos establecida | Marketing digital + freemium; sin canal de nicho especializado |
+| Onboarding | Proceso estandarizado sin acompañamiento diferenciado | Autoservicio; bajo costo pero sin personalización por clínica |
+| Operación / soporte | Soporte multicanal pero impersonal a escala | Soporte por ticket; sin contacto directo con el equipo de producto |
+| Demostración de valor | Sin reportes de impacto sobre ausentismo | Métricas de agenda; sin análisis predictivo de ausentismo |
+
+La ventaja de Kuris se concentra en los eslabones de onboarding,
+demostración de valor y desarrollo de producto, donde la especialización
+en el nicho y la capacidad de ejecución técnica integral del fundador
+generan un diferencial no replicable por los competidores de mayor escala
+sin una reestructura significativa de su modelo operativo.
 
 2.2.3 Factores Críticos de Éxito (FCE)
 
@@ -817,56 +989,20 @@ recursos comerciales y de marketing limitados; dependencia crítica de una sola
 persona; aún sin validación comercial real.
 
 
-================================================================
-3. ANÁLISIS FODA
-================================================================
+\newpage
+
+# 3. Análisis FODA
 
 
-3.1 Cuadro FODA
-----------------------------------------------------------------
+## 3.1 Cuadro FODA
 
-                   Origen interno              Origen externo
-  ─────────────────────────────────────────────────────────────
-  Positivo   FORTALEZAS                    OPORTUNIDADES
-             • Diferenciación técnica      • Segmento amplio y
-               única (FHIR R4 +              desatendido (≈ 5.000
-               predicción explicable +       establecimientos)
-               inteligencia operacional)   • Ausentismo cuantificado
-             • Interoperabilidad nativa      (23 %–30 %) sin solución
-               como barrera de entrada       adoptada
-             • Estructura de costos        • Mercado de salud digital
-               liviana; punto de            en expansión (CAGR 9,5 %)
-               equilibrio bajo (12–18      • Tendencia sectorial a
-               clínicas)                    interoperabilidad e IA
-             • Conocimiento técnico        • Marco normativo y
-               especializado del            estrategia nacional de
-               fundador                     salud digital que favorece
-             • Soporte personalizado         FHIR
-               como diferencial
-               relacional
-             • Infraestructura propia
-               ya operativa
-  ─────────────────────────────────────────────────────────────
-  Negativo   DEBILIDADES                   AMENAZAS
-             • Equipo unipersonal;         • Incumbentes locales con
-               capacidad de ejecución        base instalada y relación
-               acotada                       establecida
-             • Sin base instalada,         • Posible incorporación de
-               marca ni casos de            IA predictiva por
-               referencia                   competidores con más
-             • Recursos comerciales y        recursos
-               de marketing limitados      • Sensibilidad al precio en
-             • Dependencia crítica de        dólares (ingresos de
-               una sola persona             clientes en pesos)
-             • Sin validación comercial    • Volatilidad macroeconómica
-               real                         argentina
-                                          • Resistencia al cambio en
-                                            clínicas con herramientas
-                                            heredadas
+|  | Origen interno | Origen externo |
+|---|---|---|
+| **Positivo** | **FORTALEZAS**<br>• Diferenciación técnica única (FHIR R4 + predicción explicable + inteligencia operacional)<br>• Interoperabilidad nativa como barrera de entrada<br>• Estructura de costos liviana; punto de equilibrio bajo (12–18 clínicas)<br>• Conocimiento técnico especializado del fundador<br>• Soporte personalizado como diferencial relacional<br>• Infraestructura propia ya operativa | **OPORTUNIDADES**<br>• Segmento amplio y desatendido (≈ 5.000 establecimientos)<br>• Ausentismo cuantificado (≈ 30 % regional) sin solución adoptada en AR<br>• Mercado de salud digital en expansión (CAGR 9,5 %)<br>• Tendencia sectorial a interoperabilidad e IA<br>• Marco normativo y estrategia nacional de salud digital que favorece FHIR |
+| **Negativo** | **DEBILIDADES**<br>• Equipo unipersonal; capacidad de ejecución acotada<br>• Sin base instalada, marca ni casos de referencia<br>• Recursos comerciales y de marketing limitados<br>• Dependencia crítica de una sola persona<br>• Sin validación comercial real | **AMENAZAS**<br>• Incumbentes locales con base instalada y relación establecida<br>• Posible incorporación de IA predictiva por competidores con más recursos<br>• Sensibilidad al precio en dólares (ingresos de clientes en pesos)<br>• Volatilidad macroeconómica argentina<br>• Resistencia al cambio en clínicas con herramientas heredadas |
 
 
-3.2 Análisis de Fortalezas, Oportunidades, Debilidades y Amenazas
-----------------------------------------------------------------
+## 3.2 Análisis de Fortalezas, Oportunidades, Debilidades y Amenazas
 
 El cruce de factores orienta las estrategias del proyecto:
 
@@ -893,27 +1029,40 @@ priorizado que concentre el esfuerzo en lo diferencial y no negociable
 (multitenant y FHIR core).
 
 
-3.3 Conclusión: atractivo de la industria y fortalezas del negocio
-----------------------------------------------------------------
+## 3.3 Conclusión: atractivo de la industria y fortalezas del negocio
 
 La industria del software de gestión clínica para el segmento pequeño es
 atractiva: mercado amplio y en crecimiento, problema costoso y cuantificado, y
 una oferta existente sin diferenciación tecnológica en el nicho. Las fortalezas
 del negocio —diferenciación técnica única, interoperabilidad como barrera de
 entrada y estructura de costos liviana— están alineadas con las oportunidades del
-sector. El desafío central no es la viabilidad de la propuesta, sino la ejecución
-y la validación de la adopción con recursos acotados, lo que define la prioridad
-estratégica de la etapa: convertir la ventaja técnica en casos de referencia
-reales antes de escalar.
+sector.
+
+Sin embargo, la viabilidad comercial del proyecto aún no está demostrada: a la
+fecha del presente documento no existe ningún cliente activo ni validación
+primaria de las hipótesis de precio y adopción. Los dos riesgos que condicionan
+la viabilidad real son: (a) que las clínicas objetivo no perciban el dolor del
+ausentismo como suficientemente costoso para justificar el cambio de herramientas,
+y (b) que el precio en dólares sea una barrera de adopción en un contexto de
+ingresos en pesos con alta volatilidad cambiaria. Ambos riesgos son detectables
+temprano si se logra concretar un piloto real: el cronograma de agosto a
+noviembre de 2026 (sección 5.2) plantea ese piloto como objetivo, pero a la
+fecha no hay ninguna clínica comprometida, solo conversaciones exploratorias
+sin acuerdo. Si el piloto no se concreta en ese plazo, el plan de contingencia
+académico contempla una validación simulada como alternativa. El desafío
+central de esta etapa es, por lo tanto, doble: conseguir al menos un piloto
+real o ejecutar la alternativa simulada con rigor, y convertir la ventaja
+técnica en evidencia —real o simulada— que demuestre valor medible, sin lo
+cual la propuesta competitiva permanece enteramente en el terreno de la
+hipótesis.
 
 
-================================================================
-4. SEGMENTACIÓN
-================================================================
+\newpage
+
+# 4. Segmentación
 
 
-4.1 Segmentación de consumidores y/o negocios
-----------------------------------------------------------------
+## 4.1 Segmentación de consumidores y/o negocios
 
 Al tratarse de un negocio B2B, la unidad de segmentación es la organización
 cliente (la clínica o el consultorio), no el paciente individual. Los criterios
@@ -928,8 +1077,7 @@ de segmentación aplicados son:
   interoperabilidad futura y/o de reducción de pérdidas por ausentismo.
 
 
-4.2 Identificación de grupos diferenciados de consumidores
-----------------------------------------------------------------
+## 4.2 Identificación de grupos diferenciados de consumidores
 
 Dentro del segmento se distinguen tres perfiles:
 
@@ -950,9 +1098,33 @@ La decisión de mantener el segmento amplio dentro de "clínicas pequeñas", sin
 verticalizar por especialidad médica en esta etapa, responde al objetivo de
 validar la propuesta en un mercado más amplio antes de especializar.
 
+Perfil sociodemográfico del usuario operativo (factores socioculturales):
 
-4.3 ¿Quiénes son los potenciales usuarios / compradores del negocio?
-----------------------------------------------------------------
+El usuario que opera el sistema cotidianamente —tanto el decisor de compra como
+el usuario diario— presenta un perfil relativamente homogéneo dentro del
+segmento:
+
+  - Edad: entre 30 y 55 años. Los profesionales médicos que gestionan su propio
+    consultorio se encuentran mayoritariamente en ese rango etario; el personal
+    administrativo es algo más joven (25–45 años).
+  - Nivel educacional: universitario completo (médicos) o terciario/universitario
+    en curso (personal administrativo). Alta familiaridad con herramientas
+    digitales de consumo (WhatsApp, Google Calendar, apps bancarias), pero
+    experiencia variable con software de gestión clínica especializado.
+  - Nivel socioeconómico: medio-alto. Los profesionales de salud independientes
+    con consultorio propio en Rosario corresponden a sectores con ingresos
+    suficientes para absorber una suscripción en dólares dentro de los costos
+    operativos del consultorio.
+  - Ubicación: urbana (Rosario y zona de influencia en la fase inicial); acceso
+    desde dispositivos de escritorio y móviles en jornada laboral.
+
+Estos atributos inciden directamente en las decisiones de diseño del producto:
+interfaz clara y sin curva de aprendizaje pronunciada, acceso web sin instalación,
+notificaciones vía Telegram (canal ya incorporado por el segmento) y
+documentación en español rioplatense.
+
+
+## 4.3 ¿Quiénes son los potenciales usuarios / compradores del negocio?
 
 Conviene distinguir entre quién decide la compra y quién usa el sistema:
 
@@ -971,8 +1143,7 @@ El producto debe satisfacer simultáneamente el criterio económico del decisor 
 la usabilidad cotidiana de los usuarios operativos.
 
 
-4.4 Pautas de comportamiento esperado de cada segmento
-----------------------------------------------------------------
+## 4.4 Pautas de comportamiento esperado de cada segmento
 
 - Frecuencia de uso: diaria e intensiva (la agenda y la ficha de paciente son
   herramientas de uso continuo en la jornada).
@@ -988,19 +1159,32 @@ la usabilidad cotidiana de los usuarios operativos.
   impacto medible (reporte mensual de ausentismo) y si el soporte resuelve los
   problemas con rapidez.
 
+Perfil del visitante del sitio / usuario del sistema:
+
+  - Sexo: sin diferencia significativa por segmento (tanto hombres como mujeres
+    ejercen medicina independiente y ocupan roles administrativos en clínicas
+    pequeñas en Argentina).
+  - Edad: 30–55 años (decisores); 25–45 años (usuarios operativos).
+  - Nivel de ingreso: medio-alto (profesionales independientes con consultorio
+    propio o integrantes de centros médicos privados).
+  - Frecuencia de uso: diaria, en jornada laboral (mañana y tarde).
+  - Razón de uso: gestión de agenda, registro de historia clínica y seguimiento
+    de ausentismo como tareas recurrentes.
+  - Motivación adicional: reducción de carga administrativa, acceso a información
+    clínica ordenada y anticipación de turnos en riesgo.
+
 La información de mercado que sustenta esta segmentación proviene de fuentes
-secundarias (REFES, 2023; Geblix, 2024; Informes de Expertos, 2024) y del
+secundarias [@refes2023; @geblix2024; @informesdeexpertos2024] y del
 relevamiento competitivo propio de mayo de 2026. La validación con fuentes
 primarias se realizará durante el piloto previsto en el cronograma del proyecto.
 
 
-================================================================
-5. PLAN DE ACCIÓN
-================================================================
+\newpage
+
+# 5. Plan de acción
 
 
-5.1 Programas generales de acción
-----------------------------------------------------------------
+## 5.1 Programas generales de acción
 
 El plan de acción de Kuris se estructura en tres programas generales que
 cubren el horizonte mayo–diciembre 2026 (etapa de construcción y validación del
@@ -1041,9 +1225,9 @@ de ausentismo que demuestren valor medible.
 
 La evidencia empírica en B2B SaaS indica que entre 3 y 5 clientes piloto activos
 son suficientes para alcanzar product-market fit inicial en nichos acotados
-(SquadS Ventures, 2025). En sectores de salud regulados, la validación con datos
+[@squadsventures2025]. En sectores de salud regulados, la validación con datos
 reales de al menos un piloto es condición previa al escalamiento de la propuesta
-comercial (Bessemer Venture Partners, 2024).
+comercial [@bessemer2024].
 
 Programa G3 — Estructura operativa y cumplimiento
 
@@ -1058,21 +1242,52 @@ cada nueva clínica no consuma tiempo desproporcionado del fundador.
 
 El contexto regulatorio argentino opera como habilitador: la Estrategia Nacional
 de Salud Digital 2025–2030 consolidó en junio de 2026 la adopción de HL7 FHIR
-como estándar de interoperabilidad federal (Organización Panamericana de la
-Salud, 2026; Argentina.gob.ar, 2026). La arquitectura de Kuris está
+como estándar de interoperabilidad federal [@ops2026; @argentinagobar2026].
+La arquitectura de Kuris está
 alineada con esa hoja de ruta desde su diseño, lo que convierte el cumplimiento
 normativo en ventaja competitiva adicional.
 
 
-5.2 Programas específicos de acción
-----------------------------------------------------------------
+## 5.2 Programas específicos de acción
 
 Los programas generales se descomponen en acciones concretas organizadas por
 fase. El horizonte es el período mayo 2026 – junio 2027, que cubre desde el
 inicio del desarrollo hasta el punto de equilibrio operativo estimado.
 
 
-FASE 1 — Construcción del MVP (mayo–agosto 2026)
+### Tabla 1. Costos operativos proyectados
+
+| Ítem | Costo mensual (USD) | Notas |
+|---|---|---|
+| VPS (4 GB RAM, 2 vCPU, 80 GB SSD) | 20–30 | Proveedor: Contabo o equivalente; escala a 8 GB con >10 tenants |
+| API LLM — Claude (Anthropic) | 15–40 | Estimación: 500–2.000 llamadas/mes × ~USD 0,02 por llamada (claude-haiku-4-5); variable con volumen de pilotos |
+| Servicio de correo transaccional (SMTP / email API) | 10–15 | Resend o equivalente; hasta 10.000 emails/mes |
+| Dominio + certificado SSL | 2 | Prorrateado anual |
+| Contingencia operativa (backups, monitoreo, herramientas menores) | 38–58 | Reserva del 30 % sobre los costos anteriores |
+| **TOTAL ESTIMADO (escenario base)** | **85–145** | |
+| TOTAL ESTIMADO (escenario de crecimiento, 10+ tenants activos) | 150–220 | Con VPS de 8 GB y mayor volumen de API |
+
+Nota: el costo del tiempo del fundador no se contabiliza como costo operativo
+en efectivo en esta etapa (bootstrapping unipersonal), pero representa un costo
+de oportunidad real que se reconoce como tal. El análisis de punto de equilibrio
+opera sobre costos en efectivo; una evaluación de rentabilidad para un eventual
+inversor debería incluir una remuneración de mercado para el rol de CTO/CEO
+(referencia: USD 800–1.200/mes para desarrollador senior en Argentina en dólares
+oficiales, según mercado freelance tech, 2026).
+
+Punto de equilibrio operativo (sobre costos en efectivo):
+- Escenario base (costos USD 145/mes): 4 clínicas × USD 40 = USD 160 → equilibrio
+  individual de cada tenant adicional, antes de alcanzar el umbral de escala
+- Escenario realista (10 clínicas): ingresos USD 400 − costos USD 145 = margen USD 255 (64 %)
+- Escenario objetivo (18 clínicas): ingresos USD 720 − costos USD 165 = margen USD 555 (77 %)
+
+Nota: el umbral de "12 a 18 clínicas" citado en el resto del documento
+corresponde al escenario de crecimiento sostenible con margen operativo
+saludable (64–77 %), no al punto de equilibrio matemático estricto (4
+clínicas), que se alcanza antes pero con margen prácticamente nulo.
+
+
+### Fase 1 — Construcción del MVP (mayo–agosto 2026)
 
 Acciones técnicas:
 
@@ -1138,7 +1353,7 @@ Indicadores de la fase:
   - Al menos 1 clínica piloto activa con datos reales.
 
 
-FASE 2 — Validación y ajuste (septiembre–noviembre 2026)
+### Fase 2 — Validación y ajuste (septiembre–noviembre 2026)
 
 Acciones técnicas:
 
@@ -1177,16 +1392,15 @@ Indicadores de la fase:
   - Entre 2 y 3 clínicas piloto activas al cierre de noviembre de 2026.
 
 
-FASE 3 — Transición a ingresos (diciembre 2026 – junio 2027)
+### Fase 3 — Transición a ingresos (diciembre 2026–junio 2027)
 
 El punto de equilibrio operativo estimado se alcanza entre 12 y 18 clínicas
 suscriptas en plan base (USD 35–50 por clínica/mes), con costos fijos
-consolidados en torno a USD 50 mensuales. A ese nivel de escala, los ingresos
-cubren los costos operativos sin financiamiento externo. La evidencia empírica en
+operativos proyectados entre USD 85 y USD 145 mensuales. A ese nivel de escala,
+los ingresos cubren los costos operativos sin financiamiento externo. La evidencia empírica en
 SaaS B2B de salud indica que el ciclo de ventas en segmentos de clínicas pequeñas
 es significativamente más corto que en hospitales —semanas en lugar de meses—
-cuando el argumento se apoya en casos de referencia con impacto medible (Bessemer
-Venture Partners, 2024).
+cuando el argumento se apoya en casos de referencia con impacto medible [@bessemer2024].
 
 Acciones técnicas:
 
@@ -1229,127 +1443,142 @@ Indicadores de la fase:
 
   - Clínicas en plan pago: meta 6–12 al cierre de junio 2027.
   - Churn mensual objetivo: menor al 5 % (referencia sectorial para SaaS B2B en
-    salud: entre 3,5 % y 7,5 % mensual según We Are Founders, 2026).
+    salud: entre 3,5 % y 7,5 % mensual según @wearefounders2026).
   - Costo de onboarding por cliente: reducción del 50 % respecto del onboarding
     de los pilotos, a través de documentación y proceso autoasistido.
 
 
-TABLA RESUMEN DE HITOS
+### Tabla 2. Resumen de hitos
 
-  Hito                                            Fecha objetivo
-  ───────────────────────────────────────────────────────────────
-  Backend FHIR R4 completo (6 recursos)           Agosto 2026
-  Motor de predicción activo en piloto            Agosto 2026
-  Integración LLM: resumen historia clínica       Agosto 2026
-  Integración LLM: sugerencia CIE-10             Agosto 2026
-  1 clínica piloto activa con datos reales        Agosto 2026
-  Frontend operativo (agenda + ficha + SOAP)      Octubre 2026
-  Primer reporte de impacto (datos reales)        Noviembre 2026
-  2–3 clínicas piloto activas                     Noviembre 2026
-  Módulo de facturación y suscripciones           Diciembre 2026
-  Transición de pilotos a plan pago               Enero 2027
-  6–12 clínicas en plan pago                      Junio 2027
-  Punto de equilibrio operativo                   Junio–agosto 2027
+| Hito | Fecha objetivo | Depende de |
+|---|---|---|
+| Backend FHIR R4 completo (6 recursos) | Agosto 2026 | Solo desarrollo propio |
+| Motor de predicción activo (en entorno de prueba) | Agosto 2026 | Solo desarrollo propio |
+| Integración LLM: resumen historia clínica | Agosto 2026 | Solo desarrollo propio |
+| Integración LLM: sugerencia CIE-10 | Agosto 2026 | Solo desarrollo propio |
+| 1 clínica piloto activa con datos reales | Agosto 2026 | Conseguir un piloto real (no asegurado; ver nota) |
+| Frontend operativo (agenda + ficha + SOAP) | Octubre 2026 | Solo desarrollo propio |
+| Primer reporte de impacto (datos reales) | Noviembre 2026 | Tener un piloto real activo |
+| 2–3 clínicas piloto activas | Noviembre 2026 | Conseguir pilotos reales (no asegurado) |
+| Módulo de facturación y suscripciones | Diciembre 2026 | Solo desarrollo propio |
+| Transición de pilotos a plan pago | Enero 2027 | Tener pilotos reales que transicionar |
+| 6–12 clínicas en plan pago | Junio 2027 | Conseguir pilotos y convertirlos en clientes pagos |
+| Punto de equilibrio operativo | Junio–agosto 2027 | Alcanzar 12–18 clínicas suscriptas |
 
-
-================================================================
-REFERENCIAS (APA 7)
-================================================================
-
-Anthropic. (2025). *Claude API documentation*. https://docs.anthropic.com/
-
-Argentina.gob.ar. (2026, junio). *Se realizó encuentro para avanzar en la
-estrategia de salud digital*. Ministerio de Salud de la Nación Argentina.
-https://www.argentina.gob.ar/noticias/se-realizo-encuentro-para-avanzar-en-la-estrategia-de-salud-digital
-
-Argentina.gob.ar. (s. f.). *Estándares de salud digital*. Ministerio de Salud de
-la Nación Argentina.
-https://www.argentina.gob.ar/salud/digital/estandares
-
-Bessemer Venture Partners. (2024). *State of health tech 2024*.
-https://www.bvp.com/atlas/state-of-health-tech-2024
-
-DriCloud. (2024). *Software médico en la nube para gestión clínica*.
-https://dricloud.com/
-
-Geblix. (2024). *Análisis del ausentismo en turnos médicos en Argentina sobre 1,5
-millones de turnos*.
-https://blog.geblix.com/ausentismo-data-science-analisis
-
-Grupo Cormos. (2024). *Adquisición de Meducar y consolidación del portfolio del
-mercado local*.
-https://thepostarg.com/institucionales/grupo-cormos-adquirio-meducar-y-ya-cuenta-con-el-50-de-las-empresas-del-mercado-local/
-
-HL7 International. (s. f.). *HL7 FHIR Release 4 (R4)*. https://hl7.org/fhir/R4/
-
-Informes de Expertos. (2024). *Mercado de salud digital en América Latina: tamaño,
-participación y crecimiento 2024-2034*.
-https://www.informesdeexpertos.com/informes/mercado-de-salud-digital-en-america-latina
-
-Kotler, P., Keller, K. L., Brady, M., Goodman, M., y Hansen, T. (2017).
-*Marketing management* (3.ª ed.). Pearson Education.
-
-Medesk. (2024). *Software de gestión para clínicas y consultorios médicos*.
-https://www.medesk.net/
-
-Ministerio de Salud de la Nación Argentina. (2023). *Registro Federal de
-Establecimientos de Salud (REFES)*.
-https://datos.gob.ar/dataset/salud-listado-establecimientos-salud-asentados-registro-federal-refes
-
-Organización Panamericana de la Salud. (2026, junio 5). *OPS coopera en la
-transformación digital en salud pública en Argentina*.
-https://www.paho.org/es/noticias/5-6-2026-ops-coopera-transformacion-digital-salud-publica-argentina
-
-Porter, M. E. (1980). *Competitive strategy: Techniques for analyzing industries
-and competitors*. Free Press.
-
-República Argentina. (2000). *Ley 25.326 de Protección de Datos Personales*.
-Boletín Oficial de la República Argentina.
-
-República Argentina. (2023). *Ley 27.706 de Historia Clínica Electrónica*.
-Boletín Oficial de la República Argentina.
-
-SMART Health IT. (s. f.). *SMART on FHIR*. https://docs.smarthealthit.org/
-
-SquadS Ventures. (2025). *Empresas B2B SaaS: early exits y modelos alternativos*.
-https://squads.ventures/empresas-b2b-saas-early-exits/
-
-Turnito. (2026). *Los mejores software de turnos para clínicas en Argentina [2026]*.
-https://turnito.app/blog/los-mejores-software-de-turnos-para-clinicas-en-argentina-2026/
-
-We Are Founders. (2026). *SaaS churn rates and customer acquisition costs by
-industry: 2026 benchmarks*.
-https://www.wearefounders.uk/saas-churn-rates-and-customer-acquisition-costs-by-industry-2025-data/
+Nota: a la fecha de este documento no hay ninguna clínica piloto comprometida
+—solo conversaciones exploratorias sin acuerdo ni fecha—, por lo que todos los
+hitos marcados como dependientes de "conseguir un piloto real" son objetivos de
+cronograma, no compromisos en curso. Si el piloto no se concreta en el plazo
+previsto, el plan de contingencia académico contempla una validación simulada
+como alternativa (ver 1.2 y 3.3). Los hitos de desarrollo propio (backend,
+frontend, integraciones LLM) no dependen de esta validación y están bajo
+control directo del fundador.
 
 
-================================================================
-Versión 2.2 — 08/06/2026
+# Apéndice A — Uso de inteligencia artificial generativa y agentes especializados en el proceso de desarrollo de Kuris
 
-Cambios respecto a versión 2.1:
-  - Incorporación de dos capacidades de IA generativa al MVP del
-    seminario: resumen automático de historia clínica y sugerencia de
-    clasificación CIE-10, implementadas mediante la API de Claude
-    (Anthropic). Ambas funcionalidades figuraban en el roadmap post-MVP
-    de versiones anteriores; la decisión de incluirlas en el MVP
-    responde a la disponibilidad de APIs de LLM accesibles y al impacto
-    diferencial que representan en el flujo clínico diario.
-  - Actualización del stack tecnológico: migración de FastAPI +
-    SQLAlchemy 2.0 + Next.js 14 a Java 21 + Spring Boot 3 + Spring
-    Security + Spring Data JPA + Angular 18 + Angular Material. La
-    migración obedece a la mayor madurez del ecosistema Java/Spring para
-    RBAC empresarial, manejo de excepciones y testing estructurado,
-    y a la mejor alineación con patrones de arquitectura académicamente
-    documentados (Clean Architecture, DDD).
-  - Tabla de hitos actualizada con los hitos de integración LLM.
-  - Sección 1.3 ampliada con un cuarto pilar diferencial: asistencia
-    clínica mediante IA generativa.
+## A.1 Contexto y justificación del uso de IA en el proyecto
 
-Cambios respecto a versión 1.1 (resumidos):
-  - Documento consolidado único: integración del contenido de
-    entrega-2.md (puntos 1.3 a 4.4) al cuerpo principal.
-  - Business Model Canvas movido a documento separado (bmc.md).
-  - Incorporación del Capítulo 5: Plan de Acción (5.1 Programas
-    generales y 5.2 Programas específicos), con cronograma de hitos
-    mayo 2026 – junio 2027 y tres fases operativas.
-  - Referencias completamente reescrita en formato APA 7.
-================================================================
+Kuris es desarrollado por un único fundador con una disponibilidad real de
+15 a 20 horas semanales. En este contexto, la incorporación de herramientas
+de inteligencia artificial generativa en el ciclo de desarrollo no es un
+atajo metodológico sino una decisión estratégica explícita que amplía la
+capacidad de ejecución técnica del equipo sin incrementar el costo operativo.
+
+Esta aproximación está alineada con investigaciones recientes sobre el impacto
+de los asistentes de código basados en LLM en la productividad del desarrollador
+individual. @peng2023 demostraron experimentalmente que el uso de
+GitHub Copilot aumenta la velocidad de finalización de tareas de codificación
+en un 55 % respecto del grupo de control; @barke2023 caracterizaron
+los patrones de uso efectivo de estos asistentes, diferenciando el modo
+exploratorio (generación de código nuevo) del modo acelerador (completado de
+código conocido). El proyecto Kuris incorpora ambos modos de manera deliberada
+y documentada.
+
+La decisión de declarar explícitamente el uso de IA en este documento responde
+a un criterio de transparencia metodológica: las herramientas de IA asisten la
+implementación, pero las decisiones arquitectónicas, los modelos de dominio, la
+validación funcional y la responsabilidad sobre el producto final permanecen bajo
+criterio del autor.
+
+## A.2 Herramienta principal: Claude Code (Anthropic)
+
+La herramienta central del ciclo de desarrollo es Claude Code, una interfaz de
+línea de comandos (CLI) desarrollada por Anthropic que integra un modelo de
+lenguaje de gran escala directamente en el entorno de trabajo del desarrollador
+[@anthropic2025b]. Claude Code opera con acceso al árbol de archivos del
+repositorio, historial de git, resultados de tests y salida de compilación, lo
+que le permite entender el contexto real del proyecto en lugar de operar sobre
+fragmentos aislados.
+
+En el contexto de Kuris, Claude Code cumple las siguientes funciones en el flujo
+de desarrollo:
+
+1. Generación de código estructural (TDD Green): dado un test escrito por el
+   autor en la fase Red (test fallando, sin clase de producción), Claude Code
+   genera la implementación mínima necesaria para que el test pase. El autor
+   verifica el comportamiento y aprueba o corrige antes del commit.
+
+2. Revisión de código y detección de inconsistencias: antes de cada commit,
+   Claude Code revisa el diff completo contra los estándares del proyecto
+   (documentados en CLAUDE.md) y advierte sobre violaciones de convenciones,
+   anti-patrones identificados o inconsistencias con decisiones arquitectónicas
+   previas (ADRs).
+
+3. Generación de documentación JavaDoc y specs SDD: Claude Code genera el
+   esqueleto de documentación técnica (JavaDoc, especificaciones de casos de uso)
+   que el autor completa y valida.
+
+4. Refactorización guiada: en la fase Refactor del ciclo TDD, Claude Code propone
+   simplificaciones, detecta código duplicado y sugiere extracciones, manteniendo
+   los tests en verde como condición de aceptación.
+
+## A.3 Integración con la metodología ICONIX + SDD + TDD
+
+El uso de IA se integra de forma explícita en el flujo de trabajo del proyecto,
+que combina las metodologías ICONIX (para el análisis orientado a objetos),
+SDD (Specification-Driven Development, para el diseño previo al código) y TDD
+(Test-Driven Development, para la implementación):
+
+| Paso metodológico | Rol del desarrollador | Rol de la IA (Claude Code) |
+|---|---|---|
+| 1. Spec SDD | Redacta el spec y lo aprueba (APPROVED) | Asiste en la redacción, detecta ambigüedades, propone casos de borde |
+| 2. ADR (si aplica) | Toma la decisión arquitectónica | Provee contexto sobre trade-offs y precedentes |
+| 3. Diseño de dominio | Define entidades y agregados DDD | Genera los stubs de clases Java anotadas |
+| 4. TDD Red | Escribe el test con aserción real | Ninguno: el test debe fallar sin intervención |
+| 5. TDD Green | Aprueba o corrige la implementación generada | Genera el código mínimo de producción |
+| 6. TDD Refactor | Supervisa y aprueba | Propone simplificaciones, mantiene tests en verde |
+| 7. Documentación | Valida y completa | Genera esqueleto JavaDoc y actualiza módulos |
+| 8. Review | Aprueba el PR | Agente code-reviewer ejecuta checklist DoD |
+
+La invariante que rige todo el flujo: la IA no aprueba nada. Toda salida del
+asistente es propuesta; el desarrollador es quien acepta, rechaza o modifica
+antes del commit. Esta distinción entre autoría y asistencia es estructural
+en la metodología del proyecto.
+
+## A.4 Límites explícitos del uso de IA
+
+Para evitar la degradación de la calidad del producto y mantener la
+responsabilidad técnica del autor, el proyecto establece límites explícitos
+sobre lo que la IA no hace:
+
+- No decide la arquitectura: las decisiones de diseño están documentadas en ADRs
+  firmados por el autor; la IA puede proponer alternativas pero no toma la
+  decisión final.
+- No escribe tests: los casos de prueba son responsabilidad del autor, ya que
+  son la especificación ejecutable del comportamiento esperado. Un test generado
+  por IA podría validar el código incorrecto.
+- No aprueba PRs: el código generado es revisado por el agente code-reviewer,
+  pero la aprobación del merge es una acción del autor con evidencia de tests
+  pasando.
+- No valida reglas de negocio del dominio clínico: las decisiones sobre qué
+  constituye un turno válido, cómo se calcula el tope semanal de una obra social
+  o qué factores componen el riesgo de ausentismo son definidas por el autor a
+  partir del análisis del dominio, no generadas por el modelo.
+
+\newpage
+
+# Referencias
+
+::: {#refs}
+:::
