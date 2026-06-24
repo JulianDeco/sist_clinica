@@ -75,3 +75,5 @@ sequenceDiagram
     CIE->>TUR: marca el turno como «cumplido»
 
     Note over CIE,TUR: Cierre atómico. Dos máquinas de estado separadas (ADR-016):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema notifica al médico.
+
+    Note over Medico: Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6\nMetodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md

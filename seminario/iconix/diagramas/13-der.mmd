@@ -1,5 +1,5 @@
 ---
-title: "DER físico — ClinicaSaaS (PostgreSQL 16, Flyway V001–V012)"
+title: "DER físico — Kuris (PostgreSQL 16, Flyway V001–V012)"
 ---
 erDiagram
 
@@ -275,3 +275,7 @@ erDiagram
     tenants         ||--o{ notification_log         : "registra"
     appointments    ||--o{ notification_log         : "notificado en"
     tenants         ||--o{ audit_log                : "audita"
+
+%% Leyenda (erDiagram no soporta nodos de texto libre, se documenta como comentario):
+%% Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6
+%% Metodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md

@@ -1,5 +1,5 @@
 ---
-title: "ClinicaSaaS — Diagrama de Arquitectura (despliegue + componentes)"
+title: "Kuris — Diagrama de Arquitectura (despliegue + componentes)"
 ---
 graph TB
     USR(["👤 Usuario\nsecretaria / profesional"])
@@ -51,5 +51,12 @@ graph TB
     BACKEND --- NOTE_SEC
     REDIS --- NOTE_REDIS
 
+    %% ── Leyenda ───────────────────────────────────────────────────
+    subgraph LEYENDA["Leyenda"]
+        direction TB
+        LEG["Proyecto: Kuris — Seminario de Trabajo Final UAI 2026<br/>Agente: claude-sonnet-4-6<br/>Metodologia: ICONIX<br/>Fuente: seminario/iconix/02-especificacion-casos-de-uso.md"]
+    end
+
     style NOTE_SEC fill:#FFF8DC,stroke:#CCBB88,color:#333
     style NOTE_REDIS fill:#FFF8DC,stroke:#CCBB88,color:#333
+    style LEG fill:#FFF8DC,stroke:#CCBB88,color:#333

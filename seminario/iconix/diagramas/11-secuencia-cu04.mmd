@@ -11,6 +11,7 @@ sequenceDiagram
     participant Turno as Turno
     participant FranjaHoraria as FranjaHoraria
     participant Sobreturno as Sobreturno
+    participant DB as PostgreSQL
 
     Note over UI,PrediccionDeRiesgo: Paso 1 — durante CU-01, score ya calculado (ver 08-secuencia-cu01.mmd pasos 1–4)
     UI->>PrediccionDeRiesgo: obtenerScore(turnoId): ScoreRiesgo
@@ -20,20 +21,36 @@ sequenceDiagram
     deactivate PrediccionDeRiesgo
     UI->>PoliticaDeSobreturnos: obtenerUmbral(profesionalId): UmbralOverbooking
     activate PoliticaDeSobreturnos
+    PoliticaDeSobreturnos->>DB: SELECT umbral_riesgo FROM politica_sobreturnos WHERE profesional_id=? AND tenant_id=?
+    activate DB
+    DB-->>PoliticaDeSobreturnos: umbral
+    deactivate DB
     PoliticaDeSobreturnos-->>UI: UmbralOverbooking(porcentaje: 70%)
     deactivate PoliticaDeSobreturnos
 
     Note over UI,FranjaHoraria: Paso 2 — Verificar política de sobreturnos
     UI->>PoliticaDeSobreturnos: verificarPolitica(profesionalId, tipoTurno): ResultadoPolitica
     activate PoliticaDeSobreturnos
+    PoliticaDeSobreturnos->>DB: SELECT * FROM politica_sobreturnos WHERE profesional_id=? AND tenant_id=?
+    activate DB
+    DB-->>PoliticaDeSobreturnos: politica (habilitado, tipos_excluidos)
+    deactivate DB
     PoliticaDeSobreturnos-->>UI: ResultadoPolitica(habilitado: Boolean, motivo: String)
     deactivate PoliticaDeSobreturnos
     UI->>Turno: contarSobreturnos(profesionalId, semana): ContadorSobreturnos
     activate Turno
+    Turno->>DB: SELECT COUNT(*) FROM turno WHERE profesional_id=? AND es_sobreturno=true AND semana_iso=? AND tenant_id=?
+    activate DB
+    DB-->>Turno: cantidad
+    deactivate DB
     Turno-->>UI: ContadorSobreturnos(usados, tope)
     deactivate Turno
     UI->>FranjaHoraria: tieneSobreturno(franjaId): Boolean
     activate FranjaHoraria
+    FranjaHoraria->>DB: SELECT EXISTS(SELECT 1 FROM turno WHERE franja_id=? AND es_sobreturno=true AND tenant_id=?)
+    activate DB
+    DB-->>FranjaHoraria: boolean
+    deactivate DB
     FranjaHoraria-->>UI: Boolean
     deactivate FranjaHoraria
 
@@ -50,12 +67,19 @@ sequenceDiagram
     Secretario->>UI: aceptarSugerencia()
     Note over UI: A1 — el secretario ignora la sugerencia: el turno original\nse crea normalmente, sin sobreturno (CU-01, pasos 5–6).
 
-    Note over UI,FranjaHoraria: Paso 5 — Crear el sobreturno
+    Note over UI,FranjaHoraria: Paso 5 — Crear el sobreturno (atómico)
     UI->>Sobreturno: crear(pacienteId, profesionalId, franjaId): Sobreturno
     activate Sobreturno
+    Sobreturno->>DB: BEGIN TRANSACTION
+    activate DB
+    Sobreturno->>DB: INSERT INTO turno (paciente_id, profesional_id, franja_id, estado, es_sobreturno, tenant_id) VALUES (?, ?, ?, 'RESERVADO', true, ?)
+    DB-->>Sobreturno: sobreturnoId
     UI->>FranjaHoraria: asociarSobreturno(franjaId, sobreturnoId)
     activate FranjaHoraria
+    FranjaHoraria->>DB: UPDATE franja_horaria SET tiene_sobreturno=true WHERE id=? AND tenant_id=?
     deactivate FranjaHoraria
+    Sobreturno->>DB: COMMIT
+    deactivate DB
     Sobreturno-->>UI: Sobreturno(id, estado: RESERVADO)
     deactivate Sobreturno
 
@@ -69,3 +93,5 @@ sequenceDiagram
     deactivate UI
 
     Note over AgendaUI: Cursos operativos posteriores:\nA6 — cancelación del primer turno: el sobreturno pasa a ser turno normal.\nA7 — ambos pacientes asisten: el profesional ve la doble reserva y decide.\nA8 — uno falta: el otro toma la franja y el ausente se marca «no asistió».
+
+    Note over Secretario: Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6\nMetodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md

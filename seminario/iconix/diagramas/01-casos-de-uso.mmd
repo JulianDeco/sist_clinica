@@ -1,5 +1,5 @@
 ---
-title: "ClinicaSaaS — Diagrama de casos de uso (ICONIX) — T-020 entregable 1"
+title: "Kuris — Diagrama de casos de uso (ICONIX) — T-020 entregable 1"
 ---
 flowchart LR
     %% Convenciones:
@@ -12,7 +12,7 @@ flowchart LR
     PAC(["👤 Paciente"])
     SCH(["⚙️ Scheduler\njob programado"])
 
-    subgraph SYS["ClinicaSaaS"]
+    subgraph SYS["Kuris"]
         direction TB
 
         %% ── Autenticación ────────────────────────────────────────
@@ -153,3 +153,10 @@ flowchart LR
 
     %% ── include Auth ─────────────────────────────────────────────
     UC_LOGIN -.->|«include»| UC_TENANT
+
+    %% ── Leyenda ───────────────────────────────────────────────────
+    subgraph LEYENDA["Leyenda"]
+        direction TB
+        LEG["Proyecto: Kuris — Seminario de Trabajo Final UAI 2026<br/>Agente: claude-sonnet-4-6<br/>Metodologia: ICONIX<br/>Fuente: seminario/iconix/02-especificacion-casos-de-uso.md"]
+    end
+    style LEG fill:#FFF8DC,stroke:#CCBB88,color:#333

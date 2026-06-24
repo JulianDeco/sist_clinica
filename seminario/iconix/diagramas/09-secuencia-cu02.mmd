@@ -10,21 +10,35 @@ sequenceDiagram
     participant NotaSOAP as NotaSOAP
     participant Observacion as Observacion
     participant ClaudeAPI as Claude API
+    participant DB as PostgreSQL
 
     Note over Medico,ConsultaMedica: Paso 1
     Medico->>UI: abrirConsulta(turnoId)
     activate UI
     UI->>Turno: verificarEstado(turnoId): EstadoTurno
     activate Turno
+    Turno->>DB: SELECT estado FROM turno WHERE id=? AND tenant_id=?
+    activate DB
+    DB-->>Turno: estado
+    deactivate DB
     Turno-->>UI: EstadoTurno(LLEGO | EN_CURSO)
     deactivate Turno
     UI->>ConsultaMedica: recuperarOIniciar(turnoId): ConsultaMedica
     activate ConsultaMedica
+    ConsultaMedica->>DB: SELECT * FROM consulta_medica WHERE turno_id=? AND tenant_id=?
+    activate DB
+    DB-->>ConsultaMedica: consulta (existente o vacío)
+    deactivate DB
 
     alt A3 — paciente sin turno previo (walk-in)
         UI->>Turno: crearTurnoRetroactivo(pacienteId, profesionalId, ahora): Turno
         activate Turno
+        Turno->>DB: INSERT INTO turno (paciente_id, profesional_id, estado, tenant_id) VALUES (?, ?, 'LLEGO', ?)
+        activate DB
+        DB-->>Turno: turnoId
+        deactivate DB
         UI->>ConsultaMedica: crearConsultaWalkIn(turnoId): ConsultaMedica
+        ConsultaMedica->>DB: INSERT INTO consulta_medica (turno_id, origen, estado, tenant_id) VALUES (?, 'WALK_IN', 'EN_CURSO', ?)
         deactivate Turno
         Note over UI: Mantiene la integridad consulta–turno. El flujo continúa en el paso 2.
     end
@@ -32,6 +46,10 @@ sequenceDiagram
     Note over UI,Paciente: Paso 2
     UI->>Paciente: obtenerDatos(pacienteId): Paciente
     activate Paciente
+    Paciente->>DB: SELECT * FROM paciente WHERE id=? AND tenant_id=?
+    activate DB
+    DB-->>Paciente: datos del paciente
+    deactivate DB
     Paciente-->>UI: Paciente(nombre, obra social, historial)
     deactivate Paciente
     UI-->>Medico: presentarConsulta(Paciente, Turno)
@@ -41,6 +59,10 @@ sequenceDiagram
     UI->>NotaSOAP: crear(subjetivo, objetivo, analisis, plan): NotaSOAP
     activate NotaSOAP
     UI->>ConsultaMedica: asociarNota(consultaId, NotaSOAP)
+    ConsultaMedica->>DB: UPDATE consulta_medica SET nota_soap=? WHERE id=? AND tenant_id=?
+    activate DB
+    DB-->>ConsultaMedica: OK
+    deactivate DB
     ConsultaMedica-->>UI: NotaSOAP guardada
     deactivate NotaSOAP
 
@@ -56,6 +78,10 @@ sequenceDiagram
     end
 
     UI->>ConsultaMedica: asociarObservacion(consultaId, Observacion)
+    ConsultaMedica->>DB: INSERT INTO observacion (consulta_id, codigo, valor, unidad, tenant_id) VALUES (?, ?, ?, ?, ?)
+    activate DB
+    DB-->>ConsultaMedica: OK
+    deactivate DB
     ConsultaMedica-->>UI: Observacion guardada
     deactivate Observacion
 
@@ -69,6 +95,10 @@ sequenceDiagram
         UI-->>Medico: mostrarSugerencia(SugerenciaCIE10)
         Medico->>UI: confirmarOEditarCIE10(codigoFinal: String)
         UI->>ConsultaMedica: asociarDiagnostico(consultaId, codigoFinal)
+        ConsultaMedica->>DB: UPDATE consulta_medica SET diagnostico_cie10=? WHERE id=? AND tenant_id=?
+        activate DB
+        DB-->>ConsultaMedica: OK
+        deactivate DB
         Note over ClaudeAPI: ADR-012 / T-018. El médico conserva el criterio final.
     end
 
@@ -81,12 +111,20 @@ sequenceDiagram
     UI-->>Medico: mostrarResumen(ResumenClinico)
     Medico->>UI: validarResumen(aprobado: Boolean)
     UI->>ConsultaMedica: finalizar(consultaId, resumenValidado): ConsultaMedica
+    activate DB
+    ConsultaMedica->>DB: BEGIN TRANSACTION
+    ConsultaMedica->>DB: UPDATE consulta_medica SET estado='FINALIZADA', resumen=?, fecha_cierre=? WHERE id=? AND tenant_id=?
     UI->>Turno: marcarCumplido(turnoId)
     activate Turno
+    Turno->>DB: UPDATE turno SET estado='CUMPLIDO' WHERE id=? AND tenant_id=?
     deactivate Turno
+    ConsultaMedica->>DB: COMMIT
+    deactivate DB
     ConsultaMedica-->>UI: ConsultaMedica(estado: FINALIZADA)
     deactivate ConsultaMedica
     UI-->>Medico: consultaCerrada(consultaId)
     deactivate UI
 
     Note over ConsultaMedica,Turno: Cierre atómico. Dos máquinas de estado separadas (ADR-016):\n· Turno: RESERVADO → CONFIRMADO → LLEGÓ → CUMPLIDO / AUSENTE.\n· ConsultaMedica: EN_CURSO → FINALIZADA.\nA1 — abandono sin cerrar: la consulta queda EN_CURSO y el sistema\nnotifica al médico en su próxima sesión.
+
+    Note over Medico: Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6\nMetodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md

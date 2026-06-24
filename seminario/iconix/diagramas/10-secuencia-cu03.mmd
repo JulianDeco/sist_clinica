@@ -10,10 +10,15 @@ sequenceDiagram
     participant Recordatorio as Recordatorio
     participant MensajeNotificacion as Mensaje de notificación
     participant FranjaHoraria as FranjaHoraria
+    participant DB as PostgreSQL
 
     Note over Scheduler,Turno: Paso 1–2 — Selección de turnos
     Scheduler->>Turno: obtenerTurnosProximos(ventanaHoras: 48 | 24): List~Turno~
     activate Turno
+    Turno->>DB: SELECT * FROM turno WHERE fecha_hora BETWEEN ? AND ? AND tenant_id=?
+    activate DB
+    DB-->>Turno: filas Turno
+    deactivate DB
     Turno-->>Scheduler: List~Turno~(id, pacienteId, profesionalId, fechaHora)
     deactivate Turno
 
@@ -28,9 +33,17 @@ sequenceDiagram
         else score expirado — recalcular
             Scheduler->>Paciente: obtenerHistorial(pacienteId): List~TurnoHistorico~
             activate Paciente
+            Paciente->>DB: SELECT * FROM turno WHERE paciente_id=? AND tenant_id=? ORDER BY fecha_hora DESC
+            activate DB
+            DB-->>Paciente: historial de turnos
+            deactivate DB
             Paciente-->>Scheduler: List~TurnoHistorico~
             deactivate Paciente
             Scheduler->>PrediccionDeRiesgo: calcularScore(historial, anticipacionDias, diaSemana, franja): ScoreRiesgo
+            PrediccionDeRiesgo->>DB: INSERT INTO prediccion_riesgo (turno_id, score, factores, tenant_id) VALUES (?, ?, ?, ?)\nON CONFLICT (turno_id) DO UPDATE SET score=excluded.score
+            activate DB
+            DB-->>PrediccionDeRiesgo: OK
+            deactivate DB
             PrediccionDeRiesgo-->>Scheduler: ScoreRiesgo(valor: 0–100, factores, vigente: true)
         end
 
@@ -42,6 +55,10 @@ sequenceDiagram
         alt paciente contactable por canales digitales
             Scheduler->>Recordatorio: crear(turnoId, canal: Canal, programadoPara: Instant): Recordatorio
             activate Recordatorio
+            Recordatorio->>DB: INSERT INTO recordatorio (turno_id, canal, estado, programado_para, tenant_id) VALUES (?, ?, 'PENDIENTE', ?, ?)
+            activate DB
+            DB-->>Recordatorio: recordatorioId
+            deactivate DB
             Scheduler->>MensajeNotificacion: enviar(pacienteId, canal, contenido: PlantillaMensaje): ResultadoEnvio
             activate MensajeNotificacion
             MensajeNotificacion-->>Scheduler: ResultadoEnvio(exito: Boolean, referencia: String)
@@ -61,17 +78,30 @@ sequenceDiagram
     activate MensajeNotificacion
     MensajeNotificacion->>Recordatorio: registrarRespuesta(referencia, accion): Recordatorio
     activate Recordatorio
+    Recordatorio->>DB: UPDATE recordatorio SET estado='RESPONDIDO', respuesta=? WHERE referencia=? AND tenant_id=?
+    activate DB
+    DB-->>Recordatorio: OK
+    deactivate DB
     deactivate Recordatorio
     MensajeNotificacion->>Turno: actualizarEstado(turnoId, nuevoEstado: EstadoTurno)
     activate Turno
 
     alt A3 — confirmación recibida
+        Turno->>DB: UPDATE turno SET estado='CONFIRMADO' WHERE id=? AND tenant_id=?
+        activate DB
+        DB-->>Turno: OK
+        deactivate DB
         Turno-->>MensajeNotificacion: Turno(estado: CONFIRMADO)
     else A4 — cancelación recibida
+        Turno->>DB: UPDATE turno SET estado='CANCELADO' WHERE id=? AND tenant_id=?
+        activate DB
+        DB-->>Turno: OK
+        deactivate DB
         Turno-->>MensajeNotificacion: Turno(estado: CANCELADO)
         deactivate Turno
         MensajeNotificacion->>FranjaHoraria: liberar(franjaId)
         activate FranjaHoraria
+        FranjaHoraria->>DB: UPDATE franja_horaria SET estado='LIBRE' WHERE id=? AND tenant_id=?
         deactivate FranjaHoraria
         MensajeNotificacion->>MensajeNotificacion: notificarStaff(turnoId, motivo: CANCELADO_POR_PACIENTE)
         Note over MensajeNotificacion: Decisión 2026-06-10 (MVP mínimo): sin lista de espera\nni notificación automática a otros pacientes — roadmap post-MVP.
@@ -80,3 +110,5 @@ sequenceDiagram
     deactivate MensajeNotificacion
 
     Note over MensajeNotificacion,Recordatorio: Paso 7 — Registrar métricas de envío y respuesta en el Recordatorio
+
+    Note over Scheduler: Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6\nMetodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md

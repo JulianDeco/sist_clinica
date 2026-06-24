@@ -10,6 +10,7 @@ sequenceDiagram
     participant Paciente as Paciente
     participant PrediccionDeRiesgo as PrediccionDeRiesgo
     participant Turno as Turno
+    participant DB as PostgreSQL
 
     Note over Secretario,UI: Paso 1
     Secretario->>UI: seleccionarDatos(pacienteId, profesionalId, franjaId)
@@ -18,12 +19,20 @@ sequenceDiagram
     Note over UI,FranjaHoraria: Paso 2 — Validar disponibilidad de slot
     UI->>Agenda: consultarAgenda(profesionalId, fecha): List~FranjaHoraria~
     activate Agenda
+    Agenda->>DB: SELECT * FROM franja_horaria WHERE profesional_id=? AND tenant_id=?
+    activate DB
+    DB-->>Agenda: filas FranjaHoraria
+    deactivate DB
     Agenda->>FranjaHoraria: verificarDisponibilidad(franjaId): EstadoFranja
     activate FranjaHoraria
     FranjaHoraria-->>Agenda: EstadoFranja
     deactivate FranjaHoraria
 
     alt A1 — franja ya ocupada
+        Agenda->>DB: SELECT * FROM franja_horaria WHERE estado='LIBRE' AND profesional_id=? AND tenant_id=?
+        activate DB
+        DB-->>Agenda: franjas alternativas
+        deactivate DB
         Agenda-->>UI: FranjaNoDisponibleResponse(franjas alternativas: List~FranjaHoraria~)
         Note over UI,Agenda: El flujo retoma en el paso 2 con la nueva franja.
         Secretario->>UI: elegirFranjaAlternativa(franjaId)
@@ -35,6 +44,14 @@ sequenceDiagram
     Note over UI,Cobertura: Paso 3 — Validar cobertura y tope semanal
     UI->>Cobertura: verificarCobertura(pacienteId, fecha): ValidacionCobertura
     activate Cobertura
+    Cobertura->>DB: SELECT * FROM cobertura WHERE paciente_id=? AND tenant_id=? AND vigencia_hasta >= ?
+    activate DB
+    DB-->>Cobertura: cobertura vigente
+    deactivate DB
+    Cobertura->>DB: SELECT uso_semanal FROM cobertura_uso_semanal WHERE cobertura_id=? AND semana_iso=? AND tenant_id=?
+    activate DB
+    DB-->>Cobertura: usoSemanal
+    deactivate DB
     Cobertura-->>UI: ValidacionCobertura(vigente, usoSemanal, tope)
     deactivate Cobertura
 
@@ -46,6 +63,10 @@ sequenceDiagram
     Note over UI,PrediccionDeRiesgo: Paso 4 — Calcular riesgo de no-show
     UI->>Paciente: obtenerHistorial(pacienteId): List~TurnoHistorico~
     activate Paciente
+    Paciente->>DB: SELECT * FROM turno WHERE paciente_id=? AND tenant_id=? ORDER BY fecha_hora DESC
+    activate DB
+    DB-->>Paciente: historial de turnos
+    deactivate DB
     Paciente-->>UI: List~TurnoHistorico~
     deactivate Paciente
     UI->>PrediccionDeRiesgo: calcularScore(historial, anticipacionDias, diaSemana, franjaHoraria): ScoreRiesgo
@@ -62,18 +83,29 @@ sequenceDiagram
     Note over UI,Turno: Paso 6 — Registrar la reserva (atómico)
     UI->>Turno: crearTurno(pacienteId, profesionalId, franjaId, scoreRiesgo): Turno
     activate Turno
+    Turno->>DB: BEGIN TRANSACTION
+    activate DB
+    Turno->>DB: INSERT INTO turno (paciente_id, profesional_id, franja_id, estado, tenant_id) VALUES (?, ?, ?, 'RESERVADO', ?)
+    DB-->>Turno: turnoId
     UI->>FranjaHoraria: marcarOcupada(franjaId)
     activate FranjaHoraria
+    FranjaHoraria->>DB: UPDATE franja_horaria SET estado='OCUPADA' WHERE id=? AND tenant_id=?
     deactivate FranjaHoraria
     UI->>Cobertura: consolidarDescuento(pacienteId, fecha)
     activate Cobertura
+    Cobertura->>DB: UPDATE cobertura_uso_semanal SET uso_semanal = uso_semanal + 1 WHERE cobertura_id=? AND semana_iso=? AND tenant_id=?
     deactivate Cobertura
     UI->>PrediccionDeRiesgo: asociarPrediccion(turnoId, ScoreRiesgo)
     activate PrediccionDeRiesgo
+    PrediccionDeRiesgo->>DB: INSERT INTO prediccion_riesgo (turno_id, score, factores, confianza, version_modelo, tenant_id) VALUES (?, ?, ?, ?, ?, ?)
     deactivate PrediccionDeRiesgo
+    Turno->>DB: COMMIT
+    deactivate DB
     Turno-->>UI: Turno(id, estado: RESERVADO)
     deactivate Turno
     UI-->>Secretario: turnoRegistrado(turnoId)
     deactivate UI
 
     Note over UI,Turno: Las modificaciones de Turno, FranjaHoraria, Cobertura y\nPrediccionDeRiesgo se aplican en una única operación atómica.
+
+    Note over Secretario: Proyecto: Kuris — Seminario de Trabajo Final UAI 2026 · Agente: claude-sonnet-4-6\nMetodologia: ICONIX · Fuente: seminario/iconix/02-especificacion-casos-de-uso.md
