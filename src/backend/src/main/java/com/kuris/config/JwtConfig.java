@@ -1,7 +1,6 @@
 package com.kuris.config;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -17,14 +16,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtConfig {
 
+  // WHY: mismo valor que el default placeholder en application.yml — si llega hasta aquí
+  // significa que JWT_SECRET no fue seteado en el entorno (ADR-pendiente: fail-fast en boot).
+  private static final String PLACEHOLDER_SECRET =
+      "cambiar-en-produccion-minimo-64-caracteres-aleatorios-aqui-xxxxxxxxxxx";
+  private static final int MIN_SECRET_BYTES = 32;
+
   private final SecretKey key;
   private final long accessTokenMs;
 
   public JwtConfig(
       @Value("${app.jwt.secret}") String secret,
       @Value("${app.jwt.access-token-expiration-ms}") long accessTokenMs) {
+    validateSecret(secret);
     this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     this.accessTokenMs = accessTokenMs;
+  }
+
+  private static void validateSecret(String secret) {
+    if (secret == null || secret.isBlank()) {
+      throw new IllegalStateException("app.jwt.secret no puede estar vacío");
+    }
+    if (PLACEHOLDER_SECRET.equals(secret)) {
+      throw new IllegalStateException(
+          "app.jwt.secret usa el valor placeholder por defecto — definir JWT_SECRET en el"
+              + " entorno con un valor aleatorio real");
+    }
+    if (secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+      throw new IllegalStateException(
+          "app.jwt.secret debe tener al menos " + MIN_SECRET_BYTES + " bytes para HS256");
+    }
   }
 
   /** Emite un identity token (purpose=tenant-select, TTL 5 min). */
@@ -54,18 +75,6 @@ public class JwtConfig {
   /** Parsea y valida firma + expiración. Lanza JwtException si falla. */
   public Claims parseAndValidate(String token) {
     return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-  }
-
-  /**
-   * Extrae claims sin lanzar excepción — útil para logout donde el token puede estar próximo a
-   * expirar.
-   */
-  public Claims parseUnchecked(String token) {
-    try {
-      return parseAndValidate(token);
-    } catch (JwtException e) {
-      return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-    }
   }
 
   public long getAccessTokenMs() {
