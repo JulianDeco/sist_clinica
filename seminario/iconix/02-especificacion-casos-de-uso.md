@@ -90,7 +90,7 @@
 4. El sistema persiste las notas asociadas al Encounter.
 5. El médico registra signos vitales y mediciones (TA, FC, peso, talla, glucemia, etc.).
 6. El sistema las almacena como `Observation` FHIR asociadas al Encounter, validando rangos clínicos.
-7. Opcionalmente, el médico registra un diagnóstico provisorio como descripción libre (la codificación CIE-10 automática queda en roadmap post-MVP).
+7. Opcionalmente, el médico registra un diagnóstico provisorio como descripción libre, con sugerencia automática de código CIE-10 mediante LLM (T-018, incorporado al MVP el 2026-06-08; ver extensión E1).
 8. El médico cierra el Encounter.
 9. El sistema cierra el Encounter (`finished`), actualiza el estado del `Appointment` a `fulfilled` y persiste todo transaccionalmente.
 

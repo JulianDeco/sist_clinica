@@ -50,4 +50,5 @@ ni interrumpir a quien tomó la decisión.
 | [ADR-012](ADR-012-llm-integration.md) | IA generativa mediante Claude API para asistencia clínica | Accepted | 2026-06-08 |
 | [ADR-013](ADR-013-notification-channels.md) | Abstracción de canales de notificación — Telegram MVP, WhatsApp post-piloto | Accepted | 2026-06-08 |
 | [ADR-014](ADR-014-multi-tenant-membership.md) | Membresía multitenant — identidad separada de la pertenencia a clínica | Accepted | 2026-06-09 |
-| [ADR-015](ADR-015-user-practitioner-mapping.md) | Mapeo Usuario–Profesional — vínculo opcional y explícito | Accepted | 2026-06-09 |
+| [ADR-015](ADR-015-user-practitioner-mapping.md) | Mapeo Usuario–Profesional — vínculo opcional y explícito | Accepted | 2026-06-10 |
+| [ADR-016](ADR-016-appointment-encounter-state-machines.md) | Máquinas de estado separadas para Appointment y Encounter | Accepted | 2026-06-15 |

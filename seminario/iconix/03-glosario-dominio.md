@@ -45,7 +45,7 @@
 | **Agenda ◇— FranjaHoraria (agregación)** | Todo–parte verdadero: la franja horaria no tiene sentido fuera de la agenda que la contiene. Única agregación del modelo (la otra relación todo–parte, ConsultaMedica–NotaSOAP, es composición). |
 | **ConsultaMedica ◆— NotaSOAP (composición)** | La nota SOAP es parte inseparable de su consulta; no existe de forma independiente. |
 | **Usuario ↔ Membresia ↔ Clinica** | ADR-014: la identidad (Usuario) se separa de la pertenencia (Membresia). El Rol se asocia a la membresía, no al usuario: la misma persona puede ser Médico en una clínica y Administrador en otra. |
-| **Usuario 0..1 — 0..1 Profesional** | El médico que usa el sistema es a la vez Usuario (inicia sesión) y Profesional (tiene agenda). No todo usuario es profesional (secretaria) ni todo profesional es usuario. Ver *Hallazgos* abajo. |
+| **Usuario 0..1 — 0..1 Profesional** | El médico que usa el sistema es a la vez Usuario (inicia sesión) y Profesional (tiene agenda), pero ambos roles son independientes en el modelo: un Usuario sin agenda (p. ej. secretaria o administrador) no es Profesional, y un Profesional puede existir sin cuenta de Usuario (p. ej. un médico externo registrado solo como `Practitioner` para fines de agenda, sin acceso al sistema). La relación se modela como 0..1 — 0..1 en ambos sentidos por ese motivo. |
 | **Turno —0..1 Cobertura ("se imputa a")** | CU-01 paso 3: al reservar, el turno descuenta del tope semanal de la cobertura. El turno particular (sin cobertura) es válido — multiplicidad 0..1. |
 | **FranjaHoraria 1 — 0..\* Turno** | Normalmente una franja aloja un solo turno; la multiplicidad 0..\* habilita el segundo turno del sobreturno (CU-04). |
 
