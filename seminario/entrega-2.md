@@ -72,7 +72,7 @@ Ingeniería en Sistemas Informáticos
 
 La ventaja competitiva de Kuris no reside en una funcionalidad
 aislada, sino en la combinación —no replicada por la oferta relevada en
-el segmento de clínicas pequeñas— de tres pilares integrados al mismo
+el segmento de clínicas pequeñas— de cuatro pilares integrados al mismo
 flujo operativo:
 
 - **Interoperabilidad nativa sobre HL7 FHIR R4.** El sistema no almacena
@@ -102,21 +102,33 @@ flujo operativo:
   tope parametrizable por el profesional. La predicción se traduce
   directamente en recuperación de ingresos y en eficiencia de la agenda.
 
+- **Asistencia clínica mediante IA generativa.** A diferencia de los
+  competidores que incorporaron IA para tareas exclusivamente
+  administrativas (transcripción de llamados, asistentes telefónicos),
+  Kuris integra IA generativa en el flujo clínico: resumen automático de
+  la historia clínica al cierre de cada consulta y sugerencia de
+  clasificación CIE-10 a partir del texto libre del motivo de consulta,
+  mediante la API de Claude (Anthropic), con el profesional conservando
+  siempre el criterio final sobre la información registrada.
+
 En el relevamiento competitivo realizado (mayo de 2026) no se identificó
 ningún proveedor del segmento de clínicas pequeñas que combine estos
-tres pilares de manera nativa e integrada. Los incumbentes locales
+cuatro pilares de manera nativa e integrada. Los incumbentes locales
 ofrecen gestión administrativa sólida sin interoperabilidad estándar ni
 capacidades predictivas; los SaaS modernos genéricos incorporaron
 recientemente IA para tareas administrativas (transcripción, asistentes
-telefónicos) pero no predicción de ausentismo accionable por paciente; y
-las soluciones de consolidación masiva priorizan el volumen y la
-estandarización por sobre la personalización del flujo por clínica.
+telefónicos) pero no predicción de ausentismo accionable por paciente ni
+asistencia en el flujo clínico; y las soluciones de consolidación masiva
+priorizan el volumen y la estandarización por sobre la personalización del
+flujo por clínica.
 
 ### 1.4 Factores principales que se considera harán exitoso al proyecto
 
 - **Diferenciación funcional concreta y medible.** El producto ataca un
-  dolor cuantificado del segmento —el ausentismo, que afecta entre el 23 %
-  y el 30 % de los turnos médicos en Argentina (Geblix, 2024)— con una
+  dolor cuantificado del segmento —el ausentismo, que afecta a
+  aproximadamente 1 de cada 3 turnos médicos en América Latina (30 %, sobre
+  un análisis de 1,5 millones de turnos en Argentina, Uruguay, Chile, Perú
+  y México; Geblix, 2024)— con una
   capacidad que la competencia directa no ofrece, y cuyo impacto económico
   es demostrable mes a mes mediante el reporte de ausentismo.
 
@@ -127,10 +139,10 @@ estandarización por sobre la personalización del flujo por clínica.
   necesidades específicas y baja cobertura tecnológica adecuada.
 
 - **Estructura de costos liviana y bajo punto de equilibrio.** Con costos
-  fijos consolidados en torno a USD 50 mensuales y un punto de equilibrio
-  operativo estimado entre 12 y 18 clínicas suscriptas, el proyecto es
-  viable en su fase inicial sin financiamiento externo, lo que reduce el
-  riesgo financiero y otorga tiempo para validar la adopción.
+  fijos operativos proyectados entre USD 85 y USD 145 mensuales y un punto
+  de equilibrio operativo estimado entre 12 y 18 clínicas suscriptas, el
+  proyecto es viable en su fase inicial sin financiamiento externo, lo que
+  reduce el riesgo financiero y otorga tiempo para validar la adopción.
 
 - **Soporte personalizado del fundador como diferencial relacional.** En
   un mercado donde el soporte de los proveedores masivos tiende a ser
@@ -169,8 +181,9 @@ desatendido.
 La oportunidad surge de la convergencia de cuatro condiciones del
 contexto:
 
-1. **Un problema operativo costoso y crónico:** el ausentismo del 23 %–30 %
-   de los turnos, que se traduce en pérdidas directas de ingresos para los
+1. **Un problema operativo costoso y crónico:** el ausentismo, que afecta
+   a aproximadamente 1 de cada 3 turnos médicos a nivel regional (30 %,
+   Geblix 2024), se traduce en pérdidas directas de ingresos para los
    profesionales y para el cual el segmento no dispone de una solución
    específica adoptada.
 
@@ -395,8 +408,8 @@ habilitadores si el producto cumple la normativa de datos de salud; los
 
 - Segmento amplio y desatendido (≈ 5.000 establecimientos privados,
   mayoritariamente pequeños).
-- Problema cuantificado y costoso (ausentismo 23 %–30 %) sin solución
-  específica adoptada.
+- Problema cuantificado y costoso (ausentismo ≈ 30 % a nivel regional) sin
+  solución específica adoptada.
 - Mercado de salud digital regional en crecimiento sostenido (CAGR 9,5 %).
 - Tendencia sectorial hacia la interoperabilidad y la automatización
   inteligente.
@@ -499,7 +512,7 @@ Ingeniería en Sistemas Informáticos
 
 | | **Origen interno** | **Origen externo** |
 |---|---|---|
-| **Positivo** | **Fortalezas**<br>• Diferenciación técnica única en el segmento (FHIR R4 + predicción explicable + inteligencia operacional)<br>• Interoperabilidad nativa como barrera de entrada<br>• Estructura de costos liviana; punto de equilibrio bajo (12–18 clínicas)<br>• Conocimiento técnico especializado del fundador<br>• Soporte personalizado como diferencial relacional<br>• Infraestructura propia ya operativa | **Oportunidades**<br>• Segmento amplio y desatendido (≈ 5.000 establecimientos)<br>• Ausentismo cuantificado (23 %–30 %) sin solución adoptada<br>• Mercado de salud digital en expansión (CAGR 9,5 %)<br>• Tendencia sectorial a interoperabilidad e IA<br>• Marco normativo que favorece la interoperabilidad |
+| **Positivo** | **Fortalezas**<br>• Diferenciación técnica única en el segmento (FHIR R4 + predicción explicable + inteligencia operacional)<br>• Interoperabilidad nativa como barrera de entrada<br>• Estructura de costos liviana; punto de equilibrio bajo (12–18 clínicas)<br>• Conocimiento técnico especializado del fundador<br>• Soporte personalizado como diferencial relacional<br>• Infraestructura propia ya operativa | **Oportunidades**<br>• Segmento amplio y desatendido (≈ 5.000 establecimientos)<br>• Ausentismo cuantificado (≈ 30 % a nivel regional) sin solución adoptada<br>• Mercado de salud digital en expansión (CAGR 9,5 %)<br>• Tendencia sectorial a interoperabilidad e IA<br>• Marco normativo que favorece la interoperabilidad |
 | **Negativo** | **Debilidades**<br>• Equipo unipersonal; capacidad de ejecución acotada<br>• Sin base instalada, marca ni casos de referencia<br>• Recursos comerciales y de marketing limitados<br>• Dependencia crítica de una sola persona<br>• Sin validación comercial real | **Amenazas**<br>• Incumbentes locales con base instalada y relación establecida<br>• Posible incorporación de IA predictiva por competidores con más recursos<br>• Sensibilidad al precio en dólares (ingresos de clientes en pesos)<br>• Volatilidad macroeconómica argentina<br>• Resistencia al cambio en clínicas con herramientas heredadas |
 
 ### 3.2 Análisis de Fortalezas, Oportunidades, Debilidades y Amenazas

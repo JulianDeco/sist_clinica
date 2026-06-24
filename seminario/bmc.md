@@ -115,8 +115,8 @@ aplicados al dominio de salud.
 
 ACTIVIDADES CLAVE
 
-Desarrollo y mantenimiento del producto (FastAPI + Next.js sobre
-arquitectura FHIR). Evolución del módulo de predicción de ausentismo:
+Desarrollo y mantenimiento del producto (Java 21 + Spring Boot 3 + Angular 18
+sobre arquitectura FHIR). Evolución del módulo de predicción de ausentismo:
 ajuste de heurísticas iniciales y entrenamiento de modelos por tenant
 cuando cada clínica acumula volumen de turnos suficiente. Mantenimiento
 de conformidad con FHIR R4 y la regulación argentina de historia clínica
@@ -168,7 +168,8 @@ clientes crece.
 
 Punto de equilibrio operativo estimado: entre 12 y 18 clínicas suscriptas
 en plan base, asumiendo ticket promedio de USD 35 a USD 50 mensuales y
-costos fijos consolidados en torno a USD 50 mensuales. Esta proyección es
+costos fijos operativos proyectados entre USD 85 y USD 145 mensuales
+(detalle en plan-de-negocios.md, sección 5.2). Esta proyección es
 alcanzable en la fase inicial sin requerir financiamiento externo, dada
 la estructura de costos descrita.
 

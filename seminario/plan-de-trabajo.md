@@ -1,7 +1,7 @@
 Kuris — Plan de Trabajo
 Seminario de Trabajo Final — UAI 2026
 Autor: Julián Deco
-Versión: 1.1 — 12/05/2026
+Versión: 1.2 — 21/06/2026
 ================================================================
 
 
@@ -31,12 +31,13 @@ Funcionalidades dentro del MVP:
   - Predicción heurística explicable de ausentismo.
   - Recordatorios inteligentes diferenciados por riesgo.
   - Overbooking inteligente.
+  - Resumen automático de historia clínica con LLM y sugerencia de
+    clasificación CIE-10 (Claude API — ADR-012, T-017/T-018,
+    incorporados al MVP el 2026-06-08).
   - 1 piloto real (o plan B con simulación documentada).
 
 Funcionalidades movidas a roadmap post-MVP:
 
-  - Resumen automático de historia clínica con LLM.
-  - Sugerencia automática de clasificación CIE-10.
   - Sugerencia de cobertura óptima por franja horaria.
   - Modelos de Machine Learning entrenados por tenant.
   - Importador desde Excel para migración masiva (versión simplificada
@@ -90,11 +91,11 @@ SEMANA 1 (12/05 – 18/05) — Multitenant en base de datos
 
 Objetivos:
   - Aislamiento por tenant_id en modelos existentes.
-  - Middleware FastAPI que extrae tenant del JWT.
+  - Filtro Spring Security que extrae tenant del JWT.
   - Tests verifican que tenant A no lee datos de tenant B.
 
 Entregable:
-  - Migración Alembic con tenant_id.
+  - Migración Flyway con tenant_id.
   - Tests de aislamiento pasando.
   - Documento backend/docs/multitenancy.md.
 
@@ -532,6 +533,14 @@ Riesgos identificados y mitigación:
 
 
 ================================================================
+Versión 1.2 — 21/06/2026
+Cambios respecto a 1.1:
+  - Resumen automático de historia clínica y sugerencia CIE-10 (LLM)
+    reincorporados al MVP (ADR-012, T-017/T-018, decisión 2026-06-08),
+    revirtiendo el recorte de la versión 1.1.
+  - Migración de stack (FastAPI+Next.js → Java 21+Spring Boot 3+Angular 18,
+    2026-06-08) reflejada en las menciones técnicas de Semana 1.
+
 Versión 1.1 — 12/05/2026
 Cambios respecto a 1.0:
   - Carga sincerada a 15-20 h/semana real.
